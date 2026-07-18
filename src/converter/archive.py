@@ -389,7 +389,7 @@ class ArchiveConverter(Converter):
     def _extract_7z(self, archive: Path, dest: Path) -> tuple:
         """Extract a 7z archive using py7zr (lazy import)."""
         try:
-            import py7zr  # noqa: lazy import
+            import py7zr  # noqa: F401
         except ImportError:
             return [], "py7zr not installed"
 
@@ -448,7 +448,7 @@ class ArchiveConverter(Converter):
         """Extract a RAR archive. Tries rarfile first, then 7-Zip as fallback."""
         # Try rarfile + unrar first
         try:
-            import rarfile  # noqa: lazy import
+            import rarfile  # noqa: F401
         except ImportError:
             # rarfile not installed, try 7-Zip directly
             return self._extract_rar_via_7z(archive, dest)
