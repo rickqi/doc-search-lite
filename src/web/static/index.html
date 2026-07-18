@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>doc-search Web</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div id="app">
+  <!-- Header -->
+  <header id="header">
+    <button id="toggle-sidebar" class="icon-btn" title="切换侧栏">&#9776;</button>
+      <h1>doc-search <span class="version" id="app-version"></span></h1>
+    <div id="header-right">
+      <input type="password" id="api-key-input" placeholder="API Token" 
+             title="输入 API Token 进行认证" autocomplete="off">
+      <span id="auth-status" class="auth-badge" title="认证状态">🔓</span>
+      <button id="theme-toggle" class="icon-btn" title="切换主题">&#9788;</button>
+      <span id="status-dot" class="status-dot idle" title="状态"></span>
+    </div>
+  </header>
+
+  <div id="main">
+    <!-- Sidebar -->
+    <aside id="sidebar">
+      <div id="sidebar-tabs">
+        <button class="tab-btn active" data-tab="sessions" data-i18n="tab.sessions">会话</button>
+        <button class="tab-btn" data-tab="database" data-i18n="tab.database">数据库</button>
+      </div>
+
+      <!-- Sessions Panel -->
+      <div id="panel-sessions" class="tab-panel active">
+        <div id="sidebar-header">
+          <h3 data-i18n="session.title">会话</h3>
+          <button id="new-session-btn" class="btn primary" title="新建会话" data-i18n="sidebar.new_session">+ 新建</button>
+        </div>
+        <div id="session-list"></div>
+      </div>
+
+      <!-- Database Panel -->
+      <div id="panel-database" class="tab-panel">
+        <div id="db-stats">
+          <div class="db-stat-card"><span class="db-stat-num" id="db-total">--</span><span class="db-stat-label">总文件</span></div>
+          <div class="db-stat-card success"><span class="db-stat-num" id="db-success">--</span><span class="db-stat-label">成功</span></div>
+          <div class="db-stat-card danger"><span class="db-stat-num" id="db-failed">--</span><span class="db-stat-label">失败</span></div>
+          <div class="db-stat-card"><span class="db-stat-num" id="db-pending">--</span><span class="db-stat-label">待处理</span></div>
+        </div>
+        <div id="db-token-summary"></div>
+        <div id="db-token-chart-container" style="margin: 8px 0; display: none;">
+          <canvas id="db-token-chart" width="300" height="150"></canvas>
+        </div>
+        <div id="db-files-filter">
+          <select id="db-status-filter"><option value="">全部状态</option><option value="failed">失败</option><option value="success">成功</option><option value="pending">待处理</option></select>
+          <button id="db-refresh-btn" class="btn primary" style="font-size:11px;padding:4px 8px;">刷新</button>
+        </div>
+        <div id="db-files-list" class="scroll-list"></div>
+        <div id="upload-area">
+          <div id="upload-dropzone">
+            <span class="upload-icon">&#128193;</span>
+            <p data-i18n="upload.drop_text">拖拽文件到此处上传</p>
+            <p class="upload-hint" data-i18n="upload.hint">支持 PDF, DOCX, XLSX, PPTX, HTML, CSV, TXT, 图片, ZIP</p>
+            <input type="file" id="upload-input" multiple accept=".pdf,.docx,.xlsx,.pptx,.html,.htm,.csv,.txt,.png,.jpg,.jpeg,.bmp,.webp,.zip,.7z,.rar" hidden>
+            <button id="upload-btn" class="btn primary" onclick="document.getElementById('upload-input').click()" data-i18n="upload.select">选择文件</button>
+          </div>
+          <div id="upload-progress" class="hidden">
+            <span id="upload-stage">准备上传...</span>
+            <progress id="upload-bar" value="0" max="100"></progress>
+            <span id="upload-status-text">0/0</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="sidebar-footer">
+        <div id="config-area">
+          <label for="index-path" data-i18n="sidebar.index_path">索引路径（多个逗号分隔）</label>
+          <input id="index-path" type="text" placeholder="D:\raw\example-kb\index" value="">
+          <label for="raw-dir" data-i18n="sidebar.raw_dir">Raw 目录（多个逗号分隔）</label>
+          <input id="raw-dir" type="text" placeholder="D:\raw\example-kb" value="">
+        </div>
+      </div>
+    </aside>
+
+    <!-- Chat Area -->
+    <main id="chat">
+      <div id="message-list">
+        <div id="welcome">
+          <div class="welcome-icon">&#128269;</div>
+          <h2 data-i18n="chat.welcome">doc-search Web</h2>
+          <p data-i18n="chat.welcome_subtitle">输入问题搜索文档知识库。Agent 会自动搜索、阅读文档并回答。</p>
+          <div class="quick-actions">
+            <span class="hint" data-i18n="chat.hint">示例查询：</span>
+            <button class="chip" onclick="sendQuick('年假如何申请')">年假申请</button>
+            <button class="chip" onclick="sendQuick('差旅报销标准')">差旅报销</button>
+            <button class="chip" onclick="sendQuick('个人信息保护')">个人信息保护</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trace Panel -->
+      <div id="trace-panel" class="trace-panel collapsed">
+        <div class="trace-panel-header">
+          <span class="trace-panel-title" data-i18n="trace.title">检索过程</span>
+          <span class="trace-panel-stats" id="trace-stats"></span>
+          <div class="trace-panel-actions">
+            <button id="trace-toggle-btn" class="trace-btn" title="展开/折叠" data-i18n="trace.toggle">📊</button>
+          </div>
+        </div>
+        <div id="trace-panel-body" class="trace-panel-body">
+          <div class="trace-empty" data-i18n="trace.empty">等待查询...</div>
+        </div>
+      </div>
+
+      <!-- Input Area -->
+      <div id="input-area">
+        <div id="input-options">
+          <div id="input-options-primary">
+            <span id="agent-mode-badge" title="Agent 自动判断查询复杂度，自适应选择搜索策略">Agent</span>
+            <select id="skill-select" title="分析技能">
+              <option value="" data-i18n="skill.none">无技能</option>
+              <option value="summarize" data-i18n="skill.summarize">摘要</option>
+              <option value="compare" data-i18n="skill.compare">对比</option>
+              <option value="extract-table" data-i18n="skill.extract_table">提取表格</option>
+              <option value="detailed" data-i18n="skill.detailed">详细分析</option>
+              <option value="timeline" data-i18n="skill.timeline">时间线</option>
+              <option value="action-items" data-i18n="skill.action_items">行动项</option>
+              <option value="__load__skills/消保岗位专业技能矩阵.md" data-i18n="skill.review">合规审查</option>
+            </select>
+            <button id="advanced-toggle" title="高级搜索模式" data-i18n="search.advanced_toggle">高级</button>
+          </div>
+          <div id="advanced-options" class="hidden">
+            <select id="search-mode-select" title="搜索模式">
+              <option value="agent" selected>Agent (RAG)</option>
+              <option value="review">合规审查</option>
+              <option value="direct">联网搜索</option>
+              <option value="bm25">BM25 关键词</option>
+              <option value="grep">Grep 正则</option>
+              <option value="hybrid">混合搜索</option>
+              <option value="analyze-compare">📊 对比分析</option>
+              <option value="analyze-extract">🔍 信息提取</option>
+              <option value="analyze-summarize">📝 文档摘要</option>
+              <option value="analyze-table">📋 表格提取</option>
+            </select>
+          </div>
+        </div>
+        <textarea id="prompt-input" data-i18n-placeholder="chat.placeholder" placeholder="输入您的问题...（可编辑、复制、重新提交）" rows="2"></textarea>
+        <div id="input-actions">
+          <button id="send-btn" class="btn primary" title="发送 (Enter)" data-i18n="chat.send">发送</button>
+          <button id="abort-btn" class="btn danger hidden" title="中止当前查询" data-i18n="chat.abort">中止</button>
+          <button id="export-btn" class="btn" title="导出最后结果" style="display:none">导出</button>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="/static/i18n.js"></script>
+<script src="/static/app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,109 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environment variables
+.env
+.env.cloud
+.env.local
+.pi/doc-search-api-key
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Project specific
+output/
+raw/
+sessions/
+*.db
+
+# Logs
+*.log
+search_logs/
+D:/docs/search_logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tantivy index lock files
+*.lock
+
+# Temporary files
+*.tmp
+*.temp
+nul
+pi-doc.bat
+
+# Runtime files
+*.pid
+.pi_system_prompt.md
+
+# Internal planning
+.sisyphus/
+
+# Benchmark generated data
+docs/benchmark_report.html
+docs/benchmark_results.json
+docs/qa_benchmark_*.json
+docs/qa_benchmark_*.html
+docs/toc_comparison_results.json
+docs/issue/
+
+# Dify knowledge base mapping (use .example.json instead)
+dify_kb_map.json
+
+# Local scripts with secrets
+start-web-here.bat
+tokens.json
+
+# Temp files
+_cli_out.txt
+_cli_result.txt
+_run_cli.py
+pi-session-*.html
+
+# Internal development guide
+AGENTS.md
+# Large model files
+models/
+# QA evaluation data
+docs/qa_eval_results.json
+docs/qa_zhidu_cases.json
+docs/qa_benchmark_failed.json
+
