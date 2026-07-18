@@ -19,7 +19,7 @@
 ## 💥 Introduction
 
 **doc-search** started as a personal tool to solve a simple problem:
-hundreds of insurance policies, regulatory documents, PDFs, and Office files
+hundreds of insurance product clauses and medical diagnostic manuals
 scattered across folders — impossible to search by keywords alone.
 
 Over two years of iteration (v0.1 → v0.21), it grew into a full-featured
