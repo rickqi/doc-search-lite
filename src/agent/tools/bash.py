@@ -7,14 +7,12 @@ rg, grep, find, head, tail, cat, wc, ls/dir.
 All operations are path-sandboxed to raw_dir and strictly read-only.
 """
 
-import fnmatch
-import os
 import re
 import shlex
-import stat
 import time
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any
 
 from src.agent.base import Tool
 from src.agent.tool_types import ToolResult
@@ -29,7 +27,7 @@ _MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
 _ALLOWED_COMMANDS = frozenset({"rg", "grep", "find", "head", "tail", "cat", "wc", "ls", "dir"})
 
 
-def _resolve_sandboxed(path_str: str, raw_dir: Path) -> Optional[Path]:
+def _resolve_sandboxed(path_str: str, raw_dir: Path) -> Path | None:
     """Resolve a path string within the raw_dir sandbox.
 
     Args:
@@ -48,7 +46,7 @@ def _resolve_sandboxed(path_str: str, raw_dir: Path) -> Optional[Path]:
     return candidate
 
 
-def _read_lines(filepath: Path) -> List[str]:
+def _read_lines(filepath: Path) -> list[str]:
     """Read file lines, respecting size limits.
 
     Args:
@@ -84,7 +82,7 @@ def _truncate_output(output: str) -> str:
     return output
 
 
-def _parse_int_flag(args: List[str], flag: str, default: int) -> int:
+def _parse_int_flag(args: list[str], flag: str, default: int) -> int:
     """Extract an integer value following a flag from args.
 
     Supports both `-N 10` and `-N10` forms.
@@ -112,7 +110,7 @@ def _parse_int_flag(args: List[str], flag: str, default: int) -> int:
     return default
 
 
-def _has_flag(args: List[str], flag: str) -> bool:
+def _has_flag(args: list[str], flag: str) -> bool:
     """Check if a flag is present in args.
 
     Args:
@@ -125,7 +123,7 @@ def _has_flag(args: List[str], flag: str) -> bool:
     return flag in args
 
 
-def _extract_flag_value(args: List[str], flag: str, default: str) -> str:
+def _extract_flag_value(args: list[str], flag: str, default: str) -> str:
     """Extract a string value following a flag from args.
 
     Args:
@@ -143,11 +141,11 @@ def _extract_flag_value(args: List[str], flag: str, default: str) -> str:
 
 
 def _extract_positional_args(
-    args: List[str],
+    args: list[str],
     *,
-    bool_flags: Optional[set] = None,
-    value_flags: Optional[set] = None,
-) -> List[str]:
+    bool_flags: set | None = None,
+    value_flags: set | None = None,
+) -> list[str]:
     """Extract positional arguments (non-flag and non-flag-value).
 
     Args:
@@ -160,7 +158,7 @@ def _extract_positional_args(
     """
     bool_flags = bool_flags or set()
     value_flags = value_flags or set()
-    positionals: List[str] = []
+    positionals: list[str] = []
     skip_next = False
     for i, arg in enumerate(args):
         if skip_next:
@@ -221,7 +219,7 @@ class BashTool(Tool):
         self._max_file_size = max_file_size
 
         # Command dispatch table
-        self._commands: Dict[str, Callable[[List[str]], ToolResult]] = {
+        self._commands: dict[str, Callable[[list[str]], ToolResult]] = {
             "rg": self._cmd_rg,
             "grep": self._cmd_grep,
             "find": self._cmd_find,
@@ -291,7 +289,7 @@ class BashTool(Tool):
         handler = self._commands[cmd_name]
         return handler(cmd_args)
 
-    def to_openai_tool(self) -> Dict[str, Any]:
+    def to_openai_tool(self) -> dict[str, Any]:
         """Convert tool to OpenAI function calling format."""
         return {
             "type": "function",
@@ -325,7 +323,7 @@ class BashTool(Tool):
     # Command implementations
     # ------------------------------------------------------------------
 
-    def _cmd_rg(self, args: List[str]) -> ToolResult:
+    def _cmd_rg(self, args: list[str]) -> ToolResult:
         """Simulate ripgrep: rg [OPTIONS] PATTERN [PATH].
 
         Options:
@@ -380,7 +378,7 @@ class BashTool(Tool):
         else:
             md_files = sorted(search_root.rglob("*.md"))
 
-        results: List[str] = []
+        results: list[str] = []
         total_matches = 0
         files_searched = 0
 
@@ -450,14 +448,14 @@ class BashTool(Tool):
             },
         )
 
-    def _cmd_grep(self, args: List[str]) -> ToolResult:
+    def _cmd_grep(self, args: list[str]) -> ToolResult:
         """Simulate grep: grep [OPTIONS] PATTERN [PATH].
 
         Delegates to _cmd_rg for implementation.
         """
         return self._cmd_rg(args)
 
-    def _cmd_find(self, args: List[str]) -> ToolResult:
+    def _cmd_find(self, args: list[str]) -> ToolResult:
         """Simulate find: find [PATH] [-name PATTERN] [-type f|d]."""
         start_time = time.time()
 
@@ -475,7 +473,7 @@ class BashTool(Tool):
         if not search_root.exists():
             return ToolResult.fail(error=f"路径不存在: {search_subpath}")
 
-        results: List[str] = []
+        results: list[str] = []
 
         # Use rglob with name pattern, or walk everything if '*'
         if name_pattern == "*":
@@ -509,7 +507,7 @@ class BashTool(Tool):
             },
         )
 
-    def _cmd_head(self, args: List[str]) -> ToolResult:
+    def _cmd_head(self, args: list[str]) -> ToolResult:
         """Simulate head: head [-n N] FILE."""
         n = _parse_int_flag(args, "-n", 10)
 
@@ -537,7 +535,7 @@ class BashTool(Tool):
             },
         )
 
-    def _cmd_tail(self, args: List[str]) -> ToolResult:
+    def _cmd_tail(self, args: list[str]) -> ToolResult:
         """Simulate tail: tail [-n N] FILE."""
         n = _parse_int_flag(args, "-n", 10)
 
@@ -564,12 +562,12 @@ class BashTool(Tool):
             },
         )
 
-    def _cmd_cat(self, args: List[str]) -> ToolResult:
+    def _cmd_cat(self, args: list[str]) -> ToolResult:
         """Simulate cat: cat FILE [FILE...]."""
         if not args:
             return ToolResult.fail(error="cat 需要指定文件路径")
 
-        outputs: List[str] = []
+        outputs: list[str] = []
 
         for arg in args:
             filepath = _resolve_sandboxed(arg, self._raw_dir)
@@ -607,7 +605,7 @@ class BashTool(Tool):
             metadata={"command": "cat", "files_processed": len(args)},
         )
 
-    def _cmd_wc(self, args: List[str]) -> ToolResult:
+    def _cmd_wc(self, args: list[str]) -> ToolResult:
         """Simulate wc: wc [-l] [-w] FILE."""
         lines_mode = _has_flag(args, "-l")
         words_mode = _has_flag(args, "-w")
@@ -650,7 +648,7 @@ class BashTool(Tool):
             },
         )
 
-    def _cmd_ls(self, args: List[str]) -> ToolResult:
+    def _cmd_ls(self, args: list[str]) -> ToolResult:
         """Simulate ls: ls [PATH]."""
         start_time = time.time()
 
@@ -677,7 +675,7 @@ class BashTool(Tool):
             )
 
         # Directory listing
-        entries: List[str] = []
+        entries: list[str] = []
         try:
             for child in sorted(target.iterdir()):
                 try:

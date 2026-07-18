@@ -3,10 +3,10 @@
 import pytest
 
 from src.search.query_parser import (
-    Query,
-    QueryParser,
     CHINESE_STOP_WORDS,
     ENGLISH_STOP_WORDS,
+    Query,
+    QueryParser,
 )
 
 

@@ -9,9 +9,8 @@ Supports:
 - Stop word filtering
 """
 
-from dataclasses import dataclass, field
-from typing import Optional
 import re
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -313,8 +312,8 @@ class QueryParser:
 
     def __init__(
         self,
-        chinese_stop_words: Optional[set[str]] = None,
-        english_stop_words: Optional[set[str]] = None,
+        chinese_stop_words: set[str] | None = None,
+        english_stop_words: set[str] | None = None,
         min_term_length: int = 1,
     ):
         """

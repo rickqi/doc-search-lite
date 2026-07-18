@@ -14,9 +14,8 @@ import tarfile
 import time
 import zipfile
 from pathlib import Path
-from typing import Dict, List, Optional, Set
 
-from .base import ConvertResult, Converter
+from .base import Converter, ConvertResult
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +34,7 @@ _7Z_PATHS = [
 ]
 
 
-def _find_7z() -> Optional[str]:
+def _find_7z() -> str | None:
     """Find 7-Zip executable."""
     env_path = os.getenv("SEVENZIP_PATH")
     if env_path and os.path.isfile(env_path):
@@ -82,7 +81,7 @@ class ArchiveConverter(Converter):
         return "0.1.0"
 
     @property
-    def supported_formats(self) -> List[str]:
+    def supported_formats(self) -> list[str]:
         return sorted(ARCHIVE_EXTENSIONS)
 
     def can_convert(self, file_path: Path) -> bool:
@@ -101,12 +100,12 @@ class ArchiveConverter(Converter):
         self,
         source: Path,
         output_dir: Path,
-        options: Optional[Dict] = None,
+        options: dict | None = None,
     ) -> ConvertResult:
         """Convert an archive to a summary Markdown document."""
         start_time = time.time()
         options = options or {}
-        errors: List[str] = []
+        errors: list[str] = []
 
         # Resolve coordinator reference
         coordinator = self._coordinator
@@ -159,8 +158,8 @@ class ArchiveConverter(Converter):
 
         # 4. Extract
         try:
-            extracted: List[Path]
-            extract_error: Optional[str] = None
+            extracted: list[Path]
+            extract_error: str | None = None
 
             if fmt == "zip":
                 extracted, extract_error = self._extract_zip(source, extract_dir)
@@ -200,8 +199,8 @@ class ArchiveConverter(Converter):
         supported_extensions = self._get_supported_extensions(coordinator)
 
         total_files = 0
-        supported_files: List[Path] = []
-        skipped_files: List[Path] = []
+        supported_files: list[Path] = []
+        skipped_files: list[Path] = []
 
         for f in extracted:
             if f.is_file():
@@ -212,8 +211,8 @@ class ArchiveConverter(Converter):
                     skipped_files.append(f)
 
         # 6. Recursively convert supported files
-        converted_contents: Dict[str, str] = {}  # relative_path -> markdown
-        converted_paths: Set[Path] = set()
+        converted_contents: dict[str, str] = {}  # relative_path -> markdown
+        converted_paths: set[Path] = set()
 
         if depth < _MAX_RECURSION_DEPTH and coordinator is not None:
             child_options = dict(options)
@@ -325,7 +324,7 @@ class ArchiveConverter(Converter):
 
     def _extract_zip(self, archive: Path, dest: Path) -> tuple:
         """Extract a ZIP archive safely. Returns (extracted_paths, error)."""
-        extracted: List[Path] = []
+        extracted: list[Path] = []
         try:
             with zipfile.ZipFile(archive, "r") as zf:
                 # Check for encrypted archive — try password dictionary
@@ -397,7 +396,7 @@ class ArchiveConverter(Converter):
         except ImportError:
             return [], "py7zr not installed"
 
-        extracted: List[Path] = []
+        extracted: list[Path] = []
         try:
             with py7zr.SevenZipFile(archive, mode="r") as zf:
                 # Check password — try password dictionary
@@ -458,7 +457,7 @@ class ArchiveConverter(Converter):
             # rarfile not installed, try 7-Zip directly
             return self._extract_rar_via_7z(archive, dest)
 
-        extracted: List[Path] = []
+        extracted: list[Path] = []
         try:
             with rarfile.RarFile(archive, "r") as rf:
                 # Check password — try password dictionary
@@ -582,7 +581,7 @@ class ArchiveConverter(Converter):
                     return [], f"7-Zip RAR extraction failed (exit {result.returncode}): {stderr}"
 
             # Collect extracted files
-            extracted: List[Path] = []
+            extracted: list[Path] = []
             count = 0
             for f in dest.rglob("*"):
                 if f.is_file() and not f.is_symlink():
@@ -600,7 +599,7 @@ class ArchiveConverter(Converter):
 
     def _extract_tar(self, archive: Path, dest: Path, fmt: str) -> tuple:
         """Extract a tar archive (gz/bz2/xz/plain)."""
-        extracted: List[Path] = []
+        extracted: list[Path] = []
         try:
             # Map detected format to tarfile mode
             mode_map = {
@@ -658,7 +657,7 @@ class ArchiveConverter(Converter):
     # -- Helpers -------------------------------------------------------------
 
     @staticmethod
-    def _get_supported_extensions(coordinator) -> Set[str]:
+    def _get_supported_extensions(coordinator) -> set[str]:
         """Get the set of supported file extensions from the coordinator."""
         if coordinator is not None and hasattr(coordinator, "supported_extensions"):
             return set(coordinator.supported_extensions)
@@ -670,7 +669,7 @@ class ArchiveConverter(Converter):
         }
 
     @staticmethod
-    def _is_supported_file(f: Path, extensions: Set[str]) -> bool:
+    def _is_supported_file(f: Path, extensions: set[str]) -> bool:
         """Check if a file has a supported extension."""
         suffix = f.suffix.lower()
         if suffix in extensions:
@@ -683,7 +682,7 @@ class ArchiveConverter(Converter):
         return False
 
     @staticmethod
-    def _cleanup_extracted_originals(extract_dir: Path, converted_paths: Set[Path]) -> None:
+    def _cleanup_extracted_originals(extract_dir: Path, converted_paths: set[Path]) -> None:
         """Remove original source files after successful conversion.
 
         After the coordinator converts supported files inside the extract
@@ -695,7 +694,6 @@ class ArchiveConverter(Converter):
         Directories and any remaining files (conversion failures, unknown
         formats) are preserved for inspection.
         """
-        import shutil
 
         for f in converted_paths:
             try:
@@ -715,9 +713,9 @@ class ArchiveConverter(Converter):
                 pass
 
     @staticmethod
-    def _build_tree(extract_dir: Path, converted_paths: Set[Path]) -> str:
+    def _build_tree(extract_dir: Path, converted_paths: set[Path]) -> str:
         """Generate a directory tree string of extracted files."""
-        lines: List[str] = []
+        lines: list[str] = []
         extract_resolved = extract_dir.resolve()
 
         def _walk(directory: Path, prefix: str = ""):
@@ -754,10 +752,10 @@ class ArchiveConverter(Converter):
         supported_count: int,
         skipped_count: int,
         tree: str,
-        converted_contents: Dict[str, str],
+        converted_contents: dict[str, str],
     ) -> str:
         """Build the summary Markdown document."""
-        parts: List[str] = [
+        parts: list[str] = [
             f"# {archive_name}",
             "",
             f"> 解压文件: {total} 个 | 支持: {supported_count} 个 | 跳过: {skipped_count} 个",

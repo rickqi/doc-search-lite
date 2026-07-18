@@ -1,6 +1,5 @@
 """Unit tests for BM25Searcher class."""
 
-from datetime import datetime
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -13,8 +12,8 @@ from src.search.bm25_search import (
     SearchPreview,
     create_searcher,
 )
-from src.search.query_parser import Query
-from src.storage.base import SearchHit, SearchResult as StorageSearchResult
+from src.storage.base import SearchHit
+from src.storage.base import SearchResult as StorageSearchResult
 
 
 class TestSearchPreview:

@@ -12,7 +12,6 @@ import time
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import List, Optional
 
 from src.agent.tool_types import ToolResult
 from src.search.bm25_search import BM25Searcher, PaginatedResults
@@ -53,8 +52,8 @@ class HybridSearcher:
         self,
         bm25_searcher: BM25Searcher,
         grep_raw_dir: Path,
-        bm25_weight: Optional[float] = None,
-        grep_weight: Optional[float] = None,
+        bm25_weight: float | None = None,
+        grep_weight: float | None = None,
         profile: str = "general",
     ):
         self._bm25 = bm25_searcher
@@ -100,8 +99,8 @@ class HybridSearcher:
         """
         start_time = time.time()
 
-        bm25_results: Optional[PaginatedResults] = None
-        grep_result: Optional[ToolResult] = None
+        bm25_results: PaginatedResults | None = None
+        grep_result: ToolResult | None = None
 
         # Phase 1: Parallel retrieval
         with ThreadPoolExecutor(max_workers=2) as pool:
@@ -134,7 +133,7 @@ class HybridSearcher:
 
         elapsed = time.time() - start_time
 
-        sources_used: List[str] = []
+        sources_used: list[str] = []
         if bm25_count > 0:
             sources_used.append("bm25")
         if grep_count > 0:
@@ -167,9 +166,9 @@ class HybridSearcher:
             file_filter="*.md",
         )
 
-    def _convert_bm25(self, paginated: PaginatedResults) -> List[UnifiedSearchResult]:
+    def _convert_bm25(self, paginated: PaginatedResults) -> list[UnifiedSearchResult]:
         """Convert BM25 SearchPreview results to UnifiedSearchResult."""
-        results: List[UnifiedSearchResult] = []
+        results: list[UnifiedSearchResult] = []
         for preview in paginated.results:
             results.append(
                 UnifiedSearchResult(
@@ -185,7 +184,7 @@ class HybridSearcher:
             )
         return results
 
-    def _convert_grep(self, tool_result: ToolResult) -> List[UnifiedSearchResult]:
+    def _convert_grep(self, tool_result: ToolResult) -> list[UnifiedSearchResult]:
         """Convert GrepTool output to UnifiedSearchResult (one per file).
 
         GrepTool returns result.data as ``"file:line: content\\n..."``.
@@ -221,7 +220,7 @@ class HybridSearcher:
 
         grep_time = tool_result.metadata.get("execution_time", 0)
 
-        results: List[UnifiedSearchResult] = []
+        results: list[UnifiedSearchResult] = []
         for file_key, data in file_data.items():
             match_count = data["matches"]
             # Synthetic score: log1p(match_count) / log1p(50)  ∈ (0, 1]
@@ -248,9 +247,9 @@ class HybridSearcher:
 
     def _rrf_merge(
         self,
-        bm25_results: List[UnifiedSearchResult],
-        grep_results: List[UnifiedSearchResult],
-    ) -> List[UnifiedSearchResult]:
+        bm25_results: list[UnifiedSearchResult],
+        grep_results: list[UnifiedSearchResult],
+    ) -> list[UnifiedSearchResult]:
         """Reciprocal Rank Fusion merge using source_path as dedup key.
 
         Each source contributes:  weight / (RRF_K + rank)  to the doc's score.

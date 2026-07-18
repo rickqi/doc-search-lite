@@ -1,15 +1,13 @@
 """Tests for src/storage/chunker.py — Markdown document chunk splitting."""
 
-import pytest
 
 from src.converter.headings import extract_headings
 from src.storage.chunker import (
-    split_into_chunks,
     _hard_split_paragraphs,
     _merge_tiny_chunks,
     _split_by_headings,
+    split_into_chunks,
 )
-
 
 # ── Fixtures ────────────────────────────────────────────────
 

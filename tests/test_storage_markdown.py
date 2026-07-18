@@ -1,6 +1,5 @@
 """Unit tests for MarkdownStore storage implementation."""
 
-import json
 import shutil
 import tempfile
 from datetime import datetime

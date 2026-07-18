@@ -15,12 +15,9 @@ Tests cover:
 
 from pathlib import Path
 
-import pytest
+from docx import Document
 from openpyxl import Workbook
 from pptx import Presentation
-from pptx.util import Inches, Pt
-from docx import Document
-from docx.shared import Inches as DocxInches
 
 from src.converter.office import OfficeConverter
 

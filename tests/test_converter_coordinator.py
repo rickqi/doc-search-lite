@@ -8,13 +8,11 @@ Tests cover:
 - Custom converter registration
 """
 
-import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.converter.base import ConvertResult, Converter
+from src.converter.base import Converter, ConvertResult
 from src.converter.coordinator import (
     ConverterCoordinator,
     UnsupportedFormatError,

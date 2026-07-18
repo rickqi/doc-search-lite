@@ -12,7 +12,6 @@ Tests verify:
 All external services (BM25, LLM) are mocked.
 """
 
-import json
 import os
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -117,19 +116,17 @@ class TestResolveHelpers:
             assert result == "/env/index"
 
     def test_resolve_index_missing_raises(self):
-        with patch.dict(os.environ, {}, clear=True):
-            with patch.object(mcp_mod, "DEFAULT_INDEX", ""):
-                with pytest.raises(ValueError, match="No index_path"):
-                    mcp_mod._resolve_index("")
+        with patch.dict(os.environ, {}, clear=True), patch.object(mcp_mod, "DEFAULT_INDEX", ""):
+            with pytest.raises(ValueError, match="No index_path"):
+                mcp_mod._resolve_index("")
 
     def test_resolve_raw_from_param(self):
         result = mcp_mod._resolve_raw("/path/to/raw")
         assert result == "/path/to/raw"
 
     def test_resolve_raw_missing_raises(self):
-        with patch.object(mcp_mod, "DEFAULT_RAW", ""):
-            with pytest.raises(ValueError, match="No raw_dir"):
-                mcp_mod._resolve_raw("")
+        with patch.object(mcp_mod, "DEFAULT_RAW", ""), pytest.raises(ValueError, match="No raw_dir"):
+            mcp_mod._resolve_raw("")
 
 
 # ── Format helpers tests ──────────────────────────────────────

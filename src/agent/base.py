@@ -12,7 +12,7 @@ import time
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 
 
 class Tool(ABC):
@@ -61,7 +61,7 @@ class Tool(ABC):
         pass
 
     @abstractmethod
-    def to_openai_tool(self) -> Dict[str, Any]:
+    def to_openai_tool(self) -> dict[str, Any]:
         """Convert tool to OpenAI function calling format.
 
         Returns:
@@ -101,24 +101,24 @@ class AgentResponse:
 
     success: bool
     answer: str
-    sources: List[str] = field(default_factory=list)
-    search_hits: List[Dict[str, Any]] = field(default_factory=list)
-    tool_calls: List[Dict[str, Any]] = field(default_factory=list)
+    sources: list[str] = field(default_factory=list)
+    search_hits: list[dict[str, Any]] = field(default_factory=list)
+    tool_calls: list[dict[str, Any]] = field(default_factory=list)
     reasoning: str = ""
     confidence: float = 0.0
     tokens_used: int = 0
     processing_time: float = 0.0
-    error: Optional[str] = None
+    error: str | None = None
 
     # Diagnostics fields (populated by DiagnosticsCollector)
-    step_timings: Dict[str, float] = field(default_factory=dict)
+    step_timings: dict[str, float] = field(default_factory=dict)
     llm_call_count: int = 0
     llm_latency_total: float = 0.0
     tool_execution_total: float = 0.0
     cache_hits: int = 0
     retry_count: int = 0
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert response to dictionary format.
 
         Returns:
@@ -176,7 +176,7 @@ class Agent(ABC):
 
     def __init__(self) -> None:
         """Initialize agent with empty tool registry."""
-        self._tools: Dict[str, Tool] = {}
+        self._tools: dict[str, Tool] = {}
 
     @property
     @abstractmethod
@@ -189,7 +189,7 @@ class Agent(ABC):
         pass
 
     @property
-    def tools(self) -> List[Tool]:
+    def tools(self) -> list[Tool]:
         """List of registered tools.
 
         Returns:
@@ -224,7 +224,7 @@ class Agent(ABC):
             return True
         return False
 
-    def get_tool(self, name: str) -> Optional[Tool]:
+    def get_tool(self, name: str) -> Tool | None:
         """Get a registered tool by name.
 
         Args:
@@ -252,7 +252,7 @@ class Agent(ABC):
             raise KeyError(f"No tool registered with name '{name}'")
         return self._tools[name].execute(**kwargs)
 
-    def get_openai_tools(self) -> List[Dict[str, Any]]:
+    def get_openai_tools(self) -> list[dict[str, Any]]:
         """Get all registered tools in OpenAI function calling format.
 
         Returns:
@@ -262,7 +262,7 @@ class Agent(ABC):
 
     @abstractmethod
     def run(
-        self, query: str, context: Optional[Dict[str, Any]] = None
+        self, query: str, context: dict[str, Any] | None = None
     ) -> AgentResponse:
         """Execute the agent's main logic.
 
@@ -278,9 +278,9 @@ class Agent(ABC):
     def _record_tool_call(
         self,
         tool_name: str,
-        arguments: Dict[str, Any],
+        arguments: dict[str, Any],
         result: Any,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Record a tool call for the response.
 
         Args:
@@ -309,8 +309,8 @@ class ToolResult:
         self,
         success: bool,
         data: Any = None,
-        error: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        error: str | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """Initialize tool result.
 
@@ -325,7 +325,7 @@ class ToolResult:
         self.error = error
         self.metadata = metadata or {}
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary format.
 
         Returns:
@@ -340,7 +340,7 @@ class ToolResult:
 
     @classmethod
     def ok(
-        cls, data: Any = None, metadata: Optional[Dict[str, Any]] = None
+        cls, data: Any = None, metadata: dict[str, Any] | None = None
     ) -> "ToolResult":
         """Create a successful result.
 
@@ -355,7 +355,7 @@ class ToolResult:
 
     @classmethod
     def fail(
-        cls, error: str, metadata: Optional[Dict[str, Any]] = None
+        cls, error: str, metadata: dict[str, Any] | None = None
     ) -> "ToolResult":
         """Create a failed result.
 
@@ -384,7 +384,7 @@ class ToolCache:
     def __init__(self, ttl: float = 300, max_size: int = 128) -> None:
         self._ttl = ttl
         self._max_size = max_size
-        self._store: OrderedDict[str, tuple[float, "ToolResult"]] = OrderedDict()
+        self._store: OrderedDict[str, tuple[float, ToolResult]] = OrderedDict()
 
     # -- public API -------------------------------------------------------
 
@@ -418,7 +418,7 @@ class ToolCache:
         self._store.clear()
 
     @staticmethod
-    def make_key(tool_name: str, kwargs: Dict[str, Any]) -> str:
+    def make_key(tool_name: str, kwargs: dict[str, Any]) -> str:
         """Return a deterministic cache key from tool name and parameters.
 
         The key is the MD5 hex-digest of ``"<tool_name>:<sorted-json>"``.

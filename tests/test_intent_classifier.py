@@ -1,7 +1,8 @@
 """Tests for intent classifier — web search vs document RAG routing."""
 
 import pytest
-from src.web.intent_classifier import IntentClassifier, ExecutionMode
+
+from src.web.intent_classifier import ExecutionMode, IntentClassifier
 
 
 @pytest.fixture

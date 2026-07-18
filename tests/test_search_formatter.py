@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from src.search.result_formatter import SearchResult, ResultFormatter, format_results
+from src.search.result_formatter import ResultFormatter, SearchResult, format_results
 
 
 @pytest.fixture

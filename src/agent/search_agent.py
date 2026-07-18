@@ -15,13 +15,13 @@ import json
 import logging
 import os
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Set
+from typing import TYPE_CHECKING, Any
 
-from src.agent.base import Agent, AgentResponse, Tool
+from src.agent.base import Agent, AgentResponse
 from src.agent.llm_client import ChatMessage, ChatResponse, LLMClient, ToolCall
-from src.agent.query_decomposer import DecompositionResult, QueryDecomposer, SubQuery
+from src.agent.query_decomposer import QueryDecomposer, SubQuery
 from src.agent.sufficient_context import SearchFeedback, SufficientContextChecker
 from src.agent.tools.read import ReadTool
 from src.agent.tools.search import SearchTool
@@ -118,7 +118,7 @@ QUERY_ANALYSIS_PROMPT = """分析查询意图，提取关键搜索词。
 - grep_pattern仅当查询包含需要精确匹配的内容时填写"""
 
 # Built-in skill prompt variants (appended to SYSTEM_PROMPT when --skill is used)
-SKILL_PROMPTS: Dict[str, str] = {
+SKILL_PROMPTS: dict[str, str] = {
     "summarize": (
         "\n\n输出要求: 用200字以内概括关键要点。用项目符号列出，每个要点不超过30字。"
         "不要引用原文，用自己的话概括。"
@@ -147,8 +147,8 @@ SKILL_PROMPTS: Dict[str, str] = {
 
 
 def _build_system_prompt(
-    skill: Optional[str] = None,
-    loaded_skill_content: Optional[str] = None,
+    skill: str | None = None,
+    loaded_skill_content: str | None = None,
 ) -> str:
     """Build system prompt with optional skill-specific instructions appended.
 
@@ -175,8 +175,8 @@ class SearchResult:
     title: str
     score: float
     snippet: str
-    source_path: Optional[str] = None
-    content: Optional[str] = None
+    source_path: str | None = None
+    content: str | None = None
 
 
 class SearchAgent(Agent):
@@ -227,7 +227,7 @@ class SearchAgent(Agent):
         config: Config,
         search_tool: SearchTool,
         read_tool: ReadTool,
-        llm_client: Optional[LLMClient] = None,
+        llm_client: LLMClient | None = None,
         max_search_results: int = 10,
         max_read_docs: int = 3,
         max_context_tokens: int = 3000,
@@ -260,7 +260,7 @@ class SearchAgent(Agent):
         self._use_rerank = use_rerank
         self._mode = mode
         self._usage_tracker = usage_tracker
-        self._session_id: Optional[str] = None
+        self._session_id: str | None = None
         self._diagnostics = diagnostics
 
         # Token budget tracking
@@ -300,10 +300,10 @@ class SearchAgent(Agent):
     def run(
         self,
         query: str,
-        context: Optional[Dict[str, Any]] = None,
-        skill: Optional[str] = None,
-        loaded_skill_content: Optional[str] = None,
-        history: Optional[List[Dict[str, Any]]] = None,
+        context: dict[str, Any] | None = None,
+        skill: str | None = None,
+        loaded_skill_content: str | None = None,
+        history: list[dict[str, Any]] | None = None,
     ) -> AgentResponse:
         """Execute the search agent to answer a query.
 
@@ -444,10 +444,10 @@ class SearchAgent(Agent):
     def _run_tool_loop(
         self,
         query: str,
-        context: Optional[Dict[str, Any]] = None,
-        skill: Optional[str] = None,
-        loaded_skill_content: Optional[str] = None,
-        history: Optional[List[Dict[str, Any]]] = None,
+        context: dict[str, Any] | None = None,
+        skill: str | None = None,
+        loaded_skill_content: str | None = None,
+        history: list[dict[str, Any]] | None = None,
     ) -> AgentResponse:
         """Execute search using LLM-driven tool calling loop (DCI-Agent-Lite paradigm).
 
@@ -463,7 +463,7 @@ class SearchAgent(Agent):
             AgentResponse with answer, sources, and tool call records
         """
         start_time = time.time()
-        tool_calls: List[Dict[str, Any]] = []
+        tool_calls: list[dict[str, Any]] = []
         self._total_tokens_used = 0
 
         if self._diagnostics:
@@ -568,7 +568,7 @@ class SearchAgent(Agent):
                         expansion_note = "\n".join(f"- {q}" for q in expanded_queries[1:])
                         # Auto-execute expanded queries to find broader results
                         expanded_docs = set()
-                        expanded_hits: List[str] = []
+                        expanded_hits: list[str] = []
                         for eq in expanded_queries[1:4]:  # Try top 3 variants
                             try:
                                 eq_result = self._search_tool.execute(query=eq, limit=3)
@@ -725,7 +725,7 @@ class SearchAgent(Agent):
                         _consecutive_searches = 0  # Reset to give one more chance
                         logger.info("Convergence nudge: injected read-now prompt")
                         return False
-                    logger.info(f"Early-stop: consecutive search without read (post-nudge)")
+                    logger.info("Early-stop: consecutive search without read (post-nudge)")
                     return True
                 return False
 
@@ -1060,7 +1060,7 @@ class SearchAgent(Agent):
 
             return err_result
 
-    def _build_tool_dict(self) -> Dict[str, Any]:
+    def _build_tool_dict(self) -> dict[str, Any]:
         """Build a {name: tool_instance} dict from registered tools.
 
         Used by verification recovery to directly invoke search/read
@@ -1070,8 +1070,8 @@ class SearchAgent(Agent):
 
     def _extract_sources_from_tool_calls(
         self,
-        tool_calls: List[Dict[str, Any]],
-    ) -> List[str]:
+        tool_calls: list[dict[str, Any]],
+    ) -> list[str]:
         """Extract source paths from tool call records.
 
         Args:
@@ -1080,7 +1080,7 @@ class SearchAgent(Agent):
         Returns:
             List of unique source paths / doc_ids used
         """
-        sources: Set[str] = set()
+        sources: set[str] = set()
         for tc in tool_calls:
             if tc.get("tool") == "read":
                 args = tc.get("arguments", {})
@@ -1092,8 +1092,8 @@ class SearchAgent(Agent):
 
     def _extract_search_hits_from_tool_calls(
         self,
-        tool_calls: List[Dict[str, Any]],
-    ) -> List[Dict[str, Any]]:
+        tool_calls: list[dict[str, Any]],
+    ) -> list[dict[str, Any]]:
         """Extract structured search hit details from tool call results.
 
         Parses search tool results to recover doc_id, title, score,
@@ -1108,7 +1108,7 @@ class SearchAgent(Agent):
         """
         import json as _json
 
-        hits: List[Dict[str, Any]] = []
+        hits: list[dict[str, Any]] = []
         seen: set = set()
 
         for tc in tool_calls:
@@ -1146,7 +1146,7 @@ class SearchAgent(Agent):
 
         return hits
 
-    def _expand_query(self, query: str) -> List[str]:
+    def _expand_query(self, query: str) -> list[str]:
         """Use LLM to generate synonym/related queries for broader search.
 
         Args:
@@ -1157,14 +1157,14 @@ class SearchAgent(Agent):
             variant queries. Falls back to [query] alone if LLM call fails.
         """
         prompt = (
-            '用户查询: "{query}"\n'
+            f'用户查询: "{query}"\n'
             "请生成5个语义相同但用词不同的查询变体，用于扩大搜索范围。\n"
             "策略:\n"
             "- 将用户口语化/简称转换为可能的官方制度全称\n"
             '- 尝试不同的关键词组合（如"A B"→"A管理办法" "A规范" "A制度" "B分类"）\n'
             "- 同时生成精确匹配和模糊泛化的版本\n"
             "每行一个，不要编号，不要解释，不要重复原始查询。"
-        ).format(query=query)
+        )
         try:
             response = self._llm_client.chat(
                 messages=[{"role": "user", "content": prompt}],
@@ -1185,8 +1185,8 @@ class SearchAgent(Agent):
 
     def _execute_sub_queries_parallel(
         self,
-        sub_queries: List[SubQuery],
-        tool_calls: List[Dict[str, Any]],
+        sub_queries: list[SubQuery],
+        tool_calls: list[dict[str, Any]],
     ) -> str:
         """Execute sub-queries in parallel using ThreadPoolExecutor.
 
@@ -1213,11 +1213,11 @@ class SearchAgent(Agent):
         max_workers = min(len(sub_queries), 5)
 
         # Per-sub-query result container
-        sub_results: Dict[int, List[Dict[str, str]]] = {}
+        sub_results: dict[int, list[dict[str, str]]] = {}
 
         def _process_single_query(idx: int, sq: SubQuery) -> None:
             """Search + read for one sub-query; stores results in sub_results."""
-            docs: List[Dict[str, str]] = []
+            docs: list[dict[str, str]] = []
             try:
                 search_result = search_tool.execute(query=sq.query, limit=5)
 
@@ -1283,7 +1283,7 @@ class SearchAgent(Agent):
                     sub_results.setdefault(idx, [])
 
         # Build merged context string
-        sections: List[str] = []
+        sections: list[str] = []
         for i, sq in enumerate(sub_queries):
             docs = sub_results.get(i, [])
             section = f"[方面{i + 1}: {sq.aspect}]\n"
@@ -1366,7 +1366,7 @@ class SearchAgent(Agent):
     def _check_sufficient_context(
         self,
         query: str,
-        tool_calls: List[Dict[str, Any]],
+        tool_calls: list[dict[str, Any]],
     ) -> SearchFeedback:
         """Check if information collected so far is sufficient.
 
@@ -1380,7 +1380,7 @@ class SearchAgent(Agent):
             SearchFeedback with sufficiency assessment.
         """
         # Collect snippets from search tool results
-        snippets: List[Dict[str, Any]] = []
+        snippets: list[dict[str, Any]] = []
         for tc in tool_calls:
             if tc.get("tool") != "search" or not tc.get("success"):
                 continue
@@ -1421,7 +1421,7 @@ class SearchAgent(Agent):
 
     def _inject_feedback(
         self,
-        messages: List[Any],
+        messages: list[Any],
         feedback: SearchFeedback,
     ) -> None:
         """Inject structured feedback into messages to drive additional search.
@@ -1441,7 +1441,7 @@ class SearchAgent(Agent):
         )
         messages.append(ChatMessage(role="system", content=feedback_prompt))
 
-    def _verify_draft_grounding(self, query: str, answer: str, tool_calls: List[Dict[str, Any]]) -> SearchFeedback:
+    def _verify_draft_grounding(self, query: str, answer: str, tool_calls: list[dict[str, Any]]) -> SearchFeedback:
         """Verify that the draft answer is grounded in collected documents.
 
         Generates a quick draft verification: checks which claims have document
@@ -1458,7 +1458,7 @@ class SearchAgent(Agent):
         """
         # Collect available document content from read calls only
         # (filter out metadata entries like _sufficiency_check, _draft_verification)
-        doc_contents: List[str] = []
+        doc_contents: list[str] = []
         for tc in tool_calls:
             if tc.get("tool") != "read" or not tc.get("success"):
                 continue
@@ -1516,8 +1516,8 @@ class SearchAgent(Agent):
     def _regenerate_answer_from_docs(
         self,
         query: str,
-        tool_calls: List[Dict[str, Any]],
-    ) -> Optional[ChatResponse]:
+        tool_calls: list[dict[str, Any]],
+    ) -> ChatResponse | None:
         """Regenerate answer from collected document content.
 
         Used when the LLM's final response appears to be an intermediate
@@ -1531,7 +1531,7 @@ class SearchAgent(Agent):
             ChatResponse with regenerated answer, or None if no documents available.
         """
         # Collect document contents from read calls only
-        doc_contents: List[str] = []
+        doc_contents: list[str] = []
         for tc in tool_calls:
             if tc.get("tool") != "read" or not tc.get("success"):
                 continue
@@ -1594,7 +1594,7 @@ class SearchAgent(Agent):
             return 0.5
 
     def _calculate_tool_loop_confidence(
-        self, tool_calls: List[Dict[str, Any]], query: str = "", answer: str = ""
+        self, tool_calls: list[dict[str, Any]], query: str = "", answer: str = ""
     ) -> float:
         """Calculate confidence based on tool call results.
 
@@ -1650,7 +1650,7 @@ class SearchAgent(Agent):
     def _run_pipeline(
         self,
         query: str,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
     ) -> AgentResponse:
         """Execute the hardcoded 6-step pipeline (legacy mode).
 
@@ -1670,7 +1670,7 @@ class SearchAgent(Agent):
             AgentResponse containing answer and metadata
         """
         start_time = time.time()
-        tool_calls: List[Dict[str, Any]] = []
+        tool_calls: list[dict[str, Any]] = []
 
         # Reset per-query token budget
         self._total_tokens_used = 0
@@ -1864,8 +1864,8 @@ class SearchAgent(Agent):
         self,
         query: str,
         limit: int,
-        tool_calls: List[Dict[str, Any]],
-    ) -> List[SearchResult]:
+        tool_calls: list[dict[str, Any]],
+    ) -> list[SearchResult]:
         """Execute search and return formatted results.
 
         When use_rerank is enabled, retrieves extra BM25 candidates and
@@ -1937,10 +1937,10 @@ class SearchAgent(Agent):
     def _rerank_results(
         self,
         query: str,
-        results: List[SearchResult],
+        results: list[SearchResult],
         top_n: int,
-        tool_calls: List[Dict[str, Any]],
-    ) -> List[SearchResult]:
+        tool_calls: list[dict[str, Any]],
+    ) -> list[SearchResult]:
         """Rerank search results using ZhipuAI Rerank API.
 
         Args:
@@ -2002,10 +2002,10 @@ class SearchAgent(Agent):
 
     def _read_top_documents(
         self,
-        search_results: List[SearchResult],
+        search_results: list[SearchResult],
         max_docs: int,
-        tool_calls: List[Dict[str, Any]],
-    ) -> Dict[str, str]:
+        tool_calls: list[dict[str, Any]],
+    ) -> dict[str, str]:
         """Read top documents and return their content.
 
         Args:
@@ -2021,7 +2021,7 @@ class SearchAgent(Agent):
             logger.error("ReadTool not registered")
             return {}
 
-        contents: Dict[str, str] = {}
+        contents: dict[str, str] = {}
         total_lines = 0
         max_total_lines = 1000  # Limit total context size
 
@@ -2062,8 +2062,8 @@ class SearchAgent(Agent):
     def _generate_answer(
         self,
         query: str,
-        search_results: List[SearchResult],
-        context_docs: Dict[str, str],
+        search_results: list[SearchResult],
+        context_docs: dict[str, str],
         mode: str = "semantic",
     ) -> tuple[str, float, int]:
         """Generate answer using LLM with context.
@@ -2145,9 +2145,9 @@ class SearchAgent(Agent):
 
     def _collect_sources(
         self,
-        search_results: List[SearchResult],
-        context_docs: Dict[str, str],
-    ) -> List[str]:
+        search_results: list[SearchResult],
+        context_docs: dict[str, str],
+    ) -> list[str]:
         """Collect unique source paths from used documents.
 
         Args:
@@ -2157,7 +2157,7 @@ class SearchAgent(Agent):
         Returns:
             List of unique source paths
         """
-        sources: Set[str] = set()
+        sources: set[str] = set()
 
         for result in search_results:
             # Only include if document was actually read
@@ -2170,13 +2170,13 @@ class SearchAgent(Agent):
         self,
         success: bool,
         answer: str,
-        sources: List[str],
-        tool_calls: List[Dict[str, Any]],
+        sources: list[str],
+        tool_calls: list[dict[str, Any]],
         confidence: float,
         tokens_used: int,
         start_time: float,
-        error: Optional[str] = None,
-        search_hits: Optional[List[Dict[str, Any]]] = None,
+        error: str | None = None,
+        search_hits: list[dict[str, Any]] | None = None,
     ) -> AgentResponse:
         """Build AgentResponse from components.
 
@@ -2228,7 +2228,7 @@ class SearchAgent(Agent):
         )
 
 
-def _discover_index_tags(raw_dir: Path, sample_size: int = 50) -> List[str]:
+def _discover_index_tags(raw_dir: Path, sample_size: int = 50) -> list[str]:
     """Discover common tags from .md.json files for QueryRouter IndexMeta.
 
     Scans a sample of .md.json files in the raw directory, collects unique
@@ -2256,7 +2256,7 @@ def _discover_index_tags(raw_dir: Path, sample_size: int = 50) -> List[str]:
             if scanned >= sample_size:
                 break
             try:
-                with open(mdjson_path, "r", encoding="utf-8") as f:
+                with open(mdjson_path, encoding="utf-8") as f:
                     meta = json.load(f)
                 for tag in meta.get("tags", []):
                     if isinstance(tag, str) and tag.strip():
@@ -2273,10 +2273,10 @@ def _discover_index_tags(raw_dir: Path, sample_size: int = 50) -> List[str]:
 
 def create_search_agent(
     config: Config,
-    index_path: Optional[Path] = None,
-    input_base: Optional[Path] = None,
-    output_base: Optional[Path] = None,
-    raw_dir: Optional[Path] = None,
+    index_path: Path | None = None,
+    input_base: Path | None = None,
+    output_base: Path | None = None,
+    raw_dir: Path | None = None,
     use_rerank: bool = False,
     mode: str = "tool_loop",
     usage_tracker=None,
@@ -2306,10 +2306,10 @@ def create_search_agent(
 
     if len(index_paths) > 1:
         from src.search.multi_index import MultiIndexSearcher
-        from src.search.query_router import QueryRouter, IndexMeta
+        from src.search.query_router import IndexMeta, QueryRouter
 
         # Auto-build QueryRouter from index paths with tag discovery
-        indexes_meta: Dict[str, IndexMeta] = {}
+        indexes_meta: dict[str, IndexMeta] = {}
         for p in index_paths:
             idx_name = p.parent.name if p.name == "index" else p.name
             # Discover tags from .md.json files in the raw directory
@@ -2368,8 +2368,8 @@ def create_search_agent(
 
     # Register GrepTool + BashTool for raw file search (DCI paradigm)
     if raw_dir and Path(raw_dir).is_dir():
-        from src.agent.tools.grep import GrepTool
         from src.agent.tools.bash import BashTool
+        from src.agent.tools.grep import GrepTool
         grep_tool = GrepTool(raw_dir=Path(raw_dir))
         grep_tool.set_cache(ToolCache(ttl=300, max_size=128))
         bash_tool = BashTool(raw_dir=Path(raw_dir))

@@ -5,11 +5,10 @@ collecting latency, result count, hit rate, and MRR metrics.
 """
 
 import json
-import time
 import logging
-from dataclasses import dataclass, field, asdict
+import time
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +18,7 @@ class QuerySpec:
     """A single benchmark query with optional ground truth."""
 
     query: str
-    expected_files: List[str] = field(default_factory=list)
+    expected_files: list[str] = field(default_factory=list)
     category: str = ""
 
 
@@ -32,8 +31,8 @@ class ModeResult:
     success: bool
     latency: float = 0.0
     result_count: int = 0
-    result_files: List[str] = field(default_factory=list)
-    scores: List[float] = field(default_factory=list)
+    result_files: list[str] = field(default_factory=list)
+    scores: list[float] = field(default_factory=list)
     hit_rate: float = 0.0  # % of expected_files found
     mrr: float = 0.0  # Mean Reciprocal Rank
     error: str = ""
@@ -44,9 +43,9 @@ class ModeResult:
 class BenchmarkResult:
     """Complete benchmark results across all queries and modes."""
 
-    queries: List[QuerySpec]
-    results: List[ModeResult]
-    modes_tested: List[str]
+    queries: list[QuerySpec]
+    results: list[ModeResult]
+    modes_tested: list[str]
     index_path: str
     total_time: float = 0.0
 
@@ -65,7 +64,7 @@ class BenchmarkRunner:
         result = runner.run(queries, modes=["bm25", "grep"], runs=3, warmup=1)
     """
 
-    def __init__(self, index_path: Path, raw_dir: Optional[Path] = None):
+    def __init__(self, index_path: Path, raw_dir: Path | None = None):
         self._index_path = Path(index_path)
         self._raw_dir = Path(raw_dir) if raw_dir else self._index_path.parent
 
@@ -75,8 +74,8 @@ class BenchmarkRunner:
 
     def run(
         self,
-        queries: List[QuerySpec],
-        modes: Optional[List[str]] = None,
+        queries: list[QuerySpec],
+        modes: list[str] | None = None,
         runs: int = 1,
         warmup: int = 1,
     ) -> BenchmarkResult:
@@ -95,7 +94,7 @@ class BenchmarkRunner:
             modes = ["bm25", "grep"]
 
         start = time.time()
-        results: List[ModeResult] = []
+        results: list[ModeResult] = []
 
         # Warmup — discard results, just prime jieba / file system caches
         if warmup > 0 and queries:
@@ -119,7 +118,7 @@ class BenchmarkRunner:
     # Warmup
     # ------------------------------------------------------------------
 
-    def _warmup(self, query: str, modes: List[str], count: int) -> None:
+    def _warmup(self, query: str, modes: list[str], count: int) -> None:
         """Warmup runs to initialize jieba etc."""
         dummy_spec = QuerySpec(query=query)
         for _ in range(count):
@@ -182,9 +181,9 @@ class BenchmarkRunner:
 
     @staticmethod
     def _calc_relevance(
-        result_files: List[str],
-        expected_files: List[str],
-    ) -> Tuple[float, float]:
+        result_files: list[str],
+        expected_files: list[str],
+    ) -> tuple[float, float]:
         """Calculate hit_rate and MRR given result file list and ground truth.
 
         Returns (hit_rate, mrr).  Both are 0.0 when expected_files is empty.
@@ -209,7 +208,7 @@ class BenchmarkRunner:
     # Search backends
     # ------------------------------------------------------------------
 
-    def _search_bm25(self, query: str, limit: int = 20) -> Tuple[List[str], List[float]]:
+    def _search_bm25(self, query: str, limit: int = 20) -> tuple[list[str], list[float]]:
         """Run BM25 search, return (files, scores)."""
         from src.search.bm25_search import create_searcher
 
@@ -222,7 +221,7 @@ class BenchmarkRunner:
         scores = [r.score for r in results.results]
         return files, scores
 
-    def _search_grep(self, query: str, limit: int = 20) -> Tuple[List[str], List[float]]:
+    def _search_grep(self, query: str, limit: int = 20) -> tuple[list[str], list[float]]:
         """Run Grep search, return (files, [])."""
         from src.agent.tools.grep import GrepTool
 
@@ -232,7 +231,7 @@ class BenchmarkRunner:
             return [], []
 
         # Parse "file:line: content" format — deduplicate files
-        files: List[str] = []
+        files: list[str] = []
         seen: set = set()
         for line in result.data.split("\n"):
             if line.startswith("  ") or not line:
@@ -250,7 +249,7 @@ class BenchmarkRunner:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def load_queries(path: Path) -> List[QuerySpec]:
+    def load_queries(path: Path) -> list[QuerySpec]:
         """Load queries from a JSONL file.
 
         Each line is a JSON object with fields:
@@ -260,8 +259,8 @@ class BenchmarkRunner:
 
         Blank lines and lines starting with ``#`` are skipped.
         """
-        queries: List[QuerySpec] = []
-        with open(path, "r", encoding="utf-8") as fh:
+        queries: list[QuerySpec] = []
+        with open(path, encoding="utf-8") as fh:
             for line in fh:
                 line = line.strip()
                 if not line or line.startswith("#"):
@@ -282,18 +281,18 @@ class BenchmarkRunner:
 
     @staticmethod
     def aggregate_by_mode(
-        results: List[ModeResult],
-    ) -> Dict[str, Dict[str, float]]:
+        results: list[ModeResult],
+    ) -> dict[str, dict[str, float]]:
         """Aggregate ModeResult list into per-mode summary statistics.
 
         Returns ``{mode: {avg_latency, avg_hit_rate, avg_mrr, avg_result_count, success_rate}}``.
         Only successful results are included in latency / hit_rate / mrr averages.
         """
-        buckets: Dict[str, List[ModeResult]] = {}
+        buckets: dict[str, list[ModeResult]] = {}
         for r in results:
             buckets.setdefault(r.mode, []).append(r)
 
-        summary: Dict[str, Dict[str, float]] = {}
+        summary: dict[str, dict[str, float]] = {}
         for mode, mode_results in buckets.items():
             successful = [r for r in mode_results if r.success]
             total = len(mode_results)

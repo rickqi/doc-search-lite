@@ -10,21 +10,17 @@ Tests cover:
 
 from pathlib import Path
 
-import pytest
 from docx import Document
-from docx.oxml.ns import qn
 
+from src.converter.office import OfficeConverter
 from src.converter.table_fix import (
     _count_pipe_columns,
-    _find_nth_table_start,
     _is_separator_row,
     _make_separator,
     _pad_row,
     fix_merged_tables_with_html,
     fix_table_alignment,
 )
-from src.converter.office import OfficeConverter
-
 
 # ---------------------------------------------------------------------------
 # Helper: create DOCX files with various table structures

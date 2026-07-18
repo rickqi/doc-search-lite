@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import time
 from collections import OrderedDict
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class ToolResult:
@@ -22,15 +22,15 @@ class ToolResult:
         self,
         success: bool,
         data: Any = None,
-        error: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        error: str | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         self.success = success
         self.data = data
         self.error = error
         self.metadata = metadata or {}
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         result = {"success": self.success, "data": self.data}
         if self.error:
             result["error"] = self.error
@@ -39,11 +39,11 @@ class ToolResult:
         return result
 
     @classmethod
-    def ok(cls, data: Any = None, metadata: Optional[Dict[str, Any]] = None) -> "ToolResult":
+    def ok(cls, data: Any = None, metadata: dict[str, Any] | None = None) -> ToolResult:
         return cls(success=True, data=data, metadata=metadata)
 
     @classmethod
-    def fail(cls, error: str, metadata: Optional[Dict[str, Any]] = None) -> "ToolResult":
+    def fail(cls, error: str, metadata: dict[str, Any] | None = None) -> ToolResult:
         return cls(success=False, error=error, metadata=metadata)
 
 
@@ -58,9 +58,9 @@ class ToolCache:
     def __init__(self, ttl: float = 60.0, max_size: int = 50) -> None:
         self._ttl = ttl
         self._max_size = max_size
-        self._store: OrderedDict[str, tuple[float, "ToolResult"]] = OrderedDict()
+        self._store: OrderedDict[str, tuple[float, ToolResult]] = OrderedDict()
 
-    def get(self, key: str) -> Optional["ToolResult"]:
+    def get(self, key: str) -> ToolResult | None:
         if key not in self._store:
             return None
         expires, result = self._store[key]
@@ -70,16 +70,17 @@ class ToolCache:
         self._store.move_to_end(key)
         return result
 
-    def put(self, key: str, result: "ToolResult") -> None:
+    def put(self, key: str, result: ToolResult) -> None:
         while len(self._store) >= self._max_size:
             self._store.popitem(last=False)
         self._store[key] = (time.time() + self._ttl, result)
         self._store.move_to_end(key)
 
     @staticmethod
-    def make_key(tool_name: str, kwargs: Dict[str, Any]) -> str:
+    def make_key(tool_name: str, kwargs: dict[str, Any]) -> str:
         """Generate a deterministic cache key from tool name + arguments."""
-        import hashlib, json
+        import hashlib
+        import json
         raw = json.dumps({"name": tool_name, "kwargs": kwargs}, sort_keys=True, default=str)
         return hashlib.md5(raw.encode()).hexdigest()
 

@@ -6,7 +6,6 @@ call. These are static assertions against the prompt string — no LLM or
 network calls are needed.
 """
 
-import pytest
 
 from src.agent.search_agent import SYSTEM_PROMPT
 

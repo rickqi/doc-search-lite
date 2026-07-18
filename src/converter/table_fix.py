@@ -12,7 +12,6 @@ This module provides two fixes:
 import logging
 import re
 from pathlib import Path
-from typing import List, Optional, Tuple
 from xml.etree import ElementTree as ET
 
 logger = logging.getLogger(__name__)
@@ -80,14 +79,14 @@ def _pad_row(line: str, target_cols: int) -> str:
     return "|" + prefix[1:] + stripped
 
 
-def _find_table_blocks(lines: List[str]) -> List[Tuple[int, int]]:
+def _find_table_blocks(lines: list[str]) -> list[tuple[int, int]]:
     """Find the start and end indices of consecutive table line blocks.
 
     Returns list of (start_idx, end_idx) tuples (inclusive).
     A table block is a consecutive sequence of lines starting with ``|``.
     Lines inside code blocks (``` fenced) are excluded.
     """
-    blocks: List[Tuple[int, int]] = []
+    blocks: list[tuple[int, int]] = []
     in_code_block = False
 
     i = 0
@@ -166,7 +165,7 @@ def fix_table_alignment(markdown: str) -> str:
             continue
 
         # Fix each row
-        fixed_lines: List[str] = []
+        fixed_lines: list[str] = []
         for line in block_lines:
             if _is_separator_row(line):
                 fixed_lines.append(_make_separator(max_cols))
@@ -178,7 +177,7 @@ def fix_table_alignment(markdown: str) -> str:
     return "\n".join(lines)
 
 
-def _has_merged_cells(source: Path) -> List[bool]:
+def _has_merged_cells(source: Path) -> list[bool]:
     """Check each table in a DOCX file for merged cells.
 
     Parses the ``<w:tbl>`` XML directly for accurate merge detection.
@@ -204,7 +203,7 @@ def _has_merged_cells(source: Path) -> List[bool]:
         logger.debug("Cannot read DOCX for merge detection: %s", e)
         return []
 
-    results: List[bool] = []
+    results: list[bool] = []
     for table in doc.tables:
         has_merge = False
         tbl = table._tbl
@@ -230,7 +229,7 @@ def _has_merged_cells(source: Path) -> List[bool]:
     return results
 
 
-def _get_cell_grid_info(tc: ET.Element) -> Tuple[int, str]:
+def _get_cell_grid_info(tc: ET.Element) -> tuple[int, str]:
     """Get colspan and vMerge status from a table cell XML element.
 
     Args:
@@ -267,7 +266,7 @@ def _get_cell_grid_info(tc: ET.Element) -> Tuple[int, str]:
     return colspan, vmerge_status
 
 
-def _build_grid_map(table) -> List[List[dict]]:
+def _build_grid_map(table) -> list[list[dict]]:
     """Build a grid map from a DOCX table using raw XML.
 
     Parses the ``<w:tbl>`` XML directly instead of using python-docx's
@@ -302,8 +301,8 @@ def _build_grid_map(table) -> List[List[dict]]:
         return []
 
     # Build occupied grid and result grid
-    occupied: List[List[bool]] = [[False] * grid_width for _ in range(num_rows)]
-    grid: List[List[dict]] = [[None] * grid_width for _ in range(num_rows)]
+    occupied: list[list[bool]] = [[False] * grid_width for _ in range(num_rows)]
+    grid: list[list[dict]] = [[None] * grid_width for _ in range(num_rows)]
 
     for row_idx, tr in enumerate(tr_elements):
         tc_elements = tr.findall(f"{{{_W_NS}}}tc")
@@ -398,7 +397,7 @@ def _build_grid_map(table) -> List[List[dict]]:
     return grid
 
 
-def _docx_table_to_html(source: Path, table_index: int) -> Optional[str]:
+def _docx_table_to_html(source: Path, table_index: int) -> str | None:
     """Convert a specific table from a DOCX file to HTML.
 
     Properly handles both horizontal merges (colspan/gridSpan) and
@@ -435,9 +434,9 @@ def _docx_table_to_html(source: Path, table_index: int) -> Optional[str]:
 
     grid_width = len(grid[0]) if grid else 0
 
-    rows_html: List[str] = []
+    rows_html: list[str] = []
     for row_idx in range(num_rows):
-        cells_html: List[str] = []
+        cells_html: list[str] = []
         for col_idx in range(grid_width):
             cell_info = grid[row_idx][col_idx]
             if cell_info is None or cell_info.get("skip"):
@@ -463,7 +462,7 @@ def _docx_table_to_html(source: Path, table_index: int) -> Optional[str]:
     return "<table>\n" + "\n".join(rows_html) + "\n</table>"
 
 
-def _find_nth_table_start(markdown: str, n: int) -> Tuple[int, int]:
+def _find_nth_table_start(markdown: str, n: int) -> tuple[int, int]:
     """Find the start and end line indices of the nth Markdown table.
 
     Args:

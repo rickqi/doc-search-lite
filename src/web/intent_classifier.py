@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import re
 from enum import Enum
-from typing import Optional
 
 
 class ExecutionMode(str, Enum):
@@ -114,7 +113,7 @@ class IntentClassifier:
 
 
 # Singleton
-_classifier: Optional[IntentClassifier] = None
+_classifier: IntentClassifier | None = None
 
 
 def get_classifier() -> IntentClassifier:

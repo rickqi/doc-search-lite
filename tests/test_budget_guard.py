@@ -2,11 +2,8 @@
 
 from pathlib import Path
 
-import pytest
-
+from src.stats.budget_guard import BudgetCheckResult, BudgetGuard
 from src.storage.convert_db import ConvertDB
-from src.stats.budget_guard import BudgetGuard, BudgetCheckResult, BudgetAlert
-
 
 # ── Helpers ──────────────────────────────────────────────────────────
 

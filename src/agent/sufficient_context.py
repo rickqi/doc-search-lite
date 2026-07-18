@@ -20,9 +20,9 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 if TYPE_CHECKING:
     from src.agent.llm_client import LLMClient
@@ -57,10 +57,10 @@ class SearchFeedback:
 
     sufficient: bool
     coverage_score: float
-    covered_aspects: List[str] = field(default_factory=list)
-    missing_aspects: List[str] = field(default_factory=list)
-    suggested_queries: List[str] = field(default_factory=list)
-    suggested_tools: List[str] = field(default_factory=list)
+    covered_aspects: list[str] = field(default_factory=list)
+    missing_aspects: list[str] = field(default_factory=list)
+    suggested_queries: list[str] = field(default_factory=list)
+    suggested_tools: list[str] = field(default_factory=list)
     reason: str = ""
 
 
@@ -107,7 +107,7 @@ class SufficientContextChecker:
     def check(
         self,
         query: str,
-        collected_snippets: List[Dict[str, Any]],
+        collected_snippets: list[dict[str, Any]],
     ) -> SearchFeedback:
         """Check if collected information is sufficient for the query.
 
@@ -154,9 +154,9 @@ class SufficientContextChecker:
                 reason=f"充足性检查失败，默认为充足: {e}",
             )
 
-    def _format_snippets(self, snippets: List[Dict[str, Any]]) -> str:
+    def _format_snippets(self, snippets: list[dict[str, Any]]) -> str:
         """Format snippets into a condensed text for the LLM prompt."""
-        parts: List[str] = []
+        parts: list[str] = []
         total_len = 0
 
         for i, s in enumerate(snippets[:10]):  # Max 10 snippets

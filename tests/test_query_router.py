@@ -1,6 +1,5 @@
 """Tests for QueryRouter — keyword-based query-to-index routing."""
 
-import pytest
 
 from src.search.query_router import IndexMeta, QueryRouter
 

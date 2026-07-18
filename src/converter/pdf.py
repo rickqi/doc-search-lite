@@ -15,9 +15,9 @@ import time
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
-from typing import Dict, List, Optional
 
-from src.converter.base import ConvertResult, Converter
+from src.converter.base import Converter, ConvertResult
+
 from .table_fix import fix_table_alignment
 
 # Suppress pdfminer's verbose FontBBox warnings.
@@ -123,7 +123,7 @@ class PDFConverter(Converter):
             return "unknown"
 
     @property
-    def supported_formats(self) -> List[str]:
+    def supported_formats(self) -> list[str]:
         """Get list of supported file extensions."""
         return [".pdf"]
 
@@ -131,7 +131,7 @@ class PDFConverter(Converter):
         self,
         source: Path,
         output_dir: Path,
-        options: Optional[Dict] = None,
+        options: dict | None = None,
     ) -> ConvertResult:
         """Convert a PDF file to Markdown.
 
@@ -154,9 +154,9 @@ class PDFConverter(Converter):
         """
         start_time = time.time()
         options = options or {}
-        errors: List[str] = []
-        images: List[Path] = []
-        metadata: Dict = {}
+        errors: list[str] = []
+        images: list[Path] = []
+        metadata: dict = {}
 
         # Validate source file
         if not source.exists():
@@ -264,7 +264,7 @@ class PDFConverter(Converter):
 
             # Main conversion using pdfplumber
             pdfplumber = _get_pdfplumber()
-            markdown_parts: List[str] = []
+            markdown_parts: list[str] = []
 
             try:
                 with pdfplumber.open(str(source), password=password) as pdf:
@@ -375,8 +375,8 @@ class PDFConverter(Converter):
         page,
         page_num: int,
         extract_images: bool,
-        image_dir: Optional[Path],
-        images_list: List[Path],
+        image_dir: Path | None,
+        images_list: list[Path],
         source_hash: str,
         dpi: int,
     ) -> str:
@@ -394,7 +394,7 @@ class PDFConverter(Converter):
         Returns:
             Markdown string for the page
         """
-        parts: List[str] = []
+        parts: list[str] = []
 
         # Add page header
         parts.append(f"<!-- Page {page_num} -->")
@@ -454,7 +454,7 @@ class PDFConverter(Converter):
             if not extracted or len(extracted) == 0:
                 return ""
 
-            lines: List[str] = []
+            lines: list[str] = []
 
             # Process header row
             header = extracted[0]
@@ -488,7 +488,7 @@ class PDFConverter(Converter):
             Processed text with potential heading markers
         """
         lines = text.split("\n")
-        processed_lines: List[str] = []
+        processed_lines: list[str] = []
 
         for line in lines:
             line = line.strip()
@@ -517,7 +517,7 @@ class PDFConverter(Converter):
         image_dir: Path,
         source_hash: str,
         dpi: int,
-    ) -> List[Path]:
+    ) -> list[Path]:
         """Extract images from a PDF page.
 
         Args:
@@ -530,7 +530,7 @@ class PDFConverter(Converter):
         Returns:
             List of extracted image file paths
         """
-        images: List[Path] = []
+        images: list[Path] = []
         Image = _get_pil()
 
         # Get page images
@@ -550,7 +550,7 @@ class PDFConverter(Converter):
 
 
 # Module-level converter instance for convenience
-_default_converter: Optional[PDFConverter] = None
+_default_converter: PDFConverter | None = None
 
 
 def get_pdf_converter() -> PDFConverter:

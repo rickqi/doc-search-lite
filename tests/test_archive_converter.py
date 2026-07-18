@@ -1,18 +1,16 @@
 """Unit tests for ArchiveConverter — archive (ZIP/tar/etc.) to Markdown converter."""
 
-import os
 import tarfile
 import zipfile
 from io import BytesIO
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
 from src.converter.archive import (
-    ARCHIVE_EXTENSIONS,
     _MAX_MEMBER_COUNT,
-    _MAX_UNCOMPRESSED_SIZE,
+    ARCHIVE_EXTENSIONS,
     ArchiveConverter,
 )
 from src.converter.base import ConvertResult

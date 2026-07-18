@@ -3,7 +3,7 @@
 import json
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from src.agent.base import Tool
 from src.agent.tool_types import ToolResult
@@ -36,7 +36,7 @@ class ReadTool(Tool):
         self._store = markdown_store
         self._raw_dirs = raw_dirs or []
         self._searcher = searcher
-        self._read_history: Dict[str, str] = {}  # P2: track {doc_id/source_path: "L{start}-L{end}"}
+        self._read_history: dict[str, str] = {}  # P2: track {doc_id/source_path: "L{start}-L{end}"}
 
     @property
     def name(self) -> str:
@@ -50,8 +50,8 @@ class ReadTool(Tool):
 
     def execute(
         self,
-        doc_id: Optional[str] = None,
-        source_path: Optional[str] = None,
+        doc_id: str | None = None,
+        source_path: str | None = None,
         start_line: int = 0,
         max_lines: int = 500,
         **kwargs: Any,
@@ -102,8 +102,9 @@ class ReadTool(Tool):
                 try:
                     full = self._searcher.get_full_content(doc_id)
                     if full is not None and full.full_content:
-                        from src.storage.base import DocumentRecord
                         from datetime import datetime
+
+                        from src.storage.base import DocumentRecord
                         # FullSearchResult uses 'source' not 'source_path'
                         sp = getattr(full, "source_path", None) or getattr(full, "source", None) or ""
                         record = DocumentRecord(
@@ -217,7 +218,7 @@ class ReadTool(Tool):
             },
         )
 
-    def _format_toc(self, headings: List[Dict]) -> str:
+    def _format_toc(self, headings: list[dict]) -> str:
         """Format headings list as a compact TOC text block for Agent context.
 
         Args:
@@ -240,9 +241,9 @@ class ReadTool(Tool):
 
     def _load_headings(
         self,
-        doc_id: Optional[str] = None,
-        source_path: Optional[str] = None,
-    ) -> List[Dict]:
+        doc_id: str | None = None,
+        source_path: str | None = None,
+    ) -> list[dict]:
         """Load headings metadata from .md.json sidecar file.
 
         Tries multiple resolution paths to find the .md.json file:
@@ -281,7 +282,7 @@ class ReadTool(Tool):
 
         return []
 
-    def to_openai_tool(self) -> Dict[str, Any]:
+    def to_openai_tool(self) -> dict[str, Any]:
         """Convert tool to OpenAI function calling format."""
         return {
             "type": "function",

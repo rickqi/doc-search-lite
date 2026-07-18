@@ -12,12 +12,11 @@ Supports:
 
 import hashlib
 import logging
-import os
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 from threading import Event, Lock, Thread
-from typing import Callable, Dict, Optional, Set
 
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
@@ -70,7 +69,7 @@ class IndexWatchStats:
     updated: int = 0
     deleted: int = 0
     errors: int = 0
-    indexed_files: Set[str] = field(default_factory=set)
+    indexed_files: set[str] = field(default_factory=set)
 
     def summary(self) -> str:
         return (
@@ -87,7 +86,7 @@ class _MdFileHandler(FileSystemEventHandler):
         raw_path: Path,
         index_mgr: TantivyIndexManager,
         debounce_seconds: float = 1.0,
-        on_change: Optional[Callable[[str, str, IndexWatchStats], None]] = None,
+        on_change: Callable[[str, str, IndexWatchStats], None] | None = None,
         chunk_mode: bool = False,
         chunk_min_size: int = 50_000,
     ):
@@ -97,7 +96,7 @@ class _MdFileHandler(FileSystemEventHandler):
         self._debounce = debounce_seconds
         self._on_change = on_change
         self._stats = IndexWatchStats()
-        self._pending: Dict[str, float] = {}  # rel_path → last event time
+        self._pending: dict[str, float] = {}  # rel_path → last event time
         self._lock = Lock()
         self._stop_event = Event()
         self._chunk_mode = chunk_mode
@@ -192,7 +191,7 @@ class _MdFileHandler(FileSystemEventHandler):
             if meta_json_path.exists():
                 try:
                     import json
-                    with open(meta_json_path, "r", encoding="utf-8") as f:
+                    with open(meta_json_path, encoding="utf-8") as f:
                         meta = json.load(f)
                     if isinstance(meta, dict):
                         if "tags" in meta:
@@ -280,9 +279,9 @@ class _MdFileHandler(FileSystemEventHandler):
             self._on_change(rel_path, "delete", self._stats)
 
 
-def _preload_indexed_files(index_mgr: TantivyIndexManager) -> Set[str]:
+def _preload_indexed_files(index_mgr: TantivyIndexManager) -> set[str]:
     """Pre-populate the set of already-indexed doc_ids from the existing index."""
-    indexed: Set[str] = set()
+    indexed: set[str] = set()
     try:
         stats = index_mgr.get_stats()
         if stats.get("num_docs", 0) > 0:
@@ -329,13 +328,13 @@ class IndexWatcher:
         MAX_CONTENT_CHARS = max_content_chars
         SAMPLE_THRESHOLD_BYTES = sample_threshold
 
-        self._observer: Optional[Observer] = None
-        self._handler: Optional[_MdFileHandler] = None
-        self._index_mgr: Optional[TantivyIndexManager] = None
-        self._thread: Optional[Thread] = None
+        self._observer: Observer | None = None
+        self._handler: _MdFileHandler | None = None
+        self._index_mgr: TantivyIndexManager | None = None
+        self._thread: Thread | None = None
 
     @property
-    def stats(self) -> Optional[IndexWatchStats]:
+    def stats(self) -> IndexWatchStats | None:
         if self._handler:
             return self._handler.stats
         return None

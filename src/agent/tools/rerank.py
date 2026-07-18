@@ -7,7 +7,7 @@ to enable agent-based reranking functionality for improving search result releva
 import json
 import logging
 import time
-from typing import Any, Dict, List, Union
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -202,7 +202,7 @@ class RerankTool(Tool):
                 },
             )
 
-    def to_openai_tool(self) -> Dict[str, Any]:
+    def to_openai_tool(self) -> dict[str, Any]:
         """Convert tool to OpenAI function calling format.
 
         Returns:
@@ -241,8 +241,8 @@ class RerankTool(Tool):
 
     def _format_results(
         self,
-        reranked_results: List[RerankResult],
-        documents: List[str],
+        reranked_results: list[RerankResult],
+        documents: list[str],
         top_n: int,
     ) -> str:
         """Format reranked results into a structured string.

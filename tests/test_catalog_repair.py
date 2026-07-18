@@ -4,12 +4,10 @@ import hashlib
 import json
 from pathlib import Path
 
-import pytest
 from click.testing import CliRunner
 
 from src.cli import cli
-from src.storage.convert_db import ConvertDB, PIPELINE_VERSION
-
+from src.storage.convert_db import PIPELINE_VERSION, ConvertDB
 
 # ── Helpers ──────────────────────────────────────────────────────────
 

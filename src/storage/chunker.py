@@ -11,7 +11,6 @@ Zero schema changes — chunk info is encoded in ``doc_id`` (``#c{N}`` suffix)
 and ``title`` (``{filename} § {heading_text}``).
 """
 
-from typing import Dict, List, Tuple
 
 # Chunks smaller than this get merged into the previous chunk.
 MIN_MERGE_CHARS = 500
@@ -19,9 +18,9 @@ MIN_MERGE_CHARS = 500
 
 def split_into_chunks(
     content: str,
-    headings: List[Dict],
+    headings: list[dict],
     max_chunk_chars: int = 50_000,
-) -> List[Tuple[str, str]]:
+) -> list[tuple[str, str]]:
     """Split Markdown *content* into chunks delimited by heading boundaries.
 
     Args:
@@ -64,7 +63,7 @@ def split_into_chunks(
             return _hard_split_paragraphs(content, max_chunk_chars)
 
     # ── Refine oversized chunks ─────────────────────────────
-    refined: List[Tuple[str, str]] = []
+    refined: list[tuple[str, str]] = []
     for title, text, start_line, end_line in raw_chunks:
         if len(text) <= max_chunk_chars:
             refined.append((title, text))
@@ -77,7 +76,7 @@ def split_into_chunks(
         ]
         if len(sub_headings) >= 2:
             sub_raw = _split_by_headings(lines, sub_headings)
-            sub_refined: List[Tuple[str, str]] = []
+            sub_refined: list[tuple[str, str]] = []
             for st, stext, _, _ in sub_raw:
                 if len(stext) > max_chunk_chars:
                     parts = _hard_split_paragraphs(stext, max_chunk_chars)
@@ -110,15 +109,15 @@ def split_into_chunks(
 
 
 def _split_by_headings(
-    lines: List[str],
-    split_points: List[Dict],
-) -> List[Tuple[str, str, int, int]]:
+    lines: list[str],
+    split_points: list[dict],
+) -> list[tuple[str, str, int, int]]:
     """Build ``(title, text, start_line, end_line)`` tuples from *lines*.
 
     *split_points* must be sorted by ``line`` (ascending).  Content before
     the first split point becomes a chunk titled ``"开头"``.
     """
-    chunks: List[Tuple[str, str, int, int]] = []
+    chunks: list[tuple[str, str, int, int]] = []
     total = len(lines)
 
     # Ensure split_points are sorted by line number
@@ -143,14 +142,14 @@ def _split_by_headings(
 def _hard_split_paragraphs(
     text: str,
     max_chars: int,
-) -> List[Tuple[str, str]]:
+) -> list[tuple[str, str]]:
     """Split *text* at ``\\n\\n`` paragraph boundaries to stay under *max_chars*.
 
     If a single paragraph exceeds *max_chars* it is force-split at the
     character boundary.
     """
     paragraphs = text.split("\n\n")
-    chunks: List[str] = []
+    chunks: list[str] = []
     current = ""
 
     for para in paragraphs:
@@ -166,7 +165,7 @@ def _hard_split_paragraphs(
         chunks.append(current)
 
     # Force-split any remaining oversized chunk (single huge paragraph)
-    result: List[Tuple[str, str]] = []
+    result: list[tuple[str, str]] = []
     for chunk in chunks:
         if len(chunk) <= max_chars:
             result.append(("（续）", chunk))
@@ -178,16 +177,16 @@ def _hard_split_paragraphs(
 
 
 def _merge_tiny_chunks(
-    chunks: List[Tuple[str, str]],
+    chunks: list[tuple[str, str]],
     min_chars: int,
     max_chars: int = 0,
-) -> List[Tuple[str, str]]:
+) -> list[tuple[str, str]]:
     """Merge chunks shorter than *min_chars* into the previous chunk.
 
     If *max_chars* > 0, merging only occurs when the combined result would
     not exceed *max_chars*.  This prevents merging from undoing hard-splits.
     """
-    merged: List[Tuple[str, str]] = []
+    merged: list[tuple[str, str]] = []
     for title, text in chunks:
         if merged and len(text) < min_chars:
             prev_title, prev_text = merged[-1]

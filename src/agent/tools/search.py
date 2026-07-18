@@ -9,13 +9,12 @@ suitable for agent consumption.
 
 import json
 import time
-from dataclasses import asdict
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from src.agent.base import Tool
 from src.agent.tool_types import ToolCache, ToolResult
-from src.search.bm25_search import BM25Searcher, PaginatedResults, SearchPreview
+from src.search.bm25_search import BM25Searcher, PaginatedResults
 
 
 class SearchTool(Tool):
@@ -216,7 +215,7 @@ class SearchTool(Tool):
                 self._cache.put(cache_key, result)
             return result
 
-    def to_openai_tool(self) -> Dict[str, Any]:
+    def to_openai_tool(self) -> dict[str, Any]:
         """Convert tool to OpenAI function calling format.
 
         Returns:
@@ -254,7 +253,7 @@ class SearchTool(Tool):
             },
         }
 
-    def _format_results(self, paginated_results: PaginatedResults) -> Dict[str, Any]:
+    def _format_results(self, paginated_results: PaginatedResults) -> dict[str, Any]:
         """Format paginated results into a structured dictionary.
 
         Args:
@@ -295,7 +294,7 @@ class SearchTool(Tool):
 
 
 def create_search_tool(
-    index_path: Optional[Path] = None,
+    index_path: Path | None = None,
     use_jieba: bool = True,
     default_limit: int = 10,
     snippet_length: int = 200,

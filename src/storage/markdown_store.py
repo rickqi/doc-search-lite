@@ -6,7 +6,6 @@ import logging
 import shutil
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 from src.storage.base import DocumentRecord, Storage
 
@@ -38,14 +37,14 @@ class MarkdownStore(Storage):
         """
         self.input_base = Path(input_base).resolve()
         self.output_base = Path(output_base).resolve()
-        self._doc_id_index: Optional[Dict[str, Path]] = None  # lazy-built cache
+        self._doc_id_index: dict[str, Path] | None = None  # lazy-built cache
         self._ensure_output_dir()
 
     def _ensure_output_dir(self) -> None:
         """Ensure output directory exists."""
         self.output_base.mkdir(parents=True, exist_ok=True)
 
-    def _build_doc_id_index(self) -> Dict[str, Path]:
+    def _build_doc_id_index(self) -> dict[str, Path]:
         """Build a mapping from doc_id to metadata file path."""
         index = {}
         for meta_path in self.output_base.rglob(f"*{self.METADATA_SUFFIX}"):
@@ -60,7 +59,7 @@ class MarkdownStore(Storage):
                 continue
         return index
 
-    def _get_doc_id_index(self) -> Dict[str, Path]:
+    def _get_doc_id_index(self) -> dict[str, Path]:
         """Get the doc_id index, building it lazily if needed."""
         if self._doc_id_index is None:
             self._doc_id_index = self._build_doc_id_index()
@@ -171,7 +170,7 @@ class MarkdownStore(Storage):
             if counter > 10000:
                 raise RuntimeError(f"Too many filename conflicts for {target_path}")
 
-    def _serialize_record(self, record: DocumentRecord) -> Dict:
+    def _serialize_record(self, record: DocumentRecord) -> dict:
         """
         Serialize DocumentRecord to a JSON-compatible dictionary.
 
@@ -200,7 +199,7 @@ class MarkdownStore(Storage):
             "status": record.status,
         }
 
-    def _deserialize_record(self, data: Dict) -> DocumentRecord:
+    def _deserialize_record(self, data: dict) -> DocumentRecord:
         """
         Deserialize dictionary to DocumentRecord.
 
@@ -275,7 +274,7 @@ class MarkdownStore(Storage):
             return False
 
     def save_with_images(
-        self, record: DocumentRecord, content: str, images: List[Path]
+        self, record: DocumentRecord, content: str, images: list[Path]
     ) -> bool:
         """
         Save a document record with its Markdown content and images.
@@ -312,7 +311,7 @@ class MarkdownStore(Storage):
             logger.error("Error saving document with images %s: %s", record.source_path, e)
             return False
 
-    def load(self, doc_id: str) -> Optional[Tuple[DocumentRecord, str]]:
+    def load(self, doc_id: str) -> tuple[DocumentRecord, str] | None:
         """
         Load a document record and its content by ID.
 
@@ -337,7 +336,7 @@ class MarkdownStore(Storage):
             pass
         return None
 
-    def load_by_source(self, source_path: Path) -> Optional[Tuple[DocumentRecord, str]]:
+    def load_by_source(self, source_path: Path) -> tuple[DocumentRecord, str] | None:
         """
         Load a document record and its content by source path.
 
@@ -437,7 +436,7 @@ class MarkdownStore(Storage):
         """Check if a directory is empty."""
         return not any(path.iterdir())
 
-    def list(self, filter: Optional[Dict] = None) -> List[DocumentRecord]:
+    def list(self, filter: dict | None = None) -> list[DocumentRecord]:
         """
         List all documents, optionally filtered.
 
@@ -465,7 +464,7 @@ class MarkdownStore(Storage):
 
         return records
 
-    def _matches_filter(self, record: DocumentRecord, filter: Dict) -> bool:
+    def _matches_filter(self, record: DocumentRecord, filter: dict) -> bool:
         """
         Check if a record matches filter criteria.
 

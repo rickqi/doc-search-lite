@@ -1,9 +1,8 @@
 """Tests for LocalReranker — local cross-encoder reranking."""
 
 from unittest.mock import MagicMock, patch
-import pytest
 
-from src.search.reranker import RerankResult
+import pytest
 
 
 class TestLocalRerankerBasics:
@@ -110,10 +109,10 @@ class TestCreateReranker:
     """Factory function tests."""
 
     def test_default_creates_zhipu(self):
+        import os
+
         from src.search.local_reranker import create_reranker
         from src.search.reranker import ZhipuAIReranker
-
-        import os
         old = os.environ.pop("RERANKER_TYPE", None)
         try:
             r = create_reranker(config=None)
@@ -123,9 +122,9 @@ class TestCreateReranker:
                 os.environ["RERANKER_TYPE"] = old
 
     def test_local_type_creates_local(self):
-        from src.search.local_reranker import create_reranker, LocalReranker
-
         import os
+
+        from src.search.local_reranker import LocalReranker, create_reranker
         old = os.environ.get("RERANKER_TYPE")
         os.environ["RERANKER_TYPE"] = "local"
         try:
@@ -138,9 +137,9 @@ class TestCreateReranker:
                 os.environ["RERANKER_TYPE"] = old
 
     def test_explicit_type_overrides_env(self):
-        from src.search.local_reranker import create_reranker, LocalReranker
-
         import os
+
+        from src.search.local_reranker import LocalReranker, create_reranker
         old = os.environ.get("RERANKER_TYPE")
         os.environ["RERANKER_TYPE"] = "zhipu"
         try:

@@ -5,11 +5,10 @@ to quickly understand long documents without consuming the full token budget on
 raw content reading. Uses the fast-tier model (DeepSeek) for cost efficiency.
 """
 
-import json
-import time
 import logging
+import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from src.agent.base import Tool
 from src.agent.tool_types import ToolResult
@@ -80,8 +79,8 @@ class SummarizeTool(Tool):
 
     def execute(
         self,
-        doc_id: Optional[str] = None,
-        source_path: Optional[str] = None,
+        doc_id: str | None = None,
+        source_path: str | None = None,
         focus: str = "",
         max_lines: int = 500,
         **kwargs: Any,
@@ -179,7 +178,7 @@ class SummarizeTool(Tool):
                 metadata={"doc_id": doc_id, "execution_time": round(time.time() - start_time, 3)},
             )
 
-    def _load_content(self, doc_id: Optional[str], source_path: Optional[str]) -> Optional[str]:
+    def _load_content(self, doc_id: str | None, source_path: str | None) -> str | None:
         """Load document content by doc_id or source_path.
 
         Resolution order mirrors ReadTool:
@@ -218,7 +217,7 @@ class SummarizeTool(Tool):
 
         return None
 
-    def to_openai_tool(self) -> Dict[str, Any]:
+    def to_openai_tool(self) -> dict[str, Any]:
         """Convert tool to OpenAI function calling format."""
         return {
             "type": "function",

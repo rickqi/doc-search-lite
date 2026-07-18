@@ -16,7 +16,7 @@ import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
 from threading import Lock
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from src.web.session_store import SessionStore
 
@@ -33,21 +33,21 @@ class SessionContext:
 
     session_id: str
     index_path: Path
-    raw_dir: Optional[Path] = None
+    raw_dir: Path | None = None
     model: str = "deepseek-v4-pro"
 
     # Session state
     prompt: str = ""
-    messages: List[Dict[str, Any]] = field(default_factory=list)
-    sources: List[str] = field(default_factory=list)
+    messages: list[dict[str, Any]] = field(default_factory=list)
+    sources: list[str] = field(default_factory=list)
     created: float = field(default_factory=time.time)
     last_active: float = field(default_factory=time.time)
 
     # SSE event queue (populated by agent hooks, consumed by /events endpoint)
-    event_queue: Optional[asyncio.Queue] = None
+    event_queue: asyncio.Queue | None = None
 
     # Abort signal
-    abort_event: Optional[asyncio.Event] = None
+    abort_event: asyncio.Event | None = None
 
     def touch(self) -> None:
         """Update last-active timestamp."""
@@ -85,20 +85,20 @@ class SessionManager:
     IDLE_TIMEOUT = 1800  # 30 minutes
     MAX_SESSIONS = 20    # Max concurrent sessions
 
-    def __init__(self, storage_dir: Optional[Path] = None):
-        self._sessions: Dict[str, SessionContext] = {}
+    def __init__(self, storage_dir: Path | None = None):
+        self._sessions: dict[str, SessionContext] = {}
         self._lock = Lock()
         _dir = storage_dir or Path("sessions")
         _dir.mkdir(parents=True, exist_ok=True)
         self._store = SessionStore(_dir / "sessions.db")
-        self._cleanup_task: Optional[asyncio.Task] = None
+        self._cleanup_task: asyncio.Task | None = None
 
     # ── CRUD ──────────────────────────────────────────────
 
     def create(
         self,
         index_path: Path,
-        raw_dir: Optional[Path] = None,
+        raw_dir: Path | None = None,
         model: str = "deepseek-v4-pro",
     ) -> SessionContext:
         """Create a new session.
@@ -129,7 +129,7 @@ class SessionManager:
             logger.info("Created session: %s (index=%s)", session_id, index_path)
             return ctx
 
-    def get(self, session_id: str) -> Optional[SessionContext]:
+    def get(self, session_id: str) -> SessionContext | None:
         """Get an active session by ID."""
         with self._lock:
             ctx = self._sessions.get(session_id)
@@ -141,7 +141,7 @@ class SessionManager:
         self,
         session_id: str,
         index_path: Path,
-        raw_dir: Optional[Path] = None,
+        raw_dir: Path | None = None,
         model: str = "deepseek-v4-pro",
     ) -> SessionContext:
         """Get an existing session or create a new one with the given ID.
@@ -185,14 +185,14 @@ class SessionManager:
         logger.info("Deleted session: %s", session_id)
         return True
 
-    def list_sessions(self) -> List[Dict[str, Any]]:
+    def list_sessions(self) -> list[dict[str, Any]]:
         """List all sessions (active + persisted from SQLite store).
 
         Active in-memory sessions take precedence over DB entries.
         """
         # Merge: active sessions in memory + persisted sessions from DB
         seen: set = set()
-        result: List[Dict[str, Any]] = []
+        result: list[dict[str, Any]] = []
 
         with self._lock:
             for s in self._sessions.values():
@@ -247,7 +247,7 @@ class SessionManager:
             "last_active": ctx.last_active,
         })
 
-    def load(self, session_id: str) -> Optional[Dict[str, Any]]:
+    def load(self, session_id: str) -> dict[str, Any] | None:
         """Load persisted session data from SQLite store."""
         return self._store.load(session_id)
 
@@ -333,10 +333,10 @@ class SessionManager:
 
 # ── Global singleton ─────────────────────────────────────
 
-_default_manager: Optional[SessionManager] = None
+_default_manager: SessionManager | None = None
 
 
-def get_session_manager(storage_dir: Optional[Path] = None) -> SessionManager:
+def get_session_manager(storage_dir: Path | None = None) -> SessionManager:
     """Get or create the global SessionManager singleton."""
     global _default_manager
     if _default_manager is None:

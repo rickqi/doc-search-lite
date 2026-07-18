@@ -2,7 +2,6 @@
 Smoke tests to verify imports and basic functionality.
 """
 
-import pytest
 
 
 def test_pytest_works():
@@ -55,7 +54,7 @@ def test_converter_base_import():
 
 def test_storage_base_import():
     """Verify Storage and DocumentRecord can be imported from src.storage.base."""
-    from src.storage.base import Storage, DocumentRecord
+    from src.storage.base import DocumentRecord, Storage
 
     assert Storage is not None
     assert DocumentRecord is not None

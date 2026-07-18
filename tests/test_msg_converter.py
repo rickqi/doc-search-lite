@@ -1,8 +1,7 @@
 """Unit tests for MsgConverter — Outlook MSG email to Markdown converter."""
 
 import struct
-from pathlib import Path
-from unittest.mock import MagicMock, mock_open, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -27,7 +26,7 @@ def _encode_utf16le(text: str) -> bytes:
 
 def _encode_filetime(year=2024, month=6, day=15, hour=10, minute=30, second=0):
     """Encode a datetime as FILETIME bytes (8 bytes LE)."""
-    from datetime import datetime, timedelta, timezone
+    from datetime import datetime, timezone
 
     epoch = datetime(1601, 1, 1, tzinfo=timezone.utc)
     dt = datetime(year, month, day, hour, minute, second, tzinfo=timezone.utc)

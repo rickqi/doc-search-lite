@@ -8,7 +8,7 @@ raw text directly without any information loss through indexing or embedding.
 import re
 import time
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from src.agent.base import Tool
 from src.agent.tool_types import ToolCache, ToolResult
@@ -124,7 +124,7 @@ class GrepTool(Tool):
             return result
 
         # Search files
-        results: List[Dict[str, Any]] = []
+        results: list[dict[str, Any]] = []
         files_searched = 0
 
         for md_file in sorted(self._raw_dir.rglob(file_filter)):
@@ -229,7 +229,7 @@ class GrepTool(Tool):
             self._cache.put(cache_key, result)
         return result
 
-    def to_openai_tool(self) -> Dict[str, Any]:
+    def to_openai_tool(self) -> dict[str, Any]:
         """Convert tool to OpenAI function calling format.
 
         Returns:

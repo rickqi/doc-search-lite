@@ -10,11 +10,8 @@ Covers:
 """
 
 import json
-import math
-import os
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
@@ -27,7 +24,6 @@ from src.web.dify_retrieval import (
     DifyRetrievalRequest,
     DifyRetrievalResponse,
     DifyRetrievalSetting,
-    KnowledgeBaseConfig,
     KnowledgeBaseMapping,
     MetadataCondition,
     MetadataConditionEvaluator,

@@ -1,20 +1,18 @@
 """Tantivy-based full-text search index manager with Chinese tokenizer support."""
 
 import logging
+import shutil
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any
-
-import shutil
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
 import tantivy
-from tantivy import Document, SnippetGenerator, TextAnalyzerBuilder, Tokenizer, Filter
+from tantivy import Document, SnippetGenerator
 
 from src.storage.base import IndexManager, SearchHit, SearchResult
-
 
 SCHEMA_VERSION = "2"
 
@@ -41,7 +39,7 @@ class TantivyIndexManager(IndexManager):
 
     def __init__(
         self,
-        index_path: Optional[Path] = None,
+        index_path: Path | None = None,
         use_jieba: bool = True,
         heap_size: int = 50_000_000,
         num_threads: int = 2,
@@ -62,7 +60,7 @@ class TantivyIndexManager(IndexManager):
         self._heap_size = heap_size
         self._num_threads = num_threads
         self._readonly = readonly
-        self._writer: Optional[tantivy.IndexWriter] = None
+        self._writer: tantivy.IndexWriter | None = None
         self._jieba_available = False
         self._is_new_index = False
 
@@ -274,7 +272,7 @@ class TantivyIndexManager(IndexManager):
         doc_id: str,
         title: str,
         content: str,
-        metadata: Dict[str, Any],
+        metadata: dict[str, Any],
     ) -> bool:
         """
         Add a document to the search index.
@@ -337,7 +335,7 @@ class TantivyIndexManager(IndexManager):
         doc_id: str,
         title: str,
         content: str,
-        metadata: Dict[str, Any],
+        metadata: dict[str, Any],
     ) -> bool:
         """
         Update a document in the search index.
@@ -388,7 +386,7 @@ class TantivyIndexManager(IndexManager):
         query: str,
         limit: int = 10,
         offset: int = 0,
-        filters: Optional[Dict] = None,
+        filters: dict | None = None,
         title_boost: float = 1.0,
     ) -> SearchResult:
         """
@@ -548,13 +546,13 @@ class TantivyIndexManager(IndexManager):
 
     def _extract_highlights(
         self,
-        snippet_gen: Optional[SnippetGenerator],
+        snippet_gen: SnippetGenerator | None,
         doc: Document,
         query: str,
         content: str,
         max_terms: int = 5,
         precomputed_snippet: Any = None,
-    ) -> List[str]:
+    ) -> list[str]:
         """Extract highlight terms from snippet generator or query.
 
         Tries to extract highlighted terms from the Tantivy Snippet object
@@ -600,7 +598,7 @@ class TantivyIndexManager(IndexManager):
 
     def _extract_highlight_terms(
         self, query: str, content: str, max_terms: int = 5
-    ) -> List[str]:
+    ) -> list[str]:
         """Extract highlight terms from query that appear in content.
 
         Args:
@@ -620,7 +618,7 @@ class TantivyIndexManager(IndexManager):
         parser = QueryParser()
         parsed = parser.parse(query)
 
-        highlights: List[str] = []
+        highlights: list[str] = []
         content_lower = content.lower()
 
         # Check phrases first (higher priority)
@@ -706,7 +704,7 @@ class TantivyIndexManager(IndexManager):
                 return content[:max_length] + "..."
             return content
 
-    def get_document_by_id(self, doc_id: str) -> Optional[Dict[str, Any]]:
+    def get_document_by_id(self, doc_id: str) -> dict[str, Any] | None:
         """
         Retrieve a document by its exact doc_id, returning full content.
 
@@ -803,7 +801,7 @@ class TantivyIndexManager(IndexManager):
             logger.error("Error rebuilding index: %s", e)
             return False
 
-    def get_stats(self) -> Dict[str, Any]:
+    def get_stats(self) -> dict[str, Any]:
         """
         Get index statistics.
 

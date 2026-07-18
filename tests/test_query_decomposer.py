@@ -1,17 +1,14 @@
 """Tests for QueryDecomposer — query decomposition into sub-tasks."""
 
 import json
-
-import pytest
 from unittest.mock import MagicMock
 
+from src.agent.llm_client import ChatResponse
 from src.agent.query_decomposer import (
     DecompositionResult,
     QueryDecomposer,
     SubQuery,
 )
-from src.agent.llm_client import ChatResponse
-
 
 # ── SubQuery tests ──
 

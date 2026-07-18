@@ -2,11 +2,9 @@
 
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Tuple
 
 import pytest
 
-from src.agent.base import ToolResult
 from src.agent.tools.read import ReadTool
 from src.storage.base import DocumentRecord
 from src.storage.markdown_store import MarkdownStore
@@ -47,11 +45,11 @@ class MockMarkdownStore(MarkdownStore):
         self._test_content[doc_id] = (record, content)
         self._test_content_by_path[str(source_path)] = (record, content)
 
-    def load(self, doc_id: str) -> Optional[Tuple[DocumentRecord, str]]:
+    def load(self, doc_id: str) -> tuple[DocumentRecord, str] | None:
         """Load document by ID."""
         return self._test_content.get(doc_id)
 
-    def load_by_source(self, source_path: Path) -> Optional[Tuple[DocumentRecord, str]]:
+    def load_by_source(self, source_path: Path) -> tuple[DocumentRecord, str] | None:
         """Load document by source path."""
         return self._test_content_by_path.get(str(source_path))
 

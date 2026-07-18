@@ -14,13 +14,9 @@ This file tests the backend event emission and verifies the frontend JS structur
 from __future__ import annotations
 
 import json
-from typing import Any, Dict
-from unittest.mock import MagicMock, patch
-
-import pytest
+from unittest.mock import MagicMock
 
 from src.web.sse_events import AgentEventType, sse_encode
-
 
 # ── Backend: tool_hook SSE event emission ────────────────────────────
 
@@ -30,7 +26,6 @@ class TestBackendSearchResultEvent:
 
     def _make_tool_hook(self, event_queue: list):
         """Replicate the tool_hook logic from api.py for isolated testing."""
-        from src.web.sse_events import make_event
 
         def tool_hook(tc, result):
             # tool_call event
@@ -186,7 +181,7 @@ class TestBackendSearchResultEvent:
         result = self._make_result(success=True, content=search_content)
 
         hook(tc, result)
-    
+
         print(f"DEBUG events: {[(e[0], list(e[1].keys())) for e in events]}")  # debug
         sr_event = [e for e in events if e[0] == "search_result"][0]
         assert len(sr_event[1]["results"]) == 10, "最多应返回 10 条结果"

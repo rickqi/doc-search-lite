@@ -5,11 +5,8 @@ import io
 import json
 from pathlib import Path
 
-import pytest
-
-from src.storage.convert_db import ConvertDB
 from src.stats.reporter import StatsReporter
-
+from src.storage.convert_db import ConvertDB
 
 # ── Helpers ──────────────────────────────────────────────────────────
 

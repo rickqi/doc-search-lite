@@ -3,12 +3,12 @@ Tests for query endpoints: POST /query (BM25), POST /query/agent, POST /api/anal
 """
 
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi.testclient import TestClient
 
-from src.api import app, _searchers
+from src.api import _searchers, app
 
 client = TestClient(app)
 

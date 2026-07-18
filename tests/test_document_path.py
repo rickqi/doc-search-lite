@@ -4,7 +4,6 @@ Verifies the endpoint that the Pi extension's doc_read tool calls as
 a source_path fallback (previously dead code — endpoint didn't exist).
 """
 
-from pathlib import Path
 
 from fastapi.testclient import TestClient
 

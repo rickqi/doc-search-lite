@@ -294,7 +294,7 @@ class TestBenchmarkData:
         """All tc_id values are unique."""
         data = _load_results()
         ids = [r["tc_id"] for r in data]
-        assert len(ids) == len(set(ids)), f"Duplicate tc_ids found"
+        assert len(ids) == len(set(ids)), "Duplicate tc_ids found"
 
     def test_sections_covered(self):
         """All 7 sections present with expected counts."""

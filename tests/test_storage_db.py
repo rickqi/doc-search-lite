@@ -1,12 +1,10 @@
 """Unit tests for ConvertDB SQLite state manager."""
 
 import sqlite3
-from pathlib import Path
 
 import pytest
 
 from src.storage.convert_db import ConvertDB
-
 
 # ── Helpers ──────────────────────────────────────────────────────────
 
@@ -958,19 +956,17 @@ class TestConvertDBEdgeCases:
 
     def test_foreign_key_constraint_files_to_dirs(self, tmp_path):
         """Files require a valid directory_id (FK enforced)."""
-        with ConvertDB(tmp_path / "test.db") as db:
-            with pytest.raises(sqlite3.IntegrityError):
-                db.upsert_file(
-                    relative_path="orphan.pdf", directory_id=9999,
-                    filename="orphan.pdf", extension=".pdf",
-                    file_size=100, source_mtime="2024-01-01", source_hash="h",
-                )
+        with ConvertDB(tmp_path / "test.db") as db, pytest.raises(sqlite3.IntegrityError):
+            db.upsert_file(
+                relative_path="orphan.pdf", directory_id=9999,
+                filename="orphan.pdf", extension=".pdf",
+                file_size=100, source_mtime="2024-01-01", source_hash="h",
+            )
 
     def test_foreign_key_constraint_skipped_to_files(self, tmp_path):
         """Skipped requires a valid file_id (FK enforced)."""
-        with ConvertDB(tmp_path / "test.db") as db:
-            with pytest.raises(sqlite3.IntegrityError):
-                db.mark_file_skipped(9999, "test_reason")
+        with ConvertDB(tmp_path / "test.db") as db, pytest.raises(sqlite3.IntegrityError):
+            db.mark_file_skipped(9999, "test_reason")
 
     def test_duplicate_directory_path_unique(self, tmp_path):
         """Inserting same relative_path twice uses upsert, no error."""

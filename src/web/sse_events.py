@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import time
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class AgentEventType(str, Enum):
@@ -30,7 +30,7 @@ class AgentEventType(str, Enum):
     HEARTBEAT = "heartbeat"
 
 
-def sse_encode(event_type: AgentEventType, data: Dict[str, Any]) -> str:
+def sse_encode(event_type: AgentEventType, data: dict[str, Any]) -> str:
     """Encode a single SSE event frame.
 
     Format (per SSE spec):
@@ -73,6 +73,6 @@ def make_event(
     Returns:
         SSE-formatted string.
     """
-    data: Dict[str, Any] = dict(kwargs)
+    data: dict[str, Any] = dict(kwargs)
     data.setdefault("timestamp", time.time())
     return sse_encode(event_type, data)

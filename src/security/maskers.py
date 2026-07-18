@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import abc
 import re
-from typing import Dict, List, Optional
 
 from src.security.desensitizer import DesensitizeResult
 
@@ -36,7 +35,7 @@ class BaseMasker(abc.ABC):
 
 
 class PIIMasker(BaseMasker):
-    """PII 模式掩码 — 手机/身份证/邮箱/IP/银行卡.
+    r"""PII 模式掩码 — 手机/身份证/邮箱/IP/银行卡.
 
     默认启用的类型:
       - phone: 1[3-9]\d{9}
@@ -63,14 +62,14 @@ class PIIMasker(BaseMasker):
         "ip": r"(?<!\d)(?:[0-9]{1,3}\.){3}[0-9]{1,3}(?!\d)",
     }
 
-    def __init__(self, enabled_types: Optional[Dict[str, bool]] = None):
+    def __init__(self, enabled_types: dict[str, bool] | None = None):
         """初始化 PIIMasker.
 
         Args:
             enabled_types: {type_name: bool} 覆盖默认启停状态。
                           None = 使用默认 (phone/id_card/bank_card 启用)。
         """
-        self.patterns: Dict[str, str] = {}
+        self.patterns: dict[str, str] = {}
         if enabled_types is None:
             self.patterns.update(self.PATTERNS_HIGH_CONFIDENCE)
         else:
@@ -87,7 +86,7 @@ class PIIMasker(BaseMasker):
 class KeywordMasker(BaseMasker):
     """关键词掩码 — 从配置文件加载敏感词列表."""
 
-    def __init__(self, keywords: List[str]):
+    def __init__(self, keywords: list[str]):
         # 按长度降序排列，确保长词优先匹配，避免短词吞掉长词
         self.keywords = sorted(keywords, key=len, reverse=True)
 
@@ -109,7 +108,7 @@ class KeywordMasker(BaseMasker):
 class RegexMasker(BaseMasker):
     """自定义正则掩码 — 从配置文件加载用户定义规则."""
 
-    def __init__(self, rules: List[Dict[str, str]]):
+    def __init__(self, rules: list[dict[str, str]]):
         """rules: [{"name": "保单号", "pattern": "[A-Z]{2}\\\\d{8,12}"}]"""
         self.rules = rules
 

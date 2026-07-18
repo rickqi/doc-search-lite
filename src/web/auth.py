@@ -28,16 +28,14 @@ Scopes:
   "read"   — /document/*
 """
 
-import hashlib
 import json
 import logging
 import os
 import secrets
-import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Optional, Any
+from typing import Any
 
 from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
@@ -50,17 +48,17 @@ PUBLIC_PREFIXES = ("/static/",)
 
 DEFAULT_TOKEN_FILE = Path(__file__).resolve().parent.parent.parent / "tokens.json"
 
-_auth_log_db: Optional[Any] = None
-_auth_log_db_path: Optional[str] = None
+_auth_log_db: Any | None = None
+_auth_log_db_path: str | None = None
 
 
-def set_auth_log_db_path(path: Optional[str]) -> None:
+def set_auth_log_db_path(path: str | None) -> None:
     global _auth_log_db_path, _auth_log_db
     _auth_log_db_path = path
     _auth_log_db = None
 
 
-def _get_auth_log_db() -> Optional[Any]:
+def _get_auth_log_db() -> Any | None:
     global _auth_log_db
     if _auth_log_db is not None:
         return _auth_log_db
@@ -82,8 +80,8 @@ def _get_auth_log_db() -> Optional[Any]:
 def _log_auth_request(
     endpoint: str,
     method: str,
-    token_id: Optional[str] = None,
-    client_ip: Optional[str] = None,
+    token_id: str | None = None,
+    client_ip: str | None = None,
     status_code: int = 200,
 ) -> None:
     db = _get_auth_log_db()
@@ -109,7 +107,7 @@ class Token:
     key: str
     scopes: list[str] = field(default_factory=lambda: ["*"])
     created: str = ""
-    expires_at: Optional[str] = None
+    expires_at: str | None = None
 
     def is_expired(self) -> bool:
         if not self.expires_at:
@@ -165,7 +163,7 @@ class TokenStore:
         self._path.parent.mkdir(parents=True, exist_ok=True)
         self._path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    def validate(self, key: str) -> Optional[Token]:
+    def validate(self, key: str) -> Token | None:
         for token in self._tokens.values():
             if token.key == key:
                 if token.is_expired():
@@ -311,7 +309,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
             return request.query_params.get("token", "")
         return ""
 
-    def _required_scope(self, path: str) -> Optional[str]:
+    def _required_scope(self, path: str) -> str | None:
         if path.startswith("/api/admin/"):
             return "admin"
         if path.startswith("/query/agent") or path.startswith("/api/sessions"):

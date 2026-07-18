@@ -11,7 +11,7 @@
 """
 
 import re
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 # frontmatter 块正则：---\n ... \n---\n
 _FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
@@ -20,7 +20,7 @@ _FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n", re.DOTALL)
 MAX_HEADINGS_IN_FRONTMATTER = 20
 
 
-def inject_frontmatter(content: str, metadata: Dict[str, Any]) -> str:
+def inject_frontmatter(content: str, metadata: dict[str, Any]) -> str:
     """在 Markdown 内容头部注入 YAML frontmatter。
 
     如果内容已有 frontmatter，先剥离再重新注入（幂等）。
@@ -41,7 +41,7 @@ def inject_frontmatter(content: str, metadata: Dict[str, Any]) -> str:
     # 先剥离已有 frontmatter
     _, body = strip_frontmatter(content)
 
-    lines: List[str] = ["---"]
+    lines: list[str] = ["---"]
 
     title = metadata.get("title", "")
     lines.append(f"title: {_yaml_escape(title)}")
@@ -81,7 +81,7 @@ def inject_frontmatter(content: str, metadata: Dict[str, Any]) -> str:
     return "\n".join(lines) + body
 
 
-def strip_frontmatter(content: str) -> Tuple[bool, str]:
+def strip_frontmatter(content: str) -> tuple[bool, str]:
     """剥离 YAML frontmatter。
 
     Args:
@@ -110,7 +110,7 @@ def has_frontmatter(content: str) -> bool:
     return bool(_FRONTMATTER_RE.match(content))
 
 
-def parse_frontmatter(content: str) -> Optional[Dict[str, Any]]:
+def parse_frontmatter(content: str) -> dict[str, Any] | None:
     """简单解析 YAML frontmatter 为字典（不依赖 PyYAML）。
 
     仅支持简单 ``key: value`` 和 ``key: [a, b]`` 格式。
@@ -127,9 +127,9 @@ def parse_frontmatter(content: str) -> Optional[Dict[str, Any]]:
         return None
 
     raw = match.group(1)
-    result: Dict[str, Any] = {}
-    current_key: Optional[str] = None
-    current_list: Optional[List[Any]] = None
+    result: dict[str, Any] = {}
+    current_key: str | None = None
+    current_list: list[Any] | None = None
 
     for line in raw.split("\n"):
         stripped = line.strip()

@@ -18,7 +18,6 @@ import pytest
 from src.agent.tool_types import ToolResult
 from src.agent.tools.search import SearchTool, create_search_tool
 from src.search.bm25_search import PaginatedResults, SearchPreview
-from src.storage.base import SearchHit, SearchResult as StorageSearchResult
 
 
 class TestSearchToolInit:

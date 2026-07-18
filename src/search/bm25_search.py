@@ -12,11 +12,10 @@ with support for:
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
-from src.search.query_parser import Query, QueryParser
+from src.search.query_parser import QueryParser
 from src.search.result_formatter import SearchResult
-from src.storage.base import SearchHit
 from src.storage.index import TantivyIndexManager
 
 
@@ -33,8 +32,8 @@ class SearchPreview:
     title: str
     score: float
     snippet: str
-    source_path: Optional[Path] = None
-    highlights: List[str] = field(default_factory=list)
+    source_path: Path | None = None
+    highlights: list[str] = field(default_factory=list)
 
     def __post_init__(self):
         """Normalize source_path to Path object."""
@@ -53,7 +52,7 @@ class FullSearchResult(SearchResult):
 
     doc_id: str = ""
     full_content: str = ""
-    keywords: List[str] = field(default_factory=list)
+    keywords: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -64,7 +63,7 @@ class PaginatedResults:
     Includes pagination metadata for UI navigation.
     """
 
-    results: List[SearchPreview]
+    results: list[SearchPreview]
     total: int
     offset: int
     limit: int
@@ -221,7 +220,7 @@ class BM25Searcher:
         self,
         doc_id: str,
         include_metadata: bool = True,
-    ) -> Optional[FullSearchResult]:
+    ) -> FullSearchResult | None:
         """
         Get full content for a specific document (Phase 2).
 
@@ -249,7 +248,7 @@ class BM25Searcher:
             return None
 
         # Build metadata
-        metadata: Dict[str, Any] = {}
+        metadata: dict[str, Any] = {}
         if include_metadata:
             metadata["doc_id"] = doc["doc_id"]
             metadata["filename"] = doc["filename"]
@@ -364,7 +363,7 @@ class BM25Searcher:
 
     def search_multi_field(
         self,
-        field_queries: Dict[str, str],
+        field_queries: dict[str, str],
         limit: int = 10,
         offset: int = 0,
         operator: str = "AND",
@@ -492,7 +491,7 @@ class BM25Searcher:
         self,
         partial_query: str,
         limit: int = 5,
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Suggest query completions based on partial input.
 
@@ -545,7 +544,7 @@ class BM25Searcher:
 
         return text[: self._snippet_length - 3] + "..."
 
-    def get_index_stats(self) -> Dict[str, Any]:
+    def get_index_stats(self) -> dict[str, Any]:
         """
         Get statistics about the search index.
 
@@ -556,7 +555,7 @@ class BM25Searcher:
 
 
 def create_searcher(
-    index_path: Optional[Path] = None,
+    index_path: Path | None = None,
     use_jieba: bool = True,
     snippet_length: int = 200,
     readonly: bool = False,

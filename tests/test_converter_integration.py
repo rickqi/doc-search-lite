@@ -20,7 +20,7 @@ from openpyxl import Workbook
 from pptx import Presentation
 
 from src.converter.base import ConvertResult
-from src.converter.coordinator import ConverterCoordinator, UnsupportedFormatError
+from src.converter.coordinator import ConverterCoordinator
 from src.converter.html import HTMLConverter
 from src.converter.ocr import OCRServiceConfig
 from src.converter.office import OfficeConverter

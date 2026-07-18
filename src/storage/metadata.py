@@ -3,7 +3,6 @@
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
 
 
 class MetadataManager:
@@ -15,7 +14,7 @@ class MetadataManager:
         - keywords: List[str] — Key terms extracted from the document
     """
 
-    def __init__(self, index_path: Optional[Path] = None):
+    def __init__(self, index_path: Path | None = None):
         """
         Initialize the metadata manager.
 
@@ -26,7 +25,7 @@ class MetadataManager:
             index_path = Path.cwd() / "index.json"
 
         self.index_path = Path(index_path)
-        self._metadata: Dict[str, Dict] = {}
+        self._metadata: dict[str, dict] = {}
         self._load_index()
 
     def _load_index(self) -> None:
@@ -35,7 +34,7 @@ class MetadataManager:
             try:
                 with self.index_path.open("r", encoding="utf-8") as f:
                     self._metadata = json.load(f)
-            except (json.JSONDecodeError, IOError) as e:
+            except (OSError, json.JSONDecodeError):
                 # If file is corrupted, start with empty metadata
                 self._metadata = {}
         else:
@@ -55,10 +54,10 @@ class MetadataManager:
             with self.index_path.open("w", encoding="utf-8") as f:
                 json.dump(self._metadata, f, indent=2, ensure_ascii=False)
             return True
-        except IOError:
+        except OSError:
             return False
 
-    def save(self, path: Path, metadata: Dict) -> bool:
+    def save(self, path: Path, metadata: dict) -> bool:
         """
         Save metadata for a document path.
 
@@ -86,7 +85,7 @@ class MetadataManager:
         self._metadata[key] = metadata_copy
         return self._save_index()
 
-    def load(self, path: Path) -> Optional[Dict]:
+    def load(self, path: Path) -> dict | None:
         """
         Load metadata for a document path.
 
@@ -149,7 +148,7 @@ class MetadataManager:
 
         return False
 
-    def list_all(self) -> List[Dict]:
+    def list_all(self) -> list[dict]:
         """
         List all metadata entries.
 
@@ -168,7 +167,7 @@ class MetadataManager:
 
         return result
 
-    def query(self, filters: Dict) -> List[Dict]:
+    def query(self, filters: dict) -> list[dict]:
         """
         Query metadata entries based on filter criteria.
 
@@ -196,7 +195,7 @@ class MetadataManager:
 
         return results
 
-    def _matches_filters(self, metadata: Dict, filters: Dict) -> bool:
+    def _matches_filters(self, metadata: dict, filters: dict) -> bool:
         """
         Check if metadata matches all filter criteria.
 
@@ -264,7 +263,7 @@ class MetadataManager:
         self._metadata.clear()
         return self._save_index()
 
-    def query_by_tags(self, tags: List[str]) -> List[Dict]:
+    def query_by_tags(self, tags: list[str]) -> list[dict]:
         """Query metadata entries that contain any of the specified tags.
 
         Args:

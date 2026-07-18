@@ -12,24 +12,15 @@ Tests cover:
 import json
 import tempfile
 from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.processor.models import (
-    GLMPageResult,
-    GapTarget,
-    PageResult,
-    PDFMetadata,
-    PipelineState,
-    Supplement,
-)
+from src.processor.comparison_report import ComparisonReportGenerator
 from src.processor.coords import (
     calculate_iou,
     crop_region,
     from_pixel,
     is_duplicate,
-    map_crop_to_full,
     normalize_bbox,
     parse_la_boxes,
     parse_la_detection_labels,
@@ -37,8 +28,11 @@ from src.processor.coords import (
 )
 from src.processor.gap_analysis import GapAnalyzer
 from src.processor.locateanything_worker import LocateAnythingWorker
-from src.processor.comparison_report import ComparisonReportGenerator
-
+from src.processor.models import (
+    PDFMetadata,
+    PipelineState,
+    Supplement,
+)
 
 # ═══════════════════ Coordinate Utils ═══════════════════
 
@@ -528,8 +522,9 @@ class TestPDFEnhancePipeline:
 
     def test_glm_adapter_accepts_png(self):
         """GLM-OCR adapter should accept PNG files."""
-        from src.processor.glm_ocr_adapter import GLMOCRAdapter
         from PIL import Image
+
+        from src.processor.glm_ocr_adapter import GLMOCRAdapter
 
         with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as f:
             png_path = Path(f.name)

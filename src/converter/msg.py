@@ -10,9 +10,8 @@ import struct
 import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Dict, List, Optional
 
-from src.converter.base import ConvertResult, Converter
+from src.converter.base import Converter, ConvertResult
 
 # OLE stream paths for MSG properties (MAPI property tags)
 _STREAM_SUBJECT = "__substg1.0_0037001F"  # PR_SUBJECT (Unicode)
@@ -53,11 +52,11 @@ class MsgConverter(Converter):
         return "0.1.0"
 
     @property
-    def supported_formats(self) -> List[str]:
+    def supported_formats(self) -> list[str]:
         """Get list of supported file extensions."""
         return [".msg"]
 
-    def _read_stream(self, msg, stream_path: str) -> Optional[str]:
+    def _read_stream(self, msg, stream_path: str) -> str | None:
         """Read and decode an OLE stream.
 
         Tries UTF-16-LE first (Unicode streams with 001F suffix),
@@ -89,7 +88,7 @@ class MsgConverter(Converter):
         except Exception:
             return None
 
-    def _read_binary_stream(self, msg, stream_path: str) -> Optional[bytes]:
+    def _read_binary_stream(self, msg, stream_path: str) -> bytes | None:
         """Read a binary OLE stream.
 
         Args:
@@ -106,7 +105,7 @@ class MsgConverter(Converter):
         except Exception:
             return None
 
-    def _parse_filetime(self, data: bytes) -> Optional[str]:
+    def _parse_filetime(self, data: bytes) -> str | None:
         """Parse FILETIME bytes to ISO datetime string.
 
         FILETIME is 8 bytes, little-endian, representing 100-nanosecond
@@ -157,7 +156,7 @@ class MsgConverter(Converter):
         text = re.sub(r"\n{3,}", "\n\n", text)
         return text.strip()
 
-    def _get_attachments(self, msg) -> List[str]:
+    def _get_attachments(self, msg) -> list[str]:
         """Enumerate attachment names from MSG file.
 
         Scans for __attach_version1.0_#000{NNN}/ directories and extracts
@@ -169,7 +168,7 @@ class MsgConverter(Converter):
         Returns:
             List of attachment filenames.
         """
-        attachments: List[str] = []
+        attachments: list[str] = []
         if not msg.exists("__attach_version1.0_#00000000"):
             return attachments
 
@@ -198,7 +197,7 @@ class MsgConverter(Converter):
         self,
         source: Path,
         output_dir: Path,
-        options: Optional[Dict] = None,
+        options: dict | None = None,
     ) -> ConvertResult:
         """
         Convert an Outlook .msg email file to Markdown.
@@ -212,8 +211,8 @@ class MsgConverter(Converter):
             ConvertResult containing conversion results.
         """
         options = options or {}
-        errors: List[str] = []
-        metadata: Dict = {}
+        errors: list[str] = []
+        metadata: dict = {}
         start_time = time.time()
 
         # Validate file format
@@ -256,7 +255,7 @@ class MsgConverter(Converter):
             # Open MSG file
             try:
                 msg = olefile.OleFileIO(str(source))
-            except (OSError, IOError) as e:
+            except OSError as e:
                 error_msg = f"Cannot open MSG file (invalid OLE format): {e}"
                 return ConvertResult(
                     success=False,
@@ -304,7 +303,7 @@ class MsgConverter(Converter):
                 attachments = self._get_attachments(msg)
 
                 # Build Markdown
-                parts: List[str] = []
+                parts: list[str] = []
 
                 # Title
                 parts.append(f"# {subject}")

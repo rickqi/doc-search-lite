@@ -4,8 +4,6 @@ import time
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from src.search.multi_index import SearcherPool
 
 
@@ -198,7 +196,6 @@ class TestSearcherPoolIntegration:
     def test_search_single_index_uses_pool(self, mock_create):
         from src.search.bm25_search import PaginatedResults, SearchPreview
         from src.search.multi_index import MultiIndexSearcher
-        from src.search.unified import SearchSource
 
         mock_searcher = MagicMock()
         preview = SearchPreview(

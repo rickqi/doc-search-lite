@@ -4,7 +4,7 @@ import json
 import logging
 import uuid
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ class UsageTracker:
         """
         self._db = db
         self._source_dir = source_dir
-        self._session_id: Optional[str] = None
+        self._session_id: str | None = None
 
     def start_session(self, query: str = None, mode: str = None) -> str:
         """Start a new tracking session. Returns session_id."""
@@ -48,7 +48,7 @@ class UsageTracker:
         return self._session_id
 
     @property
-    def session_id(self) -> Optional[str]:
+    def session_id(self) -> str | None:
         """Current session ID, or None if no session started."""
         return self._session_id
 

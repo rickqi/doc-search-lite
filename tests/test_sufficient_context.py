@@ -1,17 +1,13 @@
 """Tests for SufficientContextChecker and SearchFeedback."""
 
 import json
-
-import pytest
 from unittest.mock import MagicMock
 
+from src.agent.llm_client import ChatResponse
 from src.agent.sufficient_context import (
-    SUFFICIENCY_CHECK_PROMPT,
     SearchFeedback,
     SufficientContextChecker,
 )
-from src.agent.llm_client import ChatResponse
-
 
 # ── SearchFeedback tests ──
 

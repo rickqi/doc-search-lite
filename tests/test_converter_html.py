@@ -14,8 +14,6 @@ Tests cover:
 
 from pathlib import Path
 
-import pytest
-
 from src.converter.html import HTMLConverter
 
 

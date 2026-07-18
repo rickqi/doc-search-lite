@@ -6,9 +6,8 @@ No external dependencies; all output is pure stdlib.
 
 import json
 from dataclasses import asdict
-from typing import Dict, List
 
-from src.search.benchmark import BenchmarkResult, ModeResult, BenchmarkRunner
+from src.search.benchmark import BenchmarkResult, BenchmarkRunner
 
 
 class BenchmarkReporter:
@@ -55,7 +54,7 @@ class BenchmarkReporter:
     def _text_report(self, results: BenchmarkResult) -> str:
         """Simple text summary for console output."""
         summary = BenchmarkRunner.aggregate_by_mode(results.results)
-        lines: List[str] = []
+        lines: list[str] = []
 
         lines.append("=" * 60)
         lines.append("  搜索基准测试报告")
@@ -108,7 +107,7 @@ class BenchmarkReporter:
     def _markdown_report(self, results: BenchmarkResult) -> str:
         """Structured Markdown report."""
         summary = BenchmarkRunner.aggregate_by_mode(results.results)
-        lines: List[str] = []
+        lines: list[str] = []
 
         lines.append("# 搜索基准测试报告")
         lines.append("")
@@ -255,7 +254,7 @@ class BenchmarkReporter:
     # HTML helpers
     # ------------------------------------------------------------------
 
-    def _html_overview_rows(self, summary: Dict[str, Dict[str, float]], modes: List[str]) -> str:
+    def _html_overview_rows(self, summary: dict[str, dict[str, float]], modes: list[str]) -> str:
         """Build <tr> rows for the overview table with green/red coding."""
         if not modes or len(summary) < 2:
             # No comparison possible
@@ -298,9 +297,9 @@ class BenchmarkReporter:
             )
         return "\n".join(rows)
 
-    def _html_query_sections(self, results: BenchmarkResult, modes: List[str]) -> str:
+    def _html_query_sections(self, results: BenchmarkResult, modes: list[str]) -> str:
         """Build collapsible per-query detail sections."""
-        sections: List[str] = []
+        sections: list[str] = []
         for q in results.queries:
             q_results = [r for r in results.results if r.query == q.query]
             if not q_results:
@@ -331,7 +330,7 @@ class BenchmarkReporter:
             )
         return "\n".join(sections)
 
-    def _html_latency_chart(self, summary: Dict[str, Dict[str, float]]) -> str:
+    def _html_latency_chart(self, summary: dict[str, dict[str, float]]) -> str:
         """Inline SVG bar chart comparing latencies across modes."""
         if not summary:
             return "<p>(无数据)</p>"
@@ -374,7 +373,7 @@ class BenchmarkReporter:
     # Conclusions
     # ------------------------------------------------------------------
 
-    def _conclusions(self, summary: Dict[str, Dict[str, float]]) -> str:
+    def _conclusions(self, summary: dict[str, dict[str, float]]) -> str:
         """Generate a short conclusion paragraph from aggregated stats."""
         if not summary:
             return "无测试结果。"
@@ -384,7 +383,7 @@ class BenchmarkReporter:
             s = summary[mode]
             return f"仅测试了 {mode} 模式: 平均延迟 {s['avg_latency']:.4f}s, 命中率 {s['avg_hit_rate']:.1%}。"
 
-        parts: List[str] = []
+        parts: list[str] = []
         # Fastest
         fastest = min(summary, key=lambda m: summary[m]["avg_latency"])
         parts.append(f"{fastest} 延迟最低 ({summary[fastest]['avg_latency']:.4f}s)")

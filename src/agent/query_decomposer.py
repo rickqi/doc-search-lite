@@ -17,9 +17,9 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING
 
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 if TYPE_CHECKING:
     from src.agent.llm_client import LLMClient
@@ -53,7 +53,7 @@ class SubQuery:
 
     query: str
     aspect: str = ""
-    keywords: List[str] = field(default_factory=list)
+    keywords: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -68,7 +68,7 @@ class DecompositionResult:
     """
 
     needs_decomposition: bool
-    sub_queries: List[SubQuery] = field(default_factory=list)
+    sub_queries: list[SubQuery] = field(default_factory=list)
     cross_reference: bool = False
     original_query: str = ""
 
@@ -104,7 +104,7 @@ class QueryDecomposer:
 
     def __init__(self, llm_client: LLMClient) -> None:
         self._llm = llm_client
-        self._last_usage: Dict[str, int] = {}
+        self._last_usage: dict[str, int] = {}
 
     def decompose(self, query: str) -> DecompositionResult:
         """Decompose a query into sub-tasks if needed.
@@ -196,7 +196,7 @@ class QueryDecomposer:
                 original_query=original_query,
             )
 
-        sub_queries: List[SubQuery] = [
+        sub_queries: list[SubQuery] = [
             SubQuery(query=sq.query, aspect=sq.aspect, keywords=sq.keywords)
             for sq in result.sub_queries
             if sq.query.strip()

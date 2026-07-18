@@ -7,7 +7,7 @@ and MultiIndexSearcher (fan-out + cross-index merge).
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 class SearchSource(str, Enum):
@@ -38,10 +38,10 @@ class UnifiedSearchResult:
     """
 
     doc_id: str
-    source_path: Optional[Path] = None
+    source_path: Path | None = None
     title: str = ""
     snippet: str = ""
-    highlights: List[str] = field(default_factory=list)
+    highlights: list[str] = field(default_factory=list)
     raw_score: float = 0.0
     normalized_score: float = 0.0
     rrf_score: float = 0.0
@@ -49,7 +49,7 @@ class UnifiedSearchResult:
     search_source: SearchSource = SearchSource.BM25
     index_name: str = ""
     grep_matches: int = 0
-    grep_line_matches: List[Dict[str, Any]] = field(default_factory=list)
+    grep_line_matches: list[dict[str, Any]] = field(default_factory=list)
     retrieval_time: float = 0.0
 
     def __post_init__(self):
@@ -77,10 +77,10 @@ class UnifiedSearchResults:
         grep_count: Number of results contributed by Grep.
     """
 
-    results: List[UnifiedSearchResult]
+    results: list[UnifiedSearchResult]
     total: int
     query: str
-    sources_used: List[str]
+    sources_used: list[str]
     execution_time: float = 0.0
     bm25_count: int = 0
     grep_count: int = 0

@@ -2,14 +2,11 @@
 
 import time
 from pathlib import Path
-from unittest.mock import MagicMock, patch
-
-import pytest
+from unittest.mock import MagicMock
 
 from src.agent.base import ToolCache, ToolResult
 from src.agent.tools.grep import GrepTool
 from src.agent.tools.search import SearchTool
-
 
 # ---------------------------------------------------------------------------
 # 1. ToolCache unit tests

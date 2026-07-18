@@ -16,20 +16,19 @@ import tempfile
 import time
 from datetime import datetime
 from pathlib import Path
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, PropertyMock
 
 import pytest
 from docx import Document
 from openpyxl import Workbook
 from pptx import Presentation
 
-from src.agent.base import AgentResponse, ToolResult
+from src.agent.base import ToolResult
 from src.agent.llm_client import ChatResponse
 from src.agent.search_agent import SearchAgent
-from src.agent.tools.search import SearchTool
 from src.agent.tools.read import ReadTool
+from src.agent.tools.search import SearchTool
 from src.converter.coordinator import ConverterCoordinator
-from src.converter.ocr import OCRServiceConfig
 from src.search.bm25_search import BM25Searcher
 from src.search.result_formatter import ResultFormatter, SearchResult
 from src.storage.base import DocumentRecord
@@ -37,8 +36,7 @@ from src.storage.index import TantivyIndexManager
 from src.storage.markdown_store import MarkdownStore
 from src.storage.metadata import MetadataManager
 from src.utils.config import Config
-from src.utils.file_watcher import ChangeSet, FileWatcher
-
+from src.utils.file_watcher import FileWatcher
 
 # ============================================================================
 # Helper functions to create test files

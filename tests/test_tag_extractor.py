@@ -2,8 +2,7 @@
 
 import pytest
 
-from src.converter.tag_extractor import TagExtractor, TagExtractionResult
-
+from src.converter.tag_extractor import TagExtractionResult, TagExtractor
 
 # ── Fixtures ──────────────────────────────────────────────────────
 

@@ -1,17 +1,15 @@
 """Tests for the AnalyzeTool implementation."""
 
-import json
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
-from src.agent.base import Tool, ToolResult
+from src.agent.base import Tool
 from src.agent.tools.analyze import AnalyzeTool, LLMClientProtocol
-from src.storage.markdown_store import MarkdownStore
 from src.storage.base import DocumentRecord
-from datetime import datetime
+from src.storage.markdown_store import MarkdownStore
 
 
 # Mock LLM Client for testing
@@ -20,7 +18,7 @@ class MockLLMClient:
 
     def __init__(
         self,
-        responses: Optional[Dict[str, str]] = None,
+        responses: dict[str, str] | None = None,
         default_response: str = "Mock analysis response",
     ):
         """Initialize mock client.
@@ -38,7 +36,7 @@ class MockLLMClient:
     def generate(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         temperature: float = 0.7,
         max_tokens: int = 2000,
     ) -> str:

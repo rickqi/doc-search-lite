@@ -7,8 +7,6 @@ structural/source-level assertions — no LLM calls required.
 
 import inspect
 
-import pytest
-
 from src.agent.search_agent import SearchAgent
 
 

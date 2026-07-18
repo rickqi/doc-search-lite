@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 
 @dataclass
@@ -18,9 +18,9 @@ class DocumentRecord:
     content_hash: str
     file_size: int
     file_mtime: datetime
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    keywords: List[str] = field(default_factory=list)
-    sections: List[str] = field(default_factory=list)
+    metadata: dict[str, Any] = field(default_factory=dict)
+    keywords: list[str] = field(default_factory=list)
+    sections: list[str] = field(default_factory=list)
     created_at: datetime = field(default_factory=datetime.now)
     updated_at: datetime = field(default_factory=datetime.now)
     convert_count: int = 0
@@ -37,8 +37,8 @@ class SearchHit:
     title: str
     score: float
     excerpt: str
-    highlights: List[str] = field(default_factory=list)
-    source_path: Optional[Path] = None
+    highlights: list[str] = field(default_factory=list)
+    source_path: Path | None = None
     section: str = ""
     page: int = -1
 
@@ -52,7 +52,7 @@ class SearchHit:
 class SearchResult:
     """Data model for search results."""
 
-    hits: List[SearchHit]
+    hits: list[SearchHit]
     total: int
     query: str
     execution_time: float
@@ -84,7 +84,7 @@ class Storage(ABC):
         pass
 
     @abstractmethod
-    def load(self, doc_id: str) -> Optional[Tuple[DocumentRecord, str]]:
+    def load(self, doc_id: str) -> tuple[DocumentRecord, str] | None:
         """
         Load a document record and its content by ID.
 
@@ -123,7 +123,7 @@ class Storage(ABC):
         pass
 
     @abstractmethod
-    def list(self, filter: Optional[Dict] = None) -> List[DocumentRecord]:
+    def list(self, filter: dict | None = None) -> list[DocumentRecord]:
         """
         List all documents, optionally filtered.
 
@@ -141,7 +141,7 @@ class IndexManager(ABC):
 
     @abstractmethod
     def add_document(
-        self, doc_id: str, title: str, content: str, metadata: Dict
+        self, doc_id: str, title: str, content: str, metadata: dict
     ) -> bool:
         """
         Add a document to the search index.
@@ -159,7 +159,7 @@ class IndexManager(ABC):
 
     @abstractmethod
     def update_document(
-        self, doc_id: str, title: str, content: str, metadata: Dict
+        self, doc_id: str, title: str, content: str, metadata: dict
     ) -> bool:
         """
         Update a document in the search index.
@@ -194,7 +194,7 @@ class IndexManager(ABC):
         query: str,
         limit: int = 10,
         offset: int = 0,
-        filters: Optional[Dict] = None,
+        filters: dict | None = None,
     ) -> SearchResult:
         """
         Search the index for documents.
@@ -211,7 +211,7 @@ class IndexManager(ABC):
         pass
 
     @abstractmethod
-    def get_stats(self) -> Dict:
+    def get_stats(self) -> dict:
         """
         Get index statistics.
 

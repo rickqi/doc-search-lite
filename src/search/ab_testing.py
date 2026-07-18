@@ -9,9 +9,9 @@
     
     # 定义 A/B 配置
     config_a = RunnerConfig(name="CLI Agent", mode="tool_loop",
-        index_path=r"D:\docs\raw\制度\index", raw_dir=r"D:\docs\raw\制度")
+        index_path=r"D:\\docs\raw\\制度\\index", raw_dir=r"D:\\docs\raw\\制度")
     config_b = RunnerConfig(name="MCP Pipeline", mode="pipeline",
-        index_path=r"D:\docs\raw\制度\index", raw_dir=r"D:\docs\raw\制度")
+        index_path=r"D:\\docs\raw\\制度\\index", raw_dir=r"D:\\docs\raw\\制度")
     
     # 加载测试查询
     queries = load_queries_from_benchmark("docs/qa_benchmark_cases.json", limit=10)
@@ -28,14 +28,11 @@ from __future__ import annotations
 
 import json
 import math
-import os
 import random
 import time
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Tuple
-
 
 # ── 数据类 ──────────────────────────────────────────────────────────
 
@@ -63,10 +60,10 @@ class QueryCase:
     difficulty: str = ""
     query_type: str = ""
     source_file: str = ""
-    keywords: List[str] = field(default_factory=list)
+    keywords: list[str] = field(default_factory=list)
 
     @staticmethod
-    def from_benchmark_case(c: dict) -> "QueryCase":
+    def from_benchmark_case(c: dict) -> QueryCase:
         return QueryCase(
             id=c.get("id", ""),
             question=c.get("question", ""),
@@ -102,10 +99,10 @@ class ArmResult:
     """单臂在多次运行中的汇总结果."""
 
     config: RunnerConfig = field(default_factory=RunnerConfig)
-    per_query: Dict[str, List[SingleResult]] = field(default_factory=dict)  # query_id -> [run0, run1, ...]
+    per_query: dict[str, list[SingleResult]] = field(default_factory=dict)  # query_id -> [run0, run1, ...]
     runs_completed: int = 0
 
-    def get_accuracy(self) -> List[float]:
+    def get_accuracy(self) -> list[float]:
         """所有查询×所有运行的正确率列表."""
         scores = []
         for qid, results in self.per_query.items():
@@ -113,21 +110,21 @@ class ArmResult:
                 scores.append(r.accuracy)
         return scores
 
-    def get_latency(self) -> List[float]:
+    def get_latency(self) -> list[float]:
         vals = []
         for qid, results in self.per_query.items():
             for r in results:
                 vals.append(r.latency)
         return vals
 
-    def get_tokens(self) -> List[int]:
+    def get_tokens(self) -> list[int]:
         vals = []
         for qid, results in self.per_query.items():
             for r in results:
                 vals.append(r.tokens_used)
         return vals
 
-    def get_cost(self) -> List[float]:
+    def get_cost(self) -> list[float]:
         vals = []
         for qid, results in self.per_query.items():
             for r in results:
@@ -135,10 +132,10 @@ class ArmResult:
                     vals.append(r.cost_cents)
         return vals
 
-    def mean(self, values: List[float]) -> float:
+    def mean(self, values: list[float]) -> float:
         return sum(values) / max(len(values), 1)
 
-    def stdev(self, values: List[float]) -> float:
+    def stdev(self, values: list[float]) -> float:
         if len(values) < 2:
             return 0.0
         m = self.mean(values)
@@ -248,7 +245,7 @@ class ABTestResult:
 
     # ── 统计方法 ──
 
-    def _z_test(self, scores_a: List[float], scores_b: List[float]) -> bool:
+    def _z_test(self, scores_a: list[float], scores_b: list[float]) -> bool:
         """双比例 z-test. 返回是否显著 (p<0.05)."""
         n = min(len(scores_a), len(scores_b))
         if n < 10:
@@ -288,9 +285,9 @@ class ABTestResult:
 # ── 查询加载 ────────────────────────────────────────────────────────
 
 
-def load_queries_from_benchmark(path: str, domain: Optional[str] = None,
-                                 difficulty: Optional[str] = None,
-                                 limit: Optional[int] = None) -> List[QueryCase]:
+def load_queries_from_benchmark(path: str, domain: str | None = None,
+                                 difficulty: str | None = None,
+                                 limit: int | None = None) -> list[QueryCase]:
     """从 qa_benchmark_cases.json 加载测试查询.
 
     Args:
@@ -349,10 +346,9 @@ def run_agent_query(config: RunnerConfig, query: str, query_id: str = "") -> Sin
     同步调用 CLI agent 或 MCP pipeline.
     返回包含答案、耗时、Token 消耗的结构化结果。
     """
+    from src.agent.base import AgentResponse
     from src.agent.search_agent import create_search_agent
     from src.utils.config import Config
-    from src.stats.diagnostics import DiagnosticsCollector
-    from src.agent.base import AgentResponse
 
     cfg = Config.from_env()
     if config.model:
@@ -418,7 +414,7 @@ def llm_score_answer(question: str, standard_answer: str, agent_answer: str) -> 
     if not agent_answer or not standard_answer:
         return 0.0
     try:
-        from src.agent.llm_client import LLMClient, ChatMessage
+        from src.agent.llm_client import ChatMessage, LLMClient
         from src.utils.config import Config
         config = Config.from_env()
         llm = LLMClient(config)
@@ -463,7 +459,7 @@ class ABTestRunner:
         random.seed(seed)
 
     def run(self, config_a: RunnerConfig, config_b: RunnerConfig,
-            queries: List[QueryCase], runs: int = 1) -> ABTestResult:
+            queries: list[QueryCase], runs: int = 1) -> ABTestResult:
         """运行 A/B 测试.
 
         Args:

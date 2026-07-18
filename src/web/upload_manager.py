@@ -8,14 +8,12 @@ from __future__ import annotations
 
 import asyncio
 import json
-import os
-import shutil
 import threading
 import time
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from src.converter.coordinator import ConverterCoordinator
 from src.storage.index import TantivyIndexManager
@@ -29,9 +27,9 @@ class UploadJob:
     job_id: str
     raw_dir: Path
     index_dir: Path
-    files: List[Path] = field(default_factory=list)
+    files: list[Path] = field(default_factory=list)
     status: str = "queued"  # queued | converting | indexing | done | failed
-    progress: Dict[str, Any] = field(default_factory=lambda: {
+    progress: dict[str, Any] = field(default_factory=lambda: {
         "stage": "queued",
         "current": 0,
         "total": 0,
@@ -41,8 +39,8 @@ class UploadJob:
         "doc_count": 0,
         "error": None,
     })
-    event_queue: Optional[asyncio.Queue] = None
-    abort_event: Optional[asyncio.Event] = None
+    event_queue: asyncio.Queue | None = None
+    abort_event: asyncio.Event | None = None
     created: float = field(default_factory=time.time)
 
 
@@ -56,7 +54,7 @@ class UploadManager:
     MAX_JOBS = 20
 
     def __init__(self, storage_dir: Path):
-        self._jobs: Dict[str, UploadJob] = {}
+        self._jobs: dict[str, UploadJob] = {}
         self._lock = threading.Lock()
         self._storage_dir = storage_dir
         self._storage_dir.mkdir(parents=True, exist_ok=True)
@@ -65,7 +63,7 @@ class UploadManager:
         self,
         raw_dir: Path,
         index_dir: Path,
-        files: List[Path],
+        files: list[Path],
     ) -> UploadJob:
         job_id = f"up_{uuid.uuid4().hex[:12]}"
         job = UploadJob(
@@ -82,7 +80,7 @@ class UploadManager:
             self._jobs[job_id] = job
         return job
 
-    def get(self, job_id: str) -> Optional[UploadJob]:
+    def get(self, job_id: str) -> UploadJob | None:
         with self._lock:
             return self._jobs.get(job_id)
 
@@ -95,7 +93,7 @@ class UploadManager:
                 return True
         return False
 
-    def list_jobs(self) -> List[Dict]:
+    def list_jobs(self) -> list[dict]:
         with self._lock:
             return [
                 {
@@ -125,7 +123,7 @@ class UploadManager:
 
 
 # Singleton
-_upload_manager: Optional[UploadManager] = None
+_upload_manager: UploadManager | None = None
 
 
 def get_upload_manager() -> UploadManager:
@@ -145,7 +143,7 @@ def _run_upload_job(job: UploadJob) -> None:
     """
     loop = asyncio.get_event_loop()
 
-    def push_event(event_type: str, data: Dict[str, Any]):
+    def push_event(event_type: str, data: dict[str, Any]):
         """Push SSE-compatible progress event to the job's queue."""
         if job.event_queue is None:
             return

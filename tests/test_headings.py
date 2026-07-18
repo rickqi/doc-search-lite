@@ -1,14 +1,11 @@
 """Tests for document structure awareness (headings extraction + ReadTool TOC injection)."""
 
 import json
-import pytest
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
-from src.converter.headings import extract_headings
 from src.agent.tools.read import ReadTool
-from src.agent.base import ToolResult
-
+from src.converter.headings import extract_headings
 
 # ── extract_headings tests ──────────────────────────────────────────
 
@@ -228,8 +225,9 @@ class TestReadToolTocInjection:
     def test_load_headings_from_raw_dirs(self):
         """Verify _load_headings can read from raw_dirs as fallback."""
         import tempfile
-        from src.storage.base import DocumentRecord
         from datetime import datetime
+
+        from src.storage.base import DocumentRecord
 
         with tempfile.TemporaryDirectory() as tmpdir:
             # Create .md file with a realistic name

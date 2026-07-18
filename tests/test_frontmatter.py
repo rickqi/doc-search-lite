@@ -1,14 +1,12 @@
 """Tests for frontmatter.py — YAML frontmatter injection and stripping."""
 
-import pytest
 
 from src.converter.frontmatter import (
-    inject_frontmatter,
-    strip_frontmatter,
     has_frontmatter,
+    inject_frontmatter,
     parse_frontmatter,
+    strip_frontmatter,
 )
-
 
 # ── Test inject_frontmatter ─────────────────────────────────────────────
 

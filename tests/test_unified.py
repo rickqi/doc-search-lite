@@ -2,8 +2,6 @@
 
 from pathlib import Path
 
-import pytest
-
 from src.search.unified import SearchSource, UnifiedSearchResult, UnifiedSearchResults
 
 

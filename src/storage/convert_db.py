@@ -3,7 +3,7 @@
 import json
 import sqlite3
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 # Pipeline version tracks text-only post-processing applied to converted files.
 # "1" = no fixes, "2" = table_fix + ocr_postprocess + tag_extractor integrated
@@ -26,7 +26,7 @@ class ConvertDB:
             db_path: SQLite 数据库文件路径
         """
         self.db_path = Path(db_path)
-        self._conn: Optional[sqlite3.Connection] = None
+        self._conn: sqlite3.Connection | None = None
 
     @property
     def conn(self) -> sqlite3.Connection:
@@ -36,7 +36,7 @@ class ConvertDB:
         return self._conn
 
     @conn.setter
-    def conn(self, value: Optional[sqlite3.Connection]) -> None:
+    def conn(self, value: sqlite3.Connection | None) -> None:
         """设置数据库连接。"""
         self._conn = value
 
@@ -540,7 +540,7 @@ class ConvertDB:
         self.conn.commit()
         return cursor.lastrowid  # type: ignore[return-value]
 
-    def get_pricing(self, model: str) -> Optional[dict]:
+    def get_pricing(self, model: str) -> dict | None:
         """Get pricing row for a model.
 
         Args:
@@ -634,7 +634,7 @@ class ConvertDB:
 
     def get_token_usage_daily(
         self, days: int = 30, source_dir: str = None
-    ) -> List[dict]:
+    ) -> list[dict]:
         """Get daily token usage breakdown.
 
         Args:
@@ -670,7 +670,7 @@ class ConvertDB:
 
     def get_token_usage_by_model(
         self, source_dir: str = None, days: int = None
-    ) -> List[dict]:
+    ) -> list[dict]:
         """Get token usage aggregated by model.
 
         Args:
@@ -709,7 +709,7 @@ class ConvertDB:
 
         return [dict(r) for r in rows]
 
-    def _get_config(self, key: str, default: Optional[str] = None) -> Optional[str]:
+    def _get_config(self, key: str, default: str | None = None) -> str | None:
         """获取配置项。
 
         Args:
@@ -745,7 +745,7 @@ class ConvertDB:
     def upsert_directory(
         self,
         relative_path: str,
-        parent_id: Optional[int] = None,
+        parent_id: int | None = None,
         depth: int = 0,
         name: str = "",
     ) -> int:
@@ -781,7 +781,7 @@ class ConvertDB:
         ).fetchone()
         return row["id"]
 
-    def get_directory(self, relative_path: str) -> Optional[dict]:
+    def get_directory(self, relative_path: str) -> dict | None:
         """根据相对路径获取目录记录。
 
         Args:
@@ -797,7 +797,7 @@ class ConvertDB:
         row = cursor.fetchone()
         return dict(row) if row else None
 
-    def get_directory_by_id(self, dir_id: int) -> Optional[dict]:
+    def get_directory_by_id(self, dir_id: int) -> dict | None:
         """根据 ID 获取目录记录。
 
         Args:
@@ -812,7 +812,7 @@ class ConvertDB:
         row = cursor.fetchone()
         return dict(row) if row else None
 
-    def list_subdirectories(self, parent_id: int) -> List[dict]:
+    def list_subdirectories(self, parent_id: int) -> list[dict]:
         """列出指定目录的所有子目录。
 
         Args:
@@ -963,7 +963,7 @@ class ConvertDB:
 
         return file_id
 
-    def get_file(self, relative_path: str) -> Optional[dict]:
+    def get_file(self, relative_path: str) -> dict | None:
         """根据相对路径获取文件记录。
 
         Args:
@@ -979,7 +979,7 @@ class ConvertDB:
         row = cursor.fetchone()
         return dict(row) if row else None
 
-    def get_file_by_id(self, file_id: int) -> Optional[dict]:
+    def get_file_by_id(self, file_id: int) -> dict | None:
         """根据 ID 获取文件记录。
 
         Args:
@@ -994,7 +994,7 @@ class ConvertDB:
         row = cursor.fetchone()
         return dict(row) if row else None
 
-    def get_pending_files(self, limit: int = 1000) -> List[dict]:
+    def get_pending_files(self, limit: int = 1000) -> list[dict]:
         """获取待处理的文件列表。
 
         Args:
@@ -1009,7 +1009,7 @@ class ConvertDB:
         )
         return [dict(row) for row in cursor.fetchall()]
 
-    def get_files_by_directory(self, directory_id: int) -> List[dict]:
+    def get_files_by_directory(self, directory_id: int) -> list[dict]:
         """获取指定目录下的所有文件。
 
         Args:
@@ -1024,7 +1024,7 @@ class ConvertDB:
         )
         return [dict(row) for row in cursor.fetchall()]
 
-    def get_files_by_status(self, status: str) -> List[dict]:
+    def get_files_by_status(self, status: str) -> list[dict]:
         """获取指定状态的所有文件。
 
         Args:
@@ -1039,7 +1039,7 @@ class ConvertDB:
         )
         return [dict(row) for row in cursor.fetchall()]
 
-    def get_files_by_extension(self, extension: str) -> List[dict]:
+    def get_files_by_extension(self, extension: str) -> list[dict]:
         """获取指定扩展名的所有文件。
 
         Args:
@@ -1087,7 +1087,7 @@ class ConvertDB:
         self.conn.execute(sql, values)
         self.conn.commit()
 
-    def count_files(self, status: Optional[str] = None) -> int:
+    def count_files(self, status: str | None = None) -> int:
         """统计文件数量。
 
         Args:
@@ -1128,7 +1128,7 @@ class ConvertDB:
         self,
         batch_type: str,
         total_files: int,
-        config: Optional[dict] = None,
+        config: dict | None = None,
     ) -> int:
         """创建新的批次记录。
 
@@ -1189,7 +1189,7 @@ class ConvertDB:
         )
         self.conn.commit()
 
-    def get_active_batch(self) -> Optional[dict]:
+    def get_active_batch(self) -> dict | None:
         """获取当前活跃的批次（running 或 interrupted 状态）。
 
         Returns:
@@ -1203,7 +1203,7 @@ class ConvertDB:
         row = cursor.fetchone()
         return dict(row) if row else None
 
-    def get_latest_batch(self) -> Optional[dict]:
+    def get_latest_batch(self) -> dict | None:
         """获取最新的一条批次记录。
 
         Returns:
@@ -1530,7 +1530,7 @@ class ConvertDB:
         days: int = 7,
         token_id: str = None,
         limit: int = 100,
-    ) -> List[dict]:
+    ) -> list[dict]:
         where = "1=1"
         params: list = []
         if days:

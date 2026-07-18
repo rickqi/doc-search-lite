@@ -12,7 +12,6 @@ import uuid
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
-from typing import Dict, Optional, Union
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
@@ -47,7 +46,7 @@ class OCRError(Exception):
         self,
         message: str,
         code: OCRErrorCode = OCRErrorCode.UNKNOWN,
-        original_error: Optional[Exception] = None,
+        original_error: Exception | None = None,
     ):
         super().__init__(message)
         self.code = code
@@ -70,10 +69,10 @@ class OCRResult:
     processing_time: float = 0.0
     """Time taken for OCR processing in seconds."""
 
-    error: Optional[str] = None
+    error: str | None = None
     """Error message if operation failed."""
 
-    error_code: Optional[OCRErrorCode] = None
+    error_code: OCRErrorCode | None = None
     """Error code if operation failed."""
 
     pages: int = 1
@@ -85,7 +84,7 @@ class OCRResult:
     source: str = ""
     """Source image path or URL."""
 
-    token_usage: Dict[str, int] = field(default_factory=dict)
+    token_usage: dict[str, int] = field(default_factory=dict)
     """Token usage from API response, e.g. {'input_tokens': 100, 'output_tokens': 500, 'total_tokens': 600}."""
 
 
@@ -96,7 +95,7 @@ class OCRServiceConfig:
     api_key: str
     """GLM API key."""
 
-    base_url: Optional[str] = None
+    base_url: str | None = None
     """Optional base URL for GLM API."""
 
     model: str = "glm-ocr"
@@ -299,7 +298,7 @@ class OCRService:
 
         return OCRErrorCode.API_ERROR
 
-    def _call_api_with_retry(self, file_input: Union[str, Path]) -> tuple:
+    def _call_api_with_retry(self, file_input: str | Path) -> tuple:
         """Call API with retry logic, dispatching based on OCR mode.
 
         Args:
@@ -317,7 +316,7 @@ class OCRService:
 
         return self._call_layout_parsing_api(file_input)
 
-    def _prepare_file_param(self, file_input: Union[str, Path]) -> str:
+    def _prepare_file_param(self, file_input: str | Path) -> str:
         """Convert file input to a data URL or pass through URL.
 
         Args:
@@ -347,7 +346,7 @@ class OCRService:
 
         return str(file_input)
 
-    def _call_layout_parsing_api(self, file_input: Union[str, Path]) -> tuple:
+    def _call_layout_parsing_api(self, file_input: str | Path) -> tuple:
         """Call layout_parsing API with retry logic.
 
         Args:
@@ -360,7 +359,7 @@ class OCRService:
             OCRError: If all retries fail.
         """
         client = self._get_client()
-        last_error: Optional[Exception] = None
+        last_error: Exception | None = None
 
         file_param = self._prepare_file_param(file_input)
 
@@ -372,7 +371,7 @@ class OCRService:
                 )
 
                 # Extract token usage from response
-                token_usage: Dict[str, int] = {}
+                token_usage: dict[str, int] = {}
                 if hasattr(response, "usage") and response.usage:
                     usage = response.usage
                     inp = getattr(usage, "prompt_tokens", None) or getattr(usage, "input_tokens", None) or 0
@@ -427,7 +426,7 @@ class OCRService:
             original_error=last_error,
         )
 
-    def _call_vision_api(self, file_input: Union[str, Path]) -> tuple:
+    def _call_vision_api(self, file_input: str | Path) -> tuple:
         """Call chat completions API with vision model for OCR.
 
         Uses litellm to call a vision-capable model (e.g. glm-5-turbo)
@@ -444,7 +443,7 @@ class OCRService:
         """
         import litellm
 
-        last_error: Optional[Exception] = None
+        last_error: Exception | None = None
 
         # Build image content for litellm
         if isinstance(file_input, Path) or not self._is_url(str(file_input)):
@@ -494,7 +493,7 @@ class OCRService:
                         text = choice.message.content or ""
 
                 # Extract token usage
-                token_usage: Dict[str, int] = {}
+                token_usage: dict[str, int] = {}
                 if hasattr(response, "usage") and response.usage:
                     usage = response.usage
                     token_usage = {
@@ -533,7 +532,7 @@ class OCRService:
             original_error=last_error,
         )
 
-    def recognize(self, source: Union[str, Path]) -> OCRResult:
+    def recognize(self, source: str | Path) -> OCRResult:
         """Recognize text from an image.
 
         Args:
@@ -582,7 +581,7 @@ class OCRService:
 
     def recognize_batch(
         self,
-        sources: list[Union[str, Path]],
+        sources: list[str | Path],
     ) -> list[OCRResult]:
         """Recognize text from multiple images.
 
@@ -681,7 +680,7 @@ class OCRService:
 
         temp_dir = Path(tempfile.mkdtemp())
         all_texts: list[str] = []
-        total_token_usage: Dict[str, int] = {
+        total_token_usage: dict[str, int] = {
             "input_tokens": 0,
             "output_tokens": 0,
             "total_tokens": 0,
@@ -786,7 +785,7 @@ class PaddleOCRService:
             )
         return self._ocr
 
-    def recognize(self, source: Union[str, Path]) -> OCRResult:
+    def recognize(self, source: str | Path) -> OCRResult:
         start_time = time.time()
         source_str = str(source)
 
@@ -827,12 +826,12 @@ class PaddleOCRService:
 
     def recognize_batch(
         self,
-        sources: list[Union[str, Path]],
+        sources: list[str | Path],
     ) -> list[OCRResult]:
         return [self.recognize(source) for source in sources]
 
 
-_paddleocr_service: Optional[PaddleOCRService] = None
+_paddleocr_service: PaddleOCRService | None = None
 
 
 def get_paddleocr_service() -> PaddleOCRService:
@@ -863,7 +862,7 @@ class PaddleOCRHTTPService:
 
     DEFAULT_URL = "http://localhost:8868"
 
-    def __init__(self, base_url: Optional[str] = None):
+    def __init__(self, base_url: str | None = None):
         self._base_url = (base_url or os.environ.get("PADDLEOCR_HTTP_URL", self.DEFAULT_URL)).rstrip("/")
 
     @property
@@ -884,7 +883,7 @@ class PaddleOCRHTTPService:
         except Exception:
             return False
 
-    def recognize(self, source: Union[str, Path]) -> OCRResult:
+    def recognize(self, source: str | Path) -> OCRResult:
         """Recognize text from an image via remote PaddleOCR /ocr endpoint.
 
         Uses POST /ocr for fast plain-text extraction (no layout/table/formula).
@@ -950,7 +949,7 @@ class PaddleOCRHTTPService:
 
     def recognize_structure(
         self,
-        source: Union[str, Path],
+        source: str | Path,
         use_formula: bool = True,
         use_seal: bool = True,
         use_chart: bool = False,  # chart adds 3-10x latency, only enable for chart-heavy docs
@@ -1021,7 +1020,7 @@ class PaddleOCRHTTPService:
                 source=source_str,
             )
 
-    def recognize_vl(self, source: Union[str, Path]) -> OCRResult:
+    def recognize_vl(self, source: str | Path) -> OCRResult:
         """Recognize text via PaddleOCRVL /vl endpoint (Vision-Language Model).
 
         Uses POST /vl for VLM-based document parsing — best quality
@@ -1081,7 +1080,7 @@ class PaddleOCRHTTPService:
 
     def recognize_batch(
         self,
-        sources: list[Union[str, Path]],
+        sources: list[str | Path],
     ) -> list[OCRResult]:
         """Recognize text from multiple images (sequential)."""
         return [self.recognize(source) for source in sources]
@@ -1099,7 +1098,7 @@ class PaddleOCRHTTPService:
         body_parts = [
             f"--{boundary}".encode(),
             f'Content-Disposition: form-data; name="file"; filename="{filename}"'.encode(),
-            f"Content-Type: application/octet-stream".encode(),
+            b"Content-Type: application/octet-stream",
             b"",
             file_path.read_bytes(),
             f"--{boundary}--".encode(),
@@ -1112,7 +1111,7 @@ class PaddleOCRHTTPService:
         return content_type, body
 
 
-_paddleocr_http_service: Optional[PaddleOCRHTTPService] = None
+_paddleocr_http_service: PaddleOCRHTTPService | None = None
 
 
 def get_paddleocr_http_service() -> PaddleOCRHTTPService:
@@ -1152,13 +1151,13 @@ class PPStructureV3Service:
             )
         return self._pipeline
 
-    def recognize(self, source: Union[str, Path]) -> OCRResult:
+    def recognize(self, source: str | Path) -> OCRResult:
         start_time = time.time()
         source_str = str(source)
 
         try:
-            import tempfile
             import shutil
+            import tempfile
             from pathlib import Path as _Path
 
             pipeline = self._get_pipeline()
@@ -1194,7 +1193,7 @@ class PPStructureV3Service:
         return [self.recognize(s) for s in sources]
 
 
-_ppstructurev3_service: Optional[PPStructureV3Service] = None
+_ppstructurev3_service: PPStructureV3Service | None = None
 
 
 def get_ppstructurev3_service() -> PPStructureV3Service:

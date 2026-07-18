@@ -3,8 +3,6 @@
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from src.search.bm25_search import PaginatedResults, SearchPreview
 from src.search.multi_index import MultiIndexSearcher
 from src.search.query_router import IndexMeta, QueryRouter

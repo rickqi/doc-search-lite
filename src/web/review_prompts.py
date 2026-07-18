@@ -67,7 +67,7 @@ def detect_review_mode(prompt: str) -> bool:
     """
     if not prompt:
         return False
-    
+
     indicators = [
         "审查规则", "待审查材料", "审查材料",
         '"pass": "Y 或 N"', '"rule_id"',
@@ -93,18 +93,18 @@ def enhance_review_prompt(prompt: str) -> str:
     """
     if not detect_review_mode(prompt):
         return prompt
-    
+
     # 在"# 任务要求"之前插入增强指引
     insertion_point = prompt.find("# 任务要求")
     if insertion_point == -1:
         insertion_point = prompt.find("任务要求")
-    
+
     if insertion_point > 0:
         return (
             prompt[:insertion_point] +
             REVIEW_ENHANCEMENT + "\n" +
             prompt[insertion_point:]
         )
-    
+
     # Fallback: 在末尾追加
     return prompt + "\n" + REVIEW_ENHANCEMENT

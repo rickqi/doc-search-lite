@@ -9,8 +9,6 @@ import json
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
-import pytest
-
 
 class TestSearchToolFeedback:
     """Test SearchTool feedback signals on zero / low hits."""

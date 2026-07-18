@@ -8,14 +8,13 @@ using GLM-OCR vision model for text extraction.
 import logging
 import time
 from pathlib import Path
-from typing import Dict, List, Optional
 
-from src.converter.base import ConvertResult, Converter
+from src.converter.base import Converter, ConvertResult
 from src.converter.ocr import (
     OCRService,
     OCRServiceConfig,
-    get_paddleocr_service,
     get_paddleocr_http_service,
+    get_paddleocr_service,
     get_ppstructurev3_service,
 )
 from src.converter.ocr_postprocess import postprocess_ocr_result
@@ -42,7 +41,7 @@ class ImageConverter(Converter):
         return "0.1.0"
 
     @property
-    def supported_formats(self) -> List[str]:
+    def supported_formats(self) -> list[str]:
         """Get list of supported file extensions."""
         return [".png", ".jpg", ".jpeg", ".bmp", ".webp", ".gif"]
 
@@ -50,7 +49,7 @@ class ImageConverter(Converter):
         self,
         source: Path,
         output_dir: Path,
-        options: Optional[Dict] = None,
+        options: dict | None = None,
     ) -> ConvertResult:
         """
         Convert an image file to Markdown using OCR.
@@ -68,8 +67,8 @@ class ImageConverter(Converter):
             ConvertResult containing conversion results.
         """
         options = options or {}
-        errors: List[str] = []
-        metadata: Dict = {}
+        errors: list[str] = []
+        metadata: dict = {}
         start_time = time.time()
 
         # 验证文件格式
@@ -108,7 +107,7 @@ class ImageConverter(Converter):
         try:
             with open(source, "rb") as f:
                 f.read(8)
-        except IOError as e:
+        except OSError as e:
             error_msg = f"Cannot read source file (may be corrupted or locked): {e}"
             return ConvertResult(
                 success=False,

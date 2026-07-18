@@ -27,17 +27,15 @@ if sys.platform == "win32":
     except Exception:
         pass
 
+import asyncio
 import logging
 import time
-from dataclasses import asdict
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-import asyncio
-
-from fastapi import FastAPI, HTTPException, Query, Request, UploadFile, File, Form
+from fastapi import FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
@@ -47,7 +45,7 @@ from src import __version__
 from src.stats.search_logger import SearchLogger
 
 
-def _get_diagnostics_db(index_path: Optional[str], raw_dir: Optional[str] = None) -> Optional[Any]:
+def _get_diagnostics_db(index_path: str | None, raw_dir: str | None = None) -> Any | None:
     """Get ConvertDB for diagnostics persistence, or None if unavailable.
 
     Searches index_path parent dirs and raw_dir for existing convert.db.
@@ -80,7 +78,7 @@ app.add_middleware(
 )
 
 # Authentication — supports legacy WEB_API_KEY + multi-token + open mode
-from src.web.auth import AuthMiddleware, TokenStore, get_auth_mode, get_web_api_key, require_scope
+from src.web.auth import AuthMiddleware, TokenStore, get_auth_mode, get_web_api_key
 
 _auth_mode = get_auth_mode()
 _token_store = TokenStore() if _auth_mode == "token" else None
@@ -115,14 +113,14 @@ class SearchPreviewItem(BaseModel):
     title: str
     score: float
     snippet: str
-    source_path: Optional[str] = None
-    highlights: List[str] = Field(default_factory=list)
+    source_path: str | None = None
+    highlights: list[str] = Field(default_factory=list)
 
 
 class QueryResponse(BaseModel):
     """BM25 search response."""
 
-    results: List[SearchPreviewItem]
+    results: list[SearchPreviewItem]
     total: int
     limit: int
     has_more: bool
@@ -135,14 +133,14 @@ class AgentQueryRequest(BaseModel):
 
     query: str
     index_path: str
-    raw_dir: Optional[str] = None
+    raw_dir: str | None = None
     mode: str = "tool_loop"
     limit: int = 10
     use_rerank: bool = False
-    skill: Optional[str] = None
-    load_skill: Optional[str] = None
+    skill: str | None = None
+    load_skill: str | None = None
     log: bool = True
-    session_id: Optional[str] = None
+    session_id: str | None = None
 
 
 class AnalyzeRequest(BaseModel):
@@ -150,13 +148,13 @@ class AnalyzeRequest(BaseModel):
 
     query: str = ""
     index_path: str
-    raw_dir: Optional[str] = None
+    raw_dir: str | None = None
     mode: str = "extract"  # compare | extract | summarize | table
-    doc_ids: Optional[List[str]] = None      # for compare (≥2)
-    doc_id: Optional[str] = None             # for extract/summarize/table
-    aspect: Optional[str] = None             # compare focus
+    doc_ids: list[str] | None = None      # for compare (≥2)
+    doc_id: str | None = None             # for extract/summarize/table
+    aspect: str | None = None             # compare focus
     log: bool = True
-    session_id: Optional[str] = None
+    session_id: str | None = None
 
 
 class DocumentResponse(BaseModel):
@@ -165,7 +163,7 @@ class DocumentResponse(BaseModel):
     doc_id: str
     title: str
     full_content: str
-    source_path: Optional[str] = None
+    source_path: str | None = None
 
 
 class HealthResponse(BaseModel):
@@ -179,12 +177,12 @@ class StatusResponse(BaseModel):
     """System status response."""
 
     status: str = "ok"
-    index: Optional[Dict[str, Any]] = None
+    index: dict[str, Any] | None = None
 
 
 # ─── BM25Searcher Cache ─────────────────────────────────────
 
-_searchers: Dict[str, Any] = {}
+_searchers: dict[str, Any] = {}
 
 
 def _log_search_api(query: str, response: Any, search_mode: str, index_path: str = "", enabled: bool = True, session_id: str = ""):
@@ -207,12 +205,12 @@ def _log_search_api(query: str, response: Any, search_mode: str, index_path: str
 
 
 def _persist_api_session(
-    session_id: Optional[str],
+    session_id: str | None,
     query: str,
     answer: str,
     index_path: str,
     raw_dir: str = "",
-    sources: Optional[List[str]] = None,
+    sources: list[str] | None = None,
     srch_id: str = "",
 ):
     """Persist an API call to a session, creating it if session_id is provided.
@@ -309,9 +307,10 @@ async def _run_direct_answer_with_events(ctx, config, prompt: str):
     类似 _run_direct_review_with_events，但使用通用 system prompt
     而非合规审查专用 prompt。
     """
+    import litellm
+
     from src.web.intent_classifier import WEB_SEARCH_SYSTEM_PROMPT
     from src.web.sse_events import AgentEventType, make_event
-    import litellm
 
     q = ctx.event_queue
     abort = ctx.abort_event
@@ -378,12 +377,12 @@ async def _run_direct_answer_with_events(ctx, config, prompt: str):
 
 
 async def _run_agent_with_events(
-    ctx, config, prompt: str, mode: str = "tool_loop", skill: str = "", loaded_skill_content: Optional[str] = None
+    ctx, config, prompt: str, mode: str = "tool_loop", skill: str = "", loaded_skill_content: str | None = None
 ):
     """Run SearchAgent and push events to the SSE queue."""
     from src.agent.search_agent import create_search_agent
-    from src.web.sse_events import AgentEventType, make_event
     from src.stats.diagnostics import DiagnosticsCollector
+    from src.web.sse_events import AgentEventType, make_event
 
     q = ctx.event_queue
     abort = ctx.abort_event
@@ -612,7 +611,7 @@ async def _run_agent_with_events(
 
 async def _sse_event_generator(ctx):
     """Async generator yielding SSE frames from the event queue."""
-    from src.web.sse_events import AgentEventType, make_event, heartbeat
+    from src.web.sse_events import AgentEventType, heartbeat, make_event
 
     q = ctx.event_queue
     abort = ctx.abort_event
@@ -658,7 +657,7 @@ async def list_sessions():
 @app.post("/api/sessions")
 async def create_session(
     index_path: str = Query(..., description="Path to Tantivy index (comma-separated for multi-index)"),
-    raw_dir: Optional[str] = Query(None, description="Path to raw markdown directory (comma-separated)"),
+    raw_dir: str | None = Query(None, description="Path to raw markdown directory (comma-separated)"),
     model: str = Query("deepseek-v4-pro", description="Model name"),
 ):
     """Create a new search session. Supports multi-index via comma-separated paths."""
@@ -741,12 +740,12 @@ async def submit_prompt(
 
     # Auto-detect review mode
     from src.web.review_prompts import detect_review_mode, enhance_review_prompt
-    
+
     is_review = (mode == "review") or (mode == "auto" and detect_review_mode(prompt))
     enhanced = enhance_review_prompt(prompt) if is_review else prompt
 
     # Auto-detect direct mode (AI Assistant fast path)
-    from src.web.intent_classifier import get_classifier, ExecutionMode
+    from src.web.intent_classifier import ExecutionMode, get_classifier
     classifier = get_classifier()
     intent_mode, intent_reason = classifier.classify_with_reason(prompt)
     is_direct = (mode == "direct") or (
@@ -818,24 +817,24 @@ async def abort_session(session_id: str):
 # ─── Database Query Endpoints ──────────────────────────────
 
 # ConvertDB instance cache (per raw_dir)
-_convert_dbs: Dict[str, Any] = {}
+_convert_dbs: dict[str, Any] = {}
 
 
 def _get_convert_db(raw_dir: str):
     """Get or create a cached ConvertDB instance for the given raw_dir."""
     from urllib.parse import unquote
-    
+
     key = str(Path(unquote(raw_dir)).resolve())
     if key in _convert_dbs:
         return _convert_dbs[key]
-    
+
     db_path = Path(key) / "convert.db"
     if not db_path.exists():
         raise HTTPException(
             status_code=404,
             detail=f"convert.db not found at: {key}",
         )
-    
+
     from src.storage.convert_db import ConvertDB
     db = ConvertDB(db_path).open()
     _convert_dbs[key] = db
@@ -848,15 +847,15 @@ async def db_stats(raw_dir: str):
     """转换统计摘要 — 文件状态计数 + 批次进度"""
     db = _get_convert_db(raw_dir)
     stats = db.get_stats()
-    
+
     # Add file counts by status
     statuses = ["success", "failed", "pending", "skipped"]
     by_status = {}
     for s in statuses:
         by_status[s] = db.count_files(status=s)
-    
+
     latest_batch = db.get_latest_batch()
-    
+
     return {
         "raw_dir": raw_dir,
         **stats,
@@ -868,15 +867,15 @@ async def db_stats(raw_dir: str):
 @app.get("/api/db/{raw_dir:path}/files")
 async def db_files(
     raw_dir: str,
-    status: Optional[str] = Query(None),
-    extension: Optional[str] = Query(None),
+    status: str | None = Query(None),
+    extension: str | None = Query(None),
     limit: int = Query(50, ge=1, le=500),
     offset: int = Query(0, ge=0),
     stream: bool = Query(False, description="Use SSE streaming for large result sets"),
 ):
     """文件列表 — 支持按状态/扩展名筛选，大结果集 SSE 流式"""
     db = _get_convert_db(raw_dir)
-    
+
     # Query files
     if status:
         rows = db.get_files_by_status(status)
@@ -884,15 +883,15 @@ async def db_files(
         rows = db.get_files_by_extension(extension)
     else:
         rows = db.get_files_by_status("success") + db.get_files_by_status("failed")
-    
+
     total = len(rows)
     rows = rows[offset:offset + limit]
-    
+
     if stream and total > 100:
         # SSE streaming for large result sets
         async def file_stream():
-            from src.web.sse_events import sse_encode, AgentEventType
-            import json as _json
+
+            from src.web.sse_events import AgentEventType, sse_encode
             yield sse_encode(AgentEventType("meta"), {"total": total, "limit": limit, "offset": offset})
             for row in rows:
                 yield sse_encode(AgentEventType("row"), {
@@ -907,13 +906,13 @@ async def db_files(
                 })
                 await asyncio.sleep(0.01)
             yield sse_encode(AgentEventType("done"), {"count": len(rows)})
-        
+
         return StreamingResponse(
             file_stream(),
             media_type="text/event-stream",
             headers={"Cache-Control": "no-cache", "Connection": "keep-alive"},
         )
-    
+
     return {
         "total": total,
         "limit": limit,
@@ -986,7 +985,7 @@ async def db_token_daily(
         })
 
     async def daily_stream():
-        from src.web.sse_events import sse_encode, AgentEventType
+        from src.web.sse_events import AgentEventType, sse_encode
         yield sse_encode(AgentEventType("meta"), {"days": days, "count": len(rows)})
         for row in rows:
             yield sse_encode(AgentEventType("row"), dict(row))
@@ -1086,9 +1085,10 @@ async def search_grep(request: SearchModeRequest):
     """Grep search over raw .md files (no index required)."""
     if not request.raw_dir:
         raise HTTPException(400, "raw_dir required for grep search")
-    from src.agent.tools.grep import GrepTool
-    from collections import defaultdict
     import math as _math
+    from collections import defaultdict
+
+    from src.agent.tools.grep import GrepTool
 
     tool = GrepTool(raw_dir=Path(request.raw_dir), max_results=request.limit)
     result = tool.execute(
@@ -1165,7 +1165,6 @@ async def search_hybrid(request: SearchModeRequest):
 async def search_tag(request: SearchModeRequest):
     """Tag-based recall — extract keywords from query, match document tags."""
     from src.search.bm25_search import create_searcher as _create_bm25
-    from src.search.query_router import QueryRouter, IndexMeta
 
     index_path = Path(request.index_path)
     if not index_path.exists():
@@ -1212,13 +1211,13 @@ async def query_agent(request: AgentQueryRequest):
     config = _get_config()
 
     # Auto-detect review mode
-    from src.web.review_prompts import detect_review_mode, enhance_review_prompt, REVIEW_ENHANCEMENT
+    from src.web.review_prompts import REVIEW_ENHANCEMENT, detect_review_mode, enhance_review_prompt
     is_review = (request.mode == "review") or (
         request.mode == "auto" and detect_review_mode(request.query)
     )
 
     # Auto-detect web search mode
-    from src.web.intent_classifier import get_classifier, ExecutionMode
+    from src.web.intent_classifier import ExecutionMode, get_classifier
     classifier = get_classifier()
     intent_mode, intent_reason = classifier.classify_with_reason(request.query)
     is_direct = (request.mode == "direct") or (
@@ -1228,6 +1227,7 @@ async def query_agent(request: AgentQueryRequest):
     # Web search mode: skip RAG, use internet search
     if is_direct:
         import litellm
+
         from src.web.intent_classifier import WEB_SEARCH_SYSTEM_PROMPT
 
         start = time.time()
@@ -1504,7 +1504,7 @@ class RerankRequest(BaseModel):
     """Rerank request from Pi extension's doc_rerank tool."""
 
     query: str
-    doc_ids: List[str] = []
+    doc_ids: list[str] = []
     index_path: str = ""
     top_n: int = 5
 
@@ -1529,8 +1529,8 @@ async def rerank_documents(request: RerankRequest):
     searcher = _get_searcher(request.index_path)
 
     # Retrieve document content for each doc_id
-    documents: List[str] = []
-    doc_meta: List[Dict[str, str]] = []
+    documents: list[str] = []
+    doc_meta: list[dict[str, str]] = []
     for doc_id in request.doc_ids:
         result = searcher.get_full_content(doc_id)
         if result is None:
@@ -1590,8 +1590,8 @@ async def rerank_documents(request: RerankRequest):
 
 @app.get("/status", response_model=StatusResponse)
 async def system_status(
-    index_path: Optional[str] = Query(None, description="Path to Tantivy index"),
-    raw_dir: Optional[str] = Query(None, description="Path to raw markdown directory"),
+    index_path: str | None = Query(None, description="Path to Tantivy index"),
+    raw_dir: str | None = Query(None, description="Path to raw markdown directory"),
 ):
     """System status endpoint.
 
@@ -1637,7 +1637,7 @@ class UploadResponse(BaseModel):
 
 @app.post("/api/upload")
 async def upload_files(
-    files: List[UploadFile] = File(..., description="Files to upload (multi-file supported)"),
+    files: list[UploadFile] = File(..., description="Files to upload (multi-file supported)"),
     raw_dir: str = Form(..., description="Raw directory path for storage"),
     index_dir: str = Form("", description="Index directory path (optional, defaults to raw_dir/index)"),
 ):
@@ -1646,8 +1646,9 @@ async def upload_files(
     Submit files via multipart/form-data. Returns job_id immediately;
     progress streamed via GET /api/upload/{job_id}/events.
     """
-    from src.web.upload_manager import get_upload_manager, _run_upload_job
     import threading
+
+    from src.web.upload_manager import _run_upload_job, get_upload_manager
 
     raw_path = Path(raw_dir).resolve()
     index_path = Path(index_dir).resolve() if index_dir else raw_path / "index"
@@ -1657,7 +1658,7 @@ async def upload_files(
     upload_dir.mkdir(parents=True, exist_ok=True)
 
     # Save uploaded files
-    saved_files: List[Path] = []
+    saved_files: list[Path] = []
     for f in files:
         file_path = upload_dir / f.filename
         content = await f.read()
@@ -1682,8 +1683,8 @@ async def upload_files(
 @app.get("/api/upload/{job_id}")
 async def upload_progress(job_id: str):
     """SSE progress stream for upload job."""
-    from src.web.upload_manager import get_upload_manager
     from src.web.sse_events import heartbeat
+    from src.web.upload_manager import get_upload_manager
 
     manager = get_upload_manager()
     job = manager.get(job_id)
@@ -1729,8 +1730,11 @@ async def upload_history():
 @app.post("/api/admin/build-index")
 async def admin_build_index(raw_dir: str = Query(..., description="Raw directory path")):
     """Build/rebuild Tantivy search index from .md files."""
-    import hashlib, shutil, time as _time
+    import hashlib
+    import shutil
+    import time as _time
     from pathlib import Path as _Path
+
     from src.storage.index import TantivyIndexManager
 
     raw_path = _Path(raw_dir).resolve()
@@ -1776,6 +1780,7 @@ async def admin_build_index(raw_dir: str = Query(..., description="Raw directory
 async def admin_retry(raw_dir: str = Query(..., description="Raw directory path")):
     """Reset failed files to pending for retry on next conversion."""
     from pathlib import Path as _Path
+
     from src.storage.convert_db import ConvertDB
 
     db_path = _Path(raw_dir).resolve() / "convert.db"
@@ -1798,8 +1803,10 @@ async def admin_stats_export(raw_dir: str = Query(..., description="Raw director
                              format: str = Query("json", description="Export format: json, csv, md")):
     """Export API usage statistics."""
     from io import StringIO
-    from src.storage.convert_db import ConvertDB
+
     from starlette.responses import Response
+
+    from src.storage.convert_db import ConvertDB
 
     db_path = Path(raw_dir).resolve() / "convert.db"
     if not db_path.exists():
@@ -1840,8 +1847,8 @@ async def admin_stats_export(raw_dir: str = Query(..., description="Raw director
 async def admin_budget_set(raw_dir: str = Query(...), name: str = Query("default"),
                            limit_cents: int = Query(...), period: str = Query("monthly")):
     """Set or update a budget."""
-    from src.storage.convert_db import ConvertDB
     from src.stats.budget_guard import BudgetGuard
+    from src.storage.convert_db import ConvertDB
     db_path = Path(raw_dir).resolve() / "convert.db"
     if not db_path.exists():
         raise HTTPException(404, f"No convert.db found at {raw_dir}")
@@ -1858,8 +1865,8 @@ async def admin_budget_set(raw_dir: str = Query(...), name: str = Query("default
 @app.delete("/api/admin/budget-remove")
 async def admin_budget_remove(raw_dir: str = Query(...), budget_id: int = Query(...)):
     """Remove a budget by ID."""
-    from src.storage.convert_db import ConvertDB
     from src.stats.budget_guard import BudgetGuard
+    from src.storage.convert_db import ConvertDB
     db_path = Path(raw_dir).resolve() / "convert.db"
     if not db_path.exists():
         raise HTTPException(404, f"No convert.db found at {raw_dir}")
@@ -1879,6 +1886,7 @@ async def admin_benchmark(index_path: str = Query(...), raw_dir: str = Query("")
                           runs: int = Query(1)):
     """Run a lightweight benchmark comparing search modes."""
     import time as _time
+
     from src.search.bm25_search import create_searcher as _bm25
     from src.search.hybrid import HybridSearcher
     from src.storage.index import TantivyIndexManager
@@ -2035,14 +2043,14 @@ class FeedbackRequest(BaseModel):
 
     query: str
     rating: int
-    doc_id: Optional[str] = None
-    doc_title: Optional[str] = None
-    index_path: Optional[str] = None
-    session_id: Optional[str] = None
+    doc_id: str | None = None
+    doc_title: str | None = None
+    index_path: str | None = None
+    session_id: str | None = None
 
 
 def _resolve_feedback_db(
-    index_path: Optional[str], raw_dir: Optional[str] = None
+    index_path: str | None, raw_dir: str | None = None
 ):
     """Find an existing convert.db from index_path or raw_dir."""
     from src.storage.convert_db import ConvertDB
@@ -2121,7 +2129,7 @@ async def admin_feedback(
 async def admin_auth_log(
     raw_dir: str = Query(..., description="Raw directory path"),
     days: int = Query(7, description="Days to include"),
-    token_id: Optional[str] = Query(None, description="Filter by token ID"),
+    token_id: str | None = Query(None, description="Filter by token ID"),
     limit: int = Query(100, description="Max results"),
 ):
     """Get authentication audit log records. Requires admin scope."""
@@ -2152,6 +2160,8 @@ async def dify_retrieval(request: Request):
     Auth: requires DIFY_API_KEY via Bearer token.
     If DIFY_API_KEY is not set, the endpoint is open (dev mode).
     """
+    from fastapi.responses import JSONResponse as _JSONResponse
+
     from src.web.dify_retrieval import (
         DifyErrorCode,
         DifyErrorResponse,
@@ -2159,7 +2169,6 @@ async def dify_retrieval(request: Request):
         get_dify_api_key,
         get_retrieval_service,
     )
-    from fastapi.responses import JSONResponse as _JSONResponse
 
     # Auth check — separate from WEB_API_KEY middleware
     _dify_key = get_dify_api_key()
@@ -2249,22 +2258,22 @@ if __name__ == "__main__":
     # Print startup info
     url = f"http://{args.host}:{args.port}"
     auth_note = " 🔒 Token required" if _auth_mode != "open" else ""
-    print(f"doc-search Web API v0.9.1")
+    print("doc-search Web API v0.9.1")
     print(f"  API:  {url}/docs")
     print(f"  Web:  {url}/{auth_note}")
     print(f"  Host: {args.host}:{args.port}")
     if _auth_mode == "token":
         print(f"  Auth: token-based ({_token_store.count} tokens)")
-        print(f"  Headers: Authorization: Bearer <key> | X-API-Key: <key>")
+        print("  Headers: Authorization: Bearer <key> | X-API-Key: <key>")
     elif _auth_mode == "legacy":
-        print(f"  Auth: legacy key (WEB_API_KEY=***)")
-        print(f"  Headers: Authorization: Bearer <key> | X-API-Key: <key>")
+        print("  Auth: legacy key (WEB_API_KEY=***)")
+        print("  Headers: Authorization: Bearer <key> | X-API-Key: <key>")
     else:
-        print(f"  Auth: disabled (set WEB_API_KEY or create tokens.json)")
+        print("  Auth: disabled (set WEB_API_KEY or create tokens.json)")
 
     if args.web or args.open:
-        import webbrowser
         import threading
+        import webbrowser
         def _open_browser():
             import time
             time.sleep(1.5)

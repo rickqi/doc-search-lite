@@ -7,9 +7,9 @@ Provides:
 - AuthMiddleware: token-based API authentication
 """
 
-from src.web.session_manager import SessionManager, SessionContext
+from src.web.auth import AuthMiddleware, TokenStore, get_auth_mode, get_web_api_key
+from src.web.session_manager import SessionContext, SessionManager
 from src.web.sse_events import AgentEventType, sse_encode
-from src.web.auth import AuthMiddleware, TokenStore, get_web_api_key, get_auth_mode
 
 __all__ = [
     "SessionManager",

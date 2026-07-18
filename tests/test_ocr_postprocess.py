@@ -1,6 +1,5 @@
 """Tests for OCR post-processing pipeline."""
 
-import pytest
 
 from src.converter.ocr_postprocess import (
     clean_ocr_text,

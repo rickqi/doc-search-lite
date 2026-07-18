@@ -3,10 +3,8 @@ Tests for authentication audit logging:
 ConvertDB.record_auth_log / get_auth_log and GET /api/admin/auth-log.
 """
 
-from pathlib import Path
 from unittest.mock import patch
 
-import pytest
 from fastapi.testclient import TestClient
 
 from src.api import app

@@ -3,16 +3,16 @@
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
-from unittest.mock import MagicMock, patch
+from typing import Any
+from unittest.mock import MagicMock
 
 import pytest
 
 from src.agent.analysis_agent import AnalysisAgent, LLMClientAdapter
-from src.agent.base import Agent, AgentResponse
-from src.agent.llm_client import ChatMessage, ChatResponse, LLMClient
-from src.storage.markdown_store import MarkdownStore
+from src.agent.base import Agent
+from src.agent.llm_client import ChatMessage, ChatResponse
 from src.storage.base import DocumentRecord
+from src.storage.markdown_store import MarkdownStore
 
 
 # Mock LLM Client for testing
@@ -21,7 +21,7 @@ class MockLLMClient:
 
     def __init__(
         self,
-        responses: Optional[Dict[str, str]] = None,
+        responses: dict[str, str] | None = None,
         default_response: str = "Mock analysis response",
     ):
         """Initialize mock client.
@@ -33,12 +33,12 @@ class MockLLMClient:
         self.responses = responses or {}
         self.default_response = default_response
         self.call_count = 0
-        self.last_messages: Optional[List[ChatMessage]] = None
+        self.last_messages: list[ChatMessage] | None = None
 
     def chat(
         self,
-        messages: List[ChatMessage],
-        tools: Optional[List[Any]] = None,
+        messages: list[ChatMessage],
+        tools: list[Any] | None = None,
         temperature: float = 0.7,
         max_tokens: int = 2000,
     ) -> ChatResponse:

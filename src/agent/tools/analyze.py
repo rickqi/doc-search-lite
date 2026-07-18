@@ -6,7 +6,7 @@ Supports two modes:
 """
 
 import json
-from typing import Any, Dict, List, Optional, Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 from src.agent.base import Tool
 from src.agent.tool_types import ToolResult
@@ -24,7 +24,7 @@ class LLMClientProtocol(Protocol):
     def generate(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         temperature: float = 0.7,
         max_tokens: int = 2000,
     ) -> str:
@@ -64,7 +64,7 @@ class AnalyzeTool(Tool):
     def __init__(
         self,
         markdown_store: MarkdownStore,
-        llm_client: Optional[LLMClientProtocol] = None,
+        llm_client: LLMClientProtocol | None = None,
     ):
         """Initialize the AnalyzeTool.
 
@@ -96,10 +96,10 @@ class AnalyzeTool(Tool):
     def execute(
         self,
         mode: str = "extract",
-        doc_ids: Optional[List[str]] = None,
-        doc_id: Optional[str] = None,
-        query: Optional[str] = None,
-        schema: Optional[Dict[str, Any]] = None,
+        doc_ids: list[str] | None = None,
+        doc_id: str | None = None,
+        query: str | None = None,
+        schema: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> ToolResult:
         """Execute the analyze tool.
@@ -141,8 +141,8 @@ class AnalyzeTool(Tool):
 
     def _execute_compare(
         self,
-        doc_ids: Optional[List[str]],
-        query: Optional[str],
+        doc_ids: list[str] | None,
+        query: str | None,
         **kwargs: Any,
     ) -> ToolResult:
         """Execute compare mode - compare multiple documents.
@@ -213,9 +213,9 @@ class AnalyzeTool(Tool):
 
     def _execute_extract(
         self,
-        doc_id: Optional[str],
-        query: Optional[str],
-        schema: Optional[Dict[str, Any]],
+        doc_id: str | None,
+        query: str | None,
+        schema: dict[str, Any] | None,
         **kwargs: Any,
     ) -> ToolResult:
         """Execute extract mode - extract structured information.
@@ -289,8 +289,8 @@ class AnalyzeTool(Tool):
 
     def _build_compare_prompt(
         self,
-        documents: List[Dict[str, Any]],
-        query: Optional[str],
+        documents: list[dict[str, Any]],
+        query: str | None,
     ) -> str:
         """Build the comparison prompt for LLM.
 
@@ -327,8 +327,8 @@ class AnalyzeTool(Tool):
         self,
         title: str,
         content: str,
-        query: Optional[str],
-        schema: Optional[Dict[str, Any]],
+        query: str | None,
+        schema: dict[str, Any] | None,
     ) -> str:
         """Build the extraction prompt for LLM.
 
@@ -341,7 +341,7 @@ class AnalyzeTool(Tool):
         Returns:
             Formatted prompt string
         """
-        prompt_parts = [f"从以下文档中提取信息:\n"]
+        prompt_parts = ["从以下文档中提取信息:\n"]
         prompt_parts.append(f"文档标题: {title}")
         prompt_parts.append(f"内容:\n{content[:4000]}...")  # Limit content length
         prompt_parts.append("")
@@ -406,7 +406,7 @@ class AnalyzeTool(Tool):
         # Fall back to original text
         raise json.JSONDecodeError("No valid JSON found", text, 0)
 
-    def to_openai_tool(self) -> Dict[str, Any]:
+    def to_openai_tool(self) -> dict[str, Any]:
         """Convert tool to OpenAI function calling format."""
         return {
             "type": "function",

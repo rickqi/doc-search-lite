@@ -7,7 +7,7 @@ import pytest
 
 from src.agent.base import ToolResult
 from src.search.bm25_search import PaginatedResults, SearchPreview
-from src.search.hybrid import HybridSearcher, PROFILE_WEIGHTS
+from src.search.hybrid import PROFILE_WEIGHTS, HybridSearcher
 from src.search.unified import SearchSource, UnifiedSearchResult
 from src.storage.base import SearchResult
 

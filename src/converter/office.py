@@ -15,11 +15,10 @@ import subprocess
 import tempfile
 import time
 from pathlib import Path
-from typing import Dict, List, Optional
 
 from markitdown import MarkItDown, MissingDependencyException, UnsupportedFormatException
 
-from .base import ConvertResult, Converter
+from .base import Converter, ConvertResult
 from .table_fix import fix_merged_tables_with_html, fix_table_alignment
 
 logger = logging.getLogger(__name__)
@@ -38,7 +37,7 @@ class OfficeConverter(Converter):
     """
 
     # Mapping of file extensions to document types for metadata
-    _EXTENSION_TYPES: Dict[str, str] = {
+    _EXTENSION_TYPES: dict[str, str] = {
         ".docx": "Word Document",
         ".doc": "Word Document (Legacy)",
         ".pptx": "PowerPoint Presentation",
@@ -57,12 +56,12 @@ class OfficeConverter(Converter):
         return "0.1.0"
 
     @property
-    def supported_formats(self) -> List[str]:
+    def supported_formats(self) -> list[str]:
         """Get list of supported file extensions."""
         return [".docx", ".doc", ".pptx", ".xlsx", ".xls"]
 
     @staticmethod
-    def _find_soffice() -> Optional[str]:
+    def _find_soffice() -> str | None:
         """Find LibreOffice soffice executable (cross-platform).
 
         Search order:
@@ -170,7 +169,7 @@ class OfficeConverter(Converter):
         self,
         source: Path,
         output_dir: Path,
-        options: Optional[Dict] = None,
+        options: dict | None = None,
     ) -> ConvertResult:
         """
         Convert an Office document file to Markdown.
@@ -184,8 +183,8 @@ class OfficeConverter(Converter):
             ConvertResult containing conversion results.
         """
         options = options or {}
-        errors: List[str] = []
-        metadata: Dict = {}
+        errors: list[str] = []
+        metadata: dict = {}
         start_time = time.time()
 
         # Validate file extension
@@ -225,7 +224,7 @@ class OfficeConverter(Converter):
             # Try to read a small portion to check if file is accessible
             with open(source, "rb") as f:
                 f.read(8)  # Read header bytes to verify file integrity
-        except IOError as e:
+        except OSError as e:
             error_msg = f"Cannot read source file (may be corrupted or locked): {e}"
             return ConvertResult(
                 success=False,
@@ -243,7 +242,7 @@ class OfficeConverter(Converter):
 
         try:
             # Bridge legacy .doc → .docx via LibreOffice
-            tmpdir: Optional[tempfile.TemporaryDirectory] = None
+            tmpdir: tempfile.TemporaryDirectory | None = None
             source_to_convert = source
             try:
                 if source.suffix.lower() == ".doc":

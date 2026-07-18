@@ -6,13 +6,12 @@ Covers 22 API routes across 7 test classes (~30 tests).
 """
 
 from pathlib import Path
-from unittest.mock import patch, MagicMock
 
 import pytest
 from fastapi.testclient import TestClient
 
-from src.api import app, _searchers, _convert_dbs
 import src.api as api_module
+from src.api import _convert_dbs, _searchers, app
 
 client = TestClient(app)
 

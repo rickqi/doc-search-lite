@@ -23,9 +23,8 @@ Environment:
 import logging
 import os
 import time
-from typing import List, Optional
 
-from src.search.reranker import RerankResult, RerankUsage, MAX_DOCUMENTS, MAX_DOC_LENGTH, MAX_QUERY_LENGTH
+from src.search.reranker import MAX_DOC_LENGTH, MAX_DOCUMENTS, MAX_QUERY_LENGTH, RerankResult, RerankUsage
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +33,7 @@ _model_instance = None
 _model_name = None
 
 
-def _get_model(model_name: str, device: Optional[str] = None):
+def _get_model(model_name: str, device: str | None = None):
     """Lazy-load the cross-encoder model (singleton pattern)."""
     global _model_instance, _model_name
 
@@ -76,8 +75,8 @@ class LocalReranker:
 
     def __init__(
         self,
-        model_name: Optional[str] = None,
-        device: Optional[str] = None,
+        model_name: str | None = None,
+        device: str | None = None,
         usage_tracker=None,
         **kwargs,  # Absorb unused params (api_key, timeout, max_retries) for interface compat
     ):
@@ -125,9 +124,9 @@ class LocalReranker:
     def rerank(
         self,
         query: str,
-        documents: List[str],
+        documents: list[str],
         top_n: int = 5,
-    ) -> List[RerankResult]:
+    ) -> list[RerankResult]:
         """Rerank documents by relevance to the query.
 
         Args:
@@ -195,9 +194,9 @@ class LocalReranker:
 
     @staticmethod
     def _fallback_order(
-        documents: List[str],
+        documents: list[str],
         top_n: int,
-    ) -> List[RerankResult]:
+    ) -> list[RerankResult]:
         """Fallback: return documents in original order with decreasing scores."""
         return [
             RerankResult(index=i, relevance_score=round(1.0 - i * 0.01, 4))
@@ -208,7 +207,7 @@ class LocalReranker:
 def create_reranker(
     config=None,
     usage_tracker=None,
-    reranker_type: Optional[str] = None,
+    reranker_type: str | None = None,
 ):
     """Factory: create the appropriate reranker based on configuration.
 

@@ -2,14 +2,13 @@
 
 import json
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 from click.testing import CliRunner
 
-from src.cli import cli, TaskManager
+from src.cli import TaskManager, cli
 from src.search.bm25_search import PaginatedResults, SearchPreview
-
 
 # ── Fixtures ──────────────────────────────────────────
 

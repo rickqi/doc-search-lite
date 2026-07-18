@@ -6,8 +6,7 @@ import json
 import os
 import time
 from pathlib import Path
-from typing import Any, Dict
-from unittest.mock import MagicMock, PropertyMock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -179,7 +178,6 @@ class TestSearchAgentIntegration:
     def test_exact_hit_skips_tool_loop(self, mock_am_cls):
         """精确命中时, run() 应直接返回 AgentResponse 而不走 tool_loop."""
         from src.agent.search_agent import SearchAgent, create_search_agent
-        from src.agent.base import AgentResponse
 
         # Mock AgentMemory.recall() to return exact hit
         mock_mem = MagicMock()
@@ -713,7 +711,6 @@ class TestBehaviorComparison:
 
     def test_learn_does_not_block(self, tmp_path):
         """learn() 应非阻塞（在 daemon thread 中执行）."""
-        import threading
 
         db_path = tmp_path / "learn_perf.db"
         m = AgentMemory(db_path=db_path)

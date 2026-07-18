@@ -23,7 +23,7 @@ import threading
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ logger = logging.getLogger(__name__)
 _SEARCH_LOG_DISABLED = os.environ.get("NO_SEARCH_LOG", "") == "1"
 
 # Pending daemon threads (for flush support — CLI needs to wait before process exit)
-_pending_threads: List[threading.Thread] = []
+_pending_threads: list[threading.Thread] = []
 _threads_lock = threading.Lock()
 
 # 默认存储目录
@@ -44,7 +44,7 @@ _DEFAULT_LOG_DIR = Path(os.environ.get(
 _SCHEMA_VERSION = "1"
 
 
-def _get_log_dir(custom_dir: Optional[Path] = None) -> Path:
+def _get_log_dir(custom_dir: Path | None = None) -> Path:
     """获取日志目录，优先用传入参数，其次环境变量，最后默认值。"""
     if custom_dir:
         return Path(custom_dir)
@@ -165,11 +165,11 @@ class SearchLogDB:
         *,
         limit: int = 50,
         offset: int = 0,
-        search_mode: Optional[str] = None,
-        source: Optional[str] = None,
-        tags: Optional[str] = None,
+        search_mode: str | None = None,
+        source: str | None = None,
+        tags: str | None = None,
         success_only: bool = False,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """查询搜索日志。"""
         sql = "SELECT * FROM search_logs WHERE 1=1"
         params: list = []
@@ -199,7 +199,7 @@ class SearchLogDB:
 
 # ── 模块级 DB 实例缓存 ──────────────────────────────────────────────
 
-_db_instances: Dict[str, SearchLogDB] = {}
+_db_instances: dict[str, SearchLogDB] = {}
 _db_lock = threading.Lock()
 
 
@@ -212,7 +212,7 @@ def _get_db(log_dir: Path) -> SearchLogDB:
         return _db_instances[key]
 
 
-def _normalize_hits(raw_hits: List) -> List[Dict[str, Any]]:
+def _normalize_hits(raw_hits: list) -> list[dict[str, Any]]:
     """规范化 search_hits: 提取 snippet (来自 highlights 或 直接 snippet), 统一格式。
 
     BM25 结果用 ``highlights`` (字符串列表); Agent 结果用 ``snippet`` (字符串)。
@@ -280,7 +280,7 @@ class SearchLogger:
         difficulty: str = "",
         tags: str = "",
         skill: str = "",
-        log_dir: Optional[Path] = None,
+        log_dir: Path | None = None,
     ):
         """异步记录 — 立即返回，后台线程完成写入。
 
@@ -339,7 +339,7 @@ class SearchLogger:
         difficulty: str,
         tags: str,
         skill: str,
-        log_dir: Optional[Path],
+        log_dir: Path | None,
     ):
         """实际写入 — 在 daemon thread 中执行。"""
         try:
@@ -392,7 +392,7 @@ class SearchLogger:
             logger.debug(f"SearchLogger error: {e}")
 
     @staticmethod
-    def _extract(response: Any) -> Dict[str, Any]:
+    def _extract(response: Any) -> dict[str, Any]:
         """从各种 response 类型统一提取数据。
 
         支持:
@@ -505,7 +505,7 @@ class SearchLogger:
         log_dir: Path,
         session_id: str,
         query: str,
-        record: Dict[str, Any],
+        record: dict[str, Any],
         source: str,
         search_mode: str,
         model: str,
@@ -522,7 +522,7 @@ class SearchLogger:
         ts = datetime.now().isoformat(timespec="seconds")
         tag_list = f"[{tags}]" if tags else "[]"
 
-        lines: List[str] = []
+        lines: list[str] = []
 
         # ── YAML Frontmatter ──
         lines.append("---")

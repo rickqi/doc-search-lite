@@ -17,8 +17,6 @@ from __future__ import annotations
 
 import logging
 import os
-from pathlib import Path
-from typing import List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +24,7 @@ logger = logging.getLogger(__name__)
 # Covers: empty password (owner-only encryption), numeric sequences,
 # common Chinese/English patterns, and typical corporate passwords.
 # Inspired by oletools DEFAULT_PASSWORDS and common enterprise patterns.
-_DEFAULT_PASSWORDS: List[str] = [
+_DEFAULT_PASSWORDS: list[str] = [
     # Empty password (owner-only encryption — very common in PDFs)
     "",
     # Numeric sequences (most common in Chinese enterprises)
@@ -95,7 +93,7 @@ class PasswordDictionary:
 
     def __init__(
         self,
-        dict_path: Optional[str] = None,
+        dict_path: str | None = None,
         include_defaults: bool = True,
     ):
         """Initialize the password dictionary.
@@ -108,9 +106,9 @@ class PasswordDictionary:
             include_defaults: Whether to include the built-in default passwords.
                               Set to False to use ONLY the external dictionary.
         """
-        self._passwords: List[str] = []
+        self._passwords: list[str] = []
         self._seen: set = set()
-        self._dict_path: Optional[str] = dict_path
+        self._dict_path: str | None = dict_path
         self._include_defaults = include_defaults
         self._loaded = False
 
@@ -148,7 +146,7 @@ class PasswordDictionary:
         Blank lines and trailing whitespace are ignored.
         """
         try:
-            with open(path, "r", encoding="utf-8") as f:
+            with open(path, encoding="utf-8") as f:
                 for line in f:
                     line = line.rstrip("\n\r")
                     # Skip empty lines and comments
@@ -185,7 +183,7 @@ class PasswordDictionary:
         self._add(password)
 
     @property
-    def passwords(self) -> List[str]:
+    def passwords(self) -> list[str]:
         """Return the combined password list (defaults + custom, deduplicated)."""
         self._ensure_loaded()
         return list(self._passwords)  # Return copy to prevent mutation

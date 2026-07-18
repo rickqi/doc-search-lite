@@ -7,9 +7,6 @@ and the FileMeta / DiffEntry / DiffResult / CopyResult dataclasses.
 All filesystem tests use the ``tmp_path`` fixture — no hardcoded paths.
 """
 
-import os
-import shutil
-import time
 from pathlib import Path
 from unittest.mock import patch
 
@@ -24,7 +21,6 @@ from src.utils.dir_diff import (
     copy_incremental,
     scan_directory,
 )
-
 
 # ── Fixtures ───────────────────────────────────────────────────────────
 

@@ -4,14 +4,11 @@ import json
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-import pytest
-
-from src.storage.convert_db import ConvertDB
-from src.stats.usage_tracker import UsageTracker
-from src.search.reranker import ZhipuAIReranker
-from src.converter.coordinator import ConverterCoordinator
 from src.converter.base import ConvertResult
-
+from src.converter.coordinator import ConverterCoordinator
+from src.search.reranker import ZhipuAIReranker
+from src.stats.usage_tracker import UsageTracker
+from src.storage.convert_db import ConvertDB
 
 # 鈹€鈹€ Helpers 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
@@ -459,7 +456,7 @@ class TestLLMClientIntegration:
         """chat() should call record_llm when usage_tracker is provided."""
         from unittest.mock import MagicMock
 
-        from src.agent.llm_client import ChatResponse, LLMClient
+        from src.agent.llm_client import LLMClient
         from src.utils.config import Config
 
         db = _open_db(tmp_path)
@@ -509,7 +506,7 @@ class TestLLMClientIntegration:
         """chat() should work without a tracker (backward compatible)."""
         from unittest.mock import MagicMock
 
-        from src.agent.llm_client import ChatResponse, LLMClient
+        from src.agent.llm_client import LLMClient
         from src.utils.config import Config
 
         config = Config(
@@ -544,8 +541,8 @@ class TestLLMClientIntegration:
         """chat_with_tools() should track each individual chat() call via tracker."""
         from unittest.mock import MagicMock
 
-        from src.agent.llm_client import ChatResponse, LLMClient, ToolCall
         from src.agent.base import Tool
+        from src.agent.llm_client import LLMClient
         from src.utils.config import Config
 
         db = _open_db(tmp_path)
@@ -767,8 +764,8 @@ class TestSearchAgentSession:
 
         from src.agent.llm_client import ChatResponse
         from src.agent.search_agent import SearchAgent
-        from src.agent.tools.search import SearchTool
         from src.agent.tools.read import ReadTool
+        from src.agent.tools.search import SearchTool
 
         db = _open_db(tmp_path)
         tracker = UsageTracker(db)
@@ -826,8 +823,8 @@ class TestSearchAgentSession:
 
         from src.agent.llm_client import ChatResponse
         from src.agent.search_agent import SearchAgent
-        from src.agent.tools.search import SearchTool
         from src.agent.tools.read import ReadTool
+        from src.agent.tools.search import SearchTool
 
         config = MagicMock()
         config.glm_api_key = "test-key"
@@ -879,8 +876,8 @@ class TestSearchAgentSession:
 
         from src.agent.llm_client import ChatResponse
         from src.agent.search_agent import SearchAgent
-        from src.agent.tools.search import SearchTool
         from src.agent.tools.read import ReadTool
+        from src.agent.tools.search import SearchTool
 
         db = _open_db(tmp_path)
         tracker = UsageTracker(db)
@@ -959,8 +956,9 @@ class TestCoordinatorOCRTracking:
         output_dir = tmp_path / "output"
 
         # Mock OCRService.recognize to return OCR with token usage
+        from unittest.mock import patch
+
         from src.converter.ocr import OCRResult
-        from unittest.mock import patch, MagicMock
 
         # Create a fake image file for OCR to process
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -989,16 +987,15 @@ class TestCoordinatorOCRTracking:
         def fake_render(self, source, out_dir, dpi=150):
             return [img_path], None  # No temp_dir to clean up
 
-        with patch.object(PDFConverter, "convert", fake_pdf_convert):
+        with patch.object(PDFConverter, "convert", fake_pdf_convert), patch.object(
+            ConverterCoordinator, "_render_pdf_pages", fake_render
+        ):
+            # Ensure OCR service is initialized
+            coordinator._get_ocr_service()
             with patch.object(
-                ConverterCoordinator, "_render_pdf_pages", fake_render
+                coordinator._ocr_service, "recognize", return_value=mock_ocr_result
             ):
-                # Ensure OCR service is initialized
-                coordinator._get_ocr_service()
-                with patch.object(
-                    coordinator._ocr_service, "recognize", return_value=mock_ocr_result
-                ):
-                    result = coordinator.convert(pdf_path, output_dir)
+                result = coordinator.convert(pdf_path, output_dir)
 
         # Verify OCR was used
         assert result.ocr_used is True
@@ -1040,8 +1037,9 @@ class TestCoordinatorOCRTracking:
 
     def test_coordinator_tracker_exception_does_not_break_ocr(self, tmp_path):
         """If UsageTracker.record_ocr raises, OCR result should still be returned."""
+        from unittest.mock import MagicMock, patch
+
         from src.converter.ocr import OCRResult, OCRServiceConfig
-        from unittest.mock import patch, MagicMock
 
         db = _open_db(tmp_path)
         tracker = UsageTracker(db, source_dir="test_docs")
@@ -1157,9 +1155,10 @@ class TestImageConverterOCRTracking:
 
     def test_image_convert_without_tracker_still_works(self, tmp_path):
         """ImageConverter.convert should work without usage_tracker (backward compatible)."""
+        from unittest.mock import patch
+
         from src.converter.image import ImageConverter
         from src.converter.ocr import OCRResult
-        from unittest.mock import patch
 
         converter = ImageConverter()
 
@@ -1188,9 +1187,10 @@ class TestImageConverterOCRTracking:
 
     def test_image_convert_tracker_exception_handled(self, tmp_path):
         """ImageConverter should not fail if usage_tracker raises."""
+        from unittest.mock import MagicMock, patch
+
         from src.converter.image import ImageConverter
         from src.converter.ocr import OCRResult
-        from unittest.mock import patch, MagicMock
 
         converter = ImageConverter()
 
@@ -1227,9 +1227,10 @@ class TestImageConverterOCRTracking:
 
     def test_image_convert_no_tokens_skips_tracker(self, tmp_path):
         """ImageConverter should not call tracker when OCR returns no token_usage."""
+        from unittest.mock import MagicMock, patch
+
         from src.converter.image import ImageConverter
         from src.converter.ocr import OCRResult
-        from unittest.mock import patch, MagicMock
 
         converter = ImageConverter()
 

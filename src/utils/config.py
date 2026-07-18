@@ -1,9 +1,8 @@
 """Configuration management for doc-search application."""
 
 import os
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 import yaml
 from dotenv import load_dotenv
@@ -121,7 +120,7 @@ class Config:
         return os.getenv("LLM_TIERED_ROUTING", "").lower() in ("1", "true", "yes")
 
     @classmethod
-    def from_env(cls, dotenv_path: Optional[Path] = None) -> "Config":
+    def from_env(cls, dotenv_path: Path | None = None) -> "Config":
         """Create Config from environment variables.
 
         Automatically loads .env file from project root if present.

@@ -6,12 +6,11 @@ including headings, lists, links, and tables.
 """
 
 from pathlib import Path
-from typing import Dict, Optional
 
 from markitdown import MarkItDown, MissingDependencyException, UnsupportedFormatException
 
-from .base import ConvertResult, Converter
-from .table_fix import fix_table_alignment, fix_merged_tables_with_html
+from .base import Converter, ConvertResult
+from .table_fix import fix_merged_tables_with_html, fix_table_alignment
 
 
 class HTMLConverter(Converter):
@@ -41,7 +40,7 @@ class HTMLConverter(Converter):
         self,
         source: Path,
         output_dir: Path,
-        options: Optional[Dict] = None,
+        options: dict | None = None,
     ) -> ConvertResult:
         """
         Convert an HTML file to Markdown.

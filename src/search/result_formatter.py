@@ -10,7 +10,7 @@ import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 
 @dataclass
@@ -20,9 +20,9 @@ class SearchResult:
     title: str
     score: float
     snippet: str
-    source: Union[str, Path]
-    timestamp: Optional[datetime] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+    source: str | Path
+    timestamp: datetime | None = None
+    metadata: dict[str, Any] = field(default_factory=dict)
     highlighted: bool = False
 
     def __post_init__(self):
@@ -37,7 +37,7 @@ class SearchResult:
 class ResultFormatter:
     """Formats search results in various output formats."""
 
-    def __init__(self, highlight_pattern: Optional[str] = None):
+    def __init__(self, highlight_pattern: str | None = None):
         """Initialize the ResultFormatter.
 
         Args:
@@ -76,7 +76,7 @@ class ResultFormatter:
         return text
 
     def format_json(
-        self, results: List[SearchResult], include_summary: bool = False
+        self, results: list[SearchResult], include_summary: bool = False
     ) -> str:
         """Format search results as JSON.
 
@@ -87,7 +87,7 @@ class ResultFormatter:
         Returns:
             JSON string representation of the results.
         """
-        output: Dict[str, Any] = {"results": []}
+        output: dict[str, Any] = {"results": []}
 
         for result in results:
             formatted_result = {
@@ -109,7 +109,7 @@ class ResultFormatter:
         return json.dumps(output, ensure_ascii=False, indent=2)
 
     def format_text(
-        self, results: List[SearchResult], include_summary: bool = False
+        self, results: list[SearchResult], include_summary: bool = False
     ) -> str:
         """Format search results as human-readable text.
 
@@ -143,7 +143,7 @@ class ResultFormatter:
         return "\n".join(lines)
 
     def format_markdown(
-        self, results: List[SearchResult], include_summary: bool = False
+        self, results: list[SearchResult], include_summary: bool = False
     ) -> str:
         """Format search results as Markdown.
 
@@ -188,7 +188,7 @@ class ResultFormatter:
 
         return "\n".join(lines)
 
-    def _generate_summary(self, results: List[SearchResult]) -> str:
+    def _generate_summary(self, results: list[SearchResult]) -> str:
         """Generate a summary of the search results.
 
         Args:
@@ -225,9 +225,9 @@ class ResultFormatter:
 
 
 def format_results(
-    results: List[SearchResult],
+    results: list[SearchResult],
     format_type: str = "text",
-    highlight_pattern: Optional[str] = None,
+    highlight_pattern: str | None = None,
     include_summary: bool = False,
 ) -> str:
     """Format search results in the specified format.

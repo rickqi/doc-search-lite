@@ -15,8 +15,7 @@ from typing import Any
 import pytest
 
 from src.stats import search_logger as sl_mod
-from src.stats.search_logger import SearchLogger, SearchLogDB
-
+from src.stats.search_logger import SearchLogDB, SearchLogger
 
 # ── Helpers ────────────────────────────────────────────────────────────
 
@@ -620,7 +619,6 @@ class TestSessionFixtureData:
 
     def test_fixture_jsonl_valid(self):
         """Each line is valid JSON with required fields."""
-        import json
         lines = self.FIXTURE_PATH.read_text(encoding="utf-8").strip().splitlines()
         for line in lines:
             obj = json.loads(line)
@@ -633,7 +631,6 @@ class TestSessionFixtureData:
         """Log fixture Q&A pairs and verify MD files are correct."""
         monkeypatch.setattr(sl_mod, "_SEARCH_LOG_DISABLED", False)
 
-        import json
         lines = self.FIXTURE_PATH.read_text(encoding="utf-8").strip().splitlines()
         if idx >= len(lines):
             pytest.skip("Not enough fixture entries")

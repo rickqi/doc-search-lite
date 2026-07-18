@@ -2,7 +2,7 @@
 
 import logging
 from dataclasses import dataclass, field
-from typing import Any, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ class BudgetCheckResult:
     """Result of checking all active budgets."""
 
     is_within_budget: bool
-    alerts: List[BudgetAlert] = field(default_factory=list)
+    alerts: list[BudgetAlert] = field(default_factory=list)
     total_spend_cents: int = 0
 
 
@@ -128,7 +128,7 @@ class BudgetGuard:
         period_conditions: list[str] = list(conditions)
         period_params: list = list(params)
 
-        alerts: List[BudgetAlert] = []
+        alerts: list[BudgetAlert] = []
         is_within = True
 
         for budget in budgets:
@@ -188,7 +188,7 @@ class BudgetGuard:
             total_spend_cents=total_spend_cents,
         )
 
-    def get_budgets(self) -> List[dict]:
+    def get_budgets(self) -> list[dict]:
         """List all configured budgets.
 
         Returns:

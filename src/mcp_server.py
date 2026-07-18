@@ -40,7 +40,7 @@ import os
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 # ── Lazy MCP import (package is optional) ──────────────────────
 try:
@@ -74,7 +74,7 @@ def _load_dotenv() -> None:
 
 # ── Auto-discover indexes (mirrors pi-doc.py discover_indexes) ─
 
-_DEFAULT_RAW_ROOTS: Dict[str, List[str]] = {
+_DEFAULT_RAW_ROOTS: dict[str, list[str]] = {
     "win32": [r"D:\docs\raw"],
     "linux": [
         str(Path.home() / "docs" / "raw"),
@@ -88,14 +88,14 @@ _DEFAULT_RAW_ROOTS: Dict[str, List[str]] = {
 }
 
 
-def _get_default_raw_roots() -> List[str]:
+def _get_default_raw_roots() -> list[str]:
     """Return platform-appropriate default raw root paths."""
     return _DEFAULT_RAW_ROOTS.get(sys.platform, [
         str(Path.home() / "docs" / "raw"),
     ])
 
 
-def discover_indexes(raw_root: Optional[str] = None) -> Tuple[List[str], List[str]]:
+def discover_indexes(raw_root: str | None = None) -> tuple[list[str], list[str]]:
     """Auto-discover all index directories under raw_root.
 
     Mirrors pi-doc.py's discover_indexes(): each subdirectory containing
@@ -108,8 +108,8 @@ def discover_indexes(raw_root: Optional[str] = None) -> Tuple[List[str], List[st
         (index_paths, raw_dirs) — parallel lists, index_paths[i] is the
         index directory for raw_dirs[i]. Comma-joinable.
     """
-    indexes: List[str] = []
-    raw_dirs: List[str] = []
+    indexes: list[str] = []
+    raw_dirs: list[str] = []
 
     roots = [raw_root] if raw_root else _get_default_raw_roots()
     existing = next((r for r in roots if Path(r).exists()), None)
@@ -145,7 +145,7 @@ def discover_indexes(raw_root: Optional[str] = None) -> Tuple[List[str], List[st
     return indexes, raw_dirs
 
 
-def _resolve_defaults() -> Tuple[str, str]:
+def _resolve_defaults() -> tuple[str, str]:
     """Resolve default index_path and raw_dir.
 
     Priority: env var > auto-discover.
@@ -206,11 +206,11 @@ def _smoke_test_indexes() -> None:
 
 
 # ── Cache: avoid cold restart of searcher/agent per index_path ─
-_bm25_cache: Dict[str, Any] = {}     # index_path -> BM25Searcher
-_hybrid_cache: Dict[str, Any] = {}   # index_path -> HybridSearcher
-_agent_cache: Dict[str, Any] = {}    # index_path -> SearchAgent
-_config_cache: Optional[Any] = None
-_doc_content_cache: Dict[str, str] = {}  # f"{idx}::{doc_id}" -> stripped content[:3000]
+_bm25_cache: dict[str, Any] = {}     # index_path -> BM25Searcher
+_hybrid_cache: dict[str, Any] = {}   # index_path -> HybridSearcher
+_agent_cache: dict[str, Any] = {}    # index_path -> SearchAgent
+_config_cache: Any | None = None
+_doc_content_cache: dict[str, str] = {}  # f"{idx}::{doc_id}" -> stripped content[:3000]
 _DOC_CACHE_MAX = 256
 _agent_memory: Any = None                   # Max cached documents (LRU eviction by size)
 
@@ -224,7 +224,7 @@ def _get_config():
     return _config_cache
 
 
-def _resolve_index(index_path: Optional[str]) -> str:
+def _resolve_index(index_path: str | None) -> str:
     """Resolve index path: parameter > env var > error."""
     idx = index_path or DEFAULT_INDEX
     if not idx:
@@ -234,7 +234,7 @@ def _resolve_index(index_path: Optional[str]) -> str:
     return idx
 
 
-def _resolve_raw(raw_dir: Optional[str]) -> str:
+def _resolve_raw(raw_dir: str | None) -> str:
     """Resolve raw directory: parameter > env var > derive from index."""
     raw = raw_dir or DEFAULT_RAW
     if not raw:
@@ -250,7 +250,6 @@ def _grep_fallback(query: str, raw_dir: str, limit: int = 10) -> str:
     Auto-converts multi-word natural language queries to OR regex,
     mirroring the CLI _query_with_grep logic.
     """
-    import re as _re
 
     # Auto-convert multi-word queries (same logic as CLI _query_with_grep)
     _REGEX_META = set(".+*?[](){}|^$\\<>=!")
@@ -281,7 +280,7 @@ def _grep_fallback(query: str, raw_dir: str, limit: int = 10) -> str:
         )
 
     # Format results similar to _format_search_results
-    lines: List[str] = [f"Found {total} results via grep fallback ({files_searched} files searched)\n"]
+    lines: list[str] = [f"Found {total} results via grep fallback ({files_searched} files searched)\n"]
     output_lines = (result.data or "").split("\n") if isinstance(result.data, str) else []
     for line in output_lines[:limit * 3]:  # Each match has ~3 lines (match + 2 context)
         lines.append(line)
@@ -304,7 +303,7 @@ def _get_searcher(index_path: str):
     return _bm25_cache[index_path]
 
 
-def _get_all_searchers(index_path: str) -> List[Any]:
+def _get_all_searchers(index_path: str) -> list[Any]:
     """Get or create readonly BM25Searchers for ALL indexes (multi-index).
 
     For comma-separated paths, returns one searcher per index.
@@ -323,7 +322,7 @@ def _get_all_searchers(index_path: str) -> List[Any]:
 _smoke_test_indexes()
 
 
-def _get_agent(index_path: str, raw_dir: Optional[str] = None, use_rerank: bool = True):
+def _get_agent(index_path: str, raw_dir: str | None = None, use_rerank: bool = True):
     """Get or create a SearchAgent for the given index.
 
     Supports comma-separated multi-index paths — create_search_agent
@@ -342,7 +341,7 @@ def _get_agent(index_path: str, raw_dir: Optional[str] = None, use_rerank: bool 
             use_rerank=use_rerank,
         )
         # Disable SearchLogger for MCP (avoid side-effect file writes)
-        setattr(agent, "_no_log", True)
+        agent._no_log = True
         _agent_cache[cache_key] = agent
     return _agent_cache[cache_key]
 
@@ -356,7 +355,7 @@ def _quick_search(
     query: str,
     index_path: str,
     limit: int = 3,
-) -> Optional[List[Any]]:
+) -> list[Any] | None:
     """Fast BM25 pre-check — verify index has relevant documents.
 
     Searches ALL indexes (multi-index) and merges results.
@@ -366,7 +365,7 @@ def _quick_search(
         idx_list = [i.strip() for i in index_path.split(",") if i.strip()]
         if not idx_list:
             return None
-        all_items: List[Any] = []
+        all_items: list[Any] = []
         for idx in idx_list:
             try:
                 searcher = _get_searcher(idx)
@@ -383,7 +382,7 @@ def _quick_search(
 async def _run_agent_with_timeout(
     agent: Any,
     query: str,
-    skill: Optional[str],
+    skill: str | None,
     timeout_seconds: int = _AGENT_TIMEOUT_SECONDS,
 ) -> Any:
     """Run agent.run() with a hard timeout via asyncio.
@@ -406,8 +405,8 @@ async def _run_agent_with_timeout(
 async def _fast_agent_pipeline(
     query: str,
     index_path: str,
-    raw_dir: Optional[str],
-    skill: Optional[str],
+    raw_dir: str | None,
+    skill: str | None,
 ) -> str:
     """MCP-optimized fast pipeline with query rewriting + multi-query search.
 
@@ -428,8 +427,9 @@ async def _fast_agent_pipeline(
     """
     t0 = time.time()
     config = _get_config()
-    from src.agent.llm_client import LLMClient, ChatMessage
     import concurrent.futures
+
+    from src.agent.llm_client import ChatMessage, LLMClient
 
     # ── Step 0: Agent Memory recall — check if this query was answered before ──
     try:
@@ -518,7 +518,7 @@ async def _fast_agent_pipeline(
         # Continue with original query only — best-effort
 
     # ── Step 1: Multi-query BM25 search ──
-    all_results: List[Any] = []
+    all_results: list[Any] = []
     seen_ids: set = set()
 
     # P0-fix: Index domain filtering — for domain-specific queries, only search
@@ -716,9 +716,9 @@ async def _fast_agent_pipeline(
         return text
 
 
-def _format_search_results_from_list(items: List[Any], limit: int) -> str:
+def _format_search_results_from_list(items: list[Any], limit: int) -> str:
     """Format a list of search result items (from _quick_search) into text."""
-    lines: List[str] = [f"Found {len(items)} results\n"]
+    lines: list[str] = [f"Found {len(items)} results\n"]
     for i, r in enumerate(items[:limit]):
         title = getattr(r, "title", "") or ""
         score = getattr(r, "score", 0.0)
@@ -744,7 +744,7 @@ def _format_search_results_from_list(items: List[Any], limit: int) -> str:
 
 def _format_search_results(results: Any, limit: int) -> str:
     """Format PaginatedResults or UnifiedSearchResults into readable text."""
-    lines: List[str] = []
+    lines: list[str] = []
 
     # Handle PaginatedResults (from BM25Searcher)
     items = getattr(results, "results", None) or getattr(results, "items", None) or []
@@ -781,7 +781,7 @@ def _format_search_results(results: Any, limit: int) -> str:
 
 def _format_agent_response(resp: Any) -> str:
     """Format AgentResponse into readable text."""
-    lines: List[str] = []
+    lines: list[str] = []
 
     if not getattr(resp, "success", True):
         error = getattr(resp, "error", "Unknown error")
@@ -815,7 +815,7 @@ def _format_agent_response(resp: Any) -> str:
 
 # ── MCP Server definition ─────────────────────────────────────
 
-def create_server(host: str = "127.0.0.1", port: int = 8000) -> "FastMCP":  # type: ignore[valid-type]
+def create_server(host: str = "127.0.0.1", port: int = 8000) -> FastMCP:  # type: ignore[valid-type]
     """Create and configure the FastMCP server with all tools.
     
     Args:
@@ -858,7 +858,7 @@ def create_server(host: str = "127.0.0.1", port: int = 8000) -> "FastMCP":  # ty
             if mode == "bm25":
                 # Multi-index: search all indexes, merge, re-sort
                 if "," in idx:
-                    all_items: List[Any] = []
+                    all_items: list[Any] = []
                     total_exec = 0.0
                     for searcher in _get_all_searchers(idx):
                         res = searcher.search(query, limit=limit)
@@ -886,7 +886,7 @@ def create_server(host: str = "127.0.0.1", port: int = 8000) -> "FastMCP":  # ty
 
                 # Multi-index: search each index+raw pair, merge results
                 if len(idx_list) > 1:
-                    all_items: List[Any] = []
+                    all_items: list[Any] = []
                     total_exec = 0.0
                     for i, index_dir in enumerate(idx_list):
                         raw_dir_i = raw_list[i] if i < len(raw_list) else raw_list[0]
@@ -1002,7 +1002,7 @@ def create_server(host: str = "127.0.0.1", port: int = 8000) -> "FastMCP":  # ty
             Full document content with title and metadata.
         """
         try:
-            tried_indexes: List[str] = []
+            tried_indexes: list[str] = []
 
             # Method 1: by doc_id (from index)
             if doc_id:
@@ -1044,7 +1044,7 @@ def create_server(host: str = "127.0.0.1", port: int = 8000) -> "FastMCP":  # ty
             # Method 2: by source_path (direct file read)
             if source_path:
                 # Build raw_dirs from both DEFAULT_RAW and index_path parent dirs
-                raw_dirs: List[str] = []
+                raw_dirs: list[str] = []
                 try:
                     raw = _resolve_raw("")
                     raw_dirs.extend(r.strip() for r in raw.split(",") if r.strip())

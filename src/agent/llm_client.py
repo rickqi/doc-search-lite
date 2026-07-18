@@ -10,8 +10,9 @@ import logging
 import os
 import time
 from collections import OrderedDict
+from collections.abc import AsyncGenerator, Callable, Sequence
 from dataclasses import dataclass, field
-from typing import Any, AsyncGenerator, Callable, Dict, List, Optional, Sequence, Union
+from typing import Any
 
 import litellm
 from litellm import acompletion, completion
@@ -110,17 +111,17 @@ class ChatMessage:
 
     role: str
     content: str
-    name: Optional[str] = None
-    tool_call_id: Optional[str] = None
-    tool_calls: Optional[List[Dict[str, Any]]] = None
+    name: str | None = None
+    tool_call_id: str | None = None
+    tool_calls: list[dict[str, Any]] | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary format for LiteLLM.
 
         Returns:
             Dict[str, Any]: Dictionary representation
         """
-        result: Dict[str, Any] = {"role": self.role, "content": self.content}
+        result: dict[str, Any] = {"role": self.role, "content": self.content}
         if self.name:
             result["name"] = self.name
         if self.tool_call_id:
@@ -143,7 +144,7 @@ class ToolCall:
 
     id: str
     name: str
-    arguments: Dict[str, Any]
+    arguments: dict[str, Any]
     raw_arguments: str = ""
 
     @classmethod
@@ -185,11 +186,11 @@ class ChatResponse:
     """
 
     content: str = ""
-    tool_calls: List[ToolCall] = field(default_factory=list)
+    tool_calls: list[ToolCall] = field(default_factory=list)
     finish_reason: str = ""
-    usage: Dict[str, int] = field(default_factory=dict)
+    usage: dict[str, int] = field(default_factory=dict)
     model: str = ""
-    raw_response: Optional[Any] = None
+    raw_response: Any | None = None
     latency_ms: float = 0.0
     cache_hit: bool = False
 
@@ -219,8 +220,8 @@ class ToolResult:
     name: str
     content: str
     success: bool = True
-    error: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    error: str | None = None
+    metadata: dict[str, Any] | None = None
 
     def to_message(self) -> ChatMessage:
         """Convert to a ChatMessage for the conversation.
@@ -292,7 +293,7 @@ class LLMClient:
         timeout: float = 60.0,
         usage_tracker=None,
         diagnostics: Any = None,
-        model_tier: Optional[str] = None,
+        model_tier: str | None = None,
         budget_guard=None,
     ) -> None:
         """Initialize the LLM client.
@@ -340,7 +341,7 @@ class LLMClient:
         self._model_tier = model_tier
 
         # Track provider failures to auto-disable tiers (e.g., expired API keys)
-        self._disabled_tiers: Dict[str, float] = {}  # tier -> timestamp of last failure
+        self._disabled_tiers: dict[str, float] = {}  # tier -> timestamp of last failure
 
         # Optional litellm Router for connection pooling and failover
         # Skip Router when running under pytest (test mocks patch direct completion())
@@ -371,7 +372,7 @@ class LLMClient:
                 # Only add fast tier if it differs from default and has credentials
                 fast_model = config.fast_model
                 if fast_model != self.model:
-                    fast_params: Dict[str, Any] = {"model": fast_model, "api_key": _api_key_for_model(fast_model)}
+                    fast_params: dict[str, Any] = {"model": fast_model, "api_key": _api_key_for_model(fast_model)}
                     fast_base = _base_url_for_model(fast_model)
                     if fast_base:
                         fast_params["api_base"] = fast_base
@@ -379,7 +380,7 @@ class LLMClient:
                 # Only add power tier if it differs from default and has credentials
                 power_model = config.power_model
                 if power_model != self.model:
-                    power_params: Dict[str, Any] = {"model": power_model, "api_key": _api_key_for_model(power_model)}
+                    power_params: dict[str, Any] = {"model": power_model, "api_key": _api_key_for_model(power_model)}
                     power_base = _base_url_for_model(power_model)
                     if power_base:
                         power_params["api_base"] = power_base
@@ -410,7 +411,7 @@ class LLMClient:
 
         logger.info(f"Initialized LLMClient with model: {self.model}")
 
-    def _resolve_model(self, override_tier: Optional[str] = None) -> str:
+    def _resolve_model(self, override_tier: str | None = None) -> str:
         """Resolve which model to use based on tier config.
 
         Fallback chain:
@@ -444,9 +445,7 @@ class LLMClient:
                 model_result = fast
         elif tier == "power":
             power = self.config.power_model
-            if power.startswith("deepseek/") and not self.config.deepseek_api_key:
-                model_result = self.model
-            elif power.startswith("zai/") and not self.config.glm_api_key:
+            if power.startswith("deepseek/") and not self.config.deepseek_api_key or power.startswith("zai/") and not self.config.glm_api_key:
                 model_result = self.model
             else:
                 model_result = power
@@ -484,13 +483,13 @@ class LLMClient:
                 )
         return warnings
 
-    def _mark_tier_failed(self, tier: Optional[str]) -> None:
+    def _mark_tier_failed(self, tier: str | None) -> None:
         """Mark a model tier as failed (e.g., auth error) to disable it temporarily."""
         if tier:
             self._disabled_tiers[tier] = time.time()
             logger.warning("Tier '%s' marked as failed, falling back to default model for 5 minutes", tier)
 
-    def _resolve_router_model_name(self, override_tier: Optional[str] = None) -> str:
+    def _resolve_router_model_name(self, override_tier: str | None = None) -> str:
         """Resolve the Router model_name for the given tier.
 
         Falls back to "default" if the tier model matches the default model.
@@ -509,8 +508,8 @@ class LLMClient:
         return tier or "default"
 
     def _convert_tools(
-        self, tools: Optional[List[Tool]]
-    ) -> Optional[List[Dict[str, Any]]]:
+        self, tools: list[Tool] | None
+    ) -> list[dict[str, Any]] | None:
         """Convert Tool objects to LiteLLM format.
 
         Args:
@@ -607,11 +606,11 @@ class LLMClient:
 
     def chat(
         self,
-        messages: Sequence[Union[ChatMessage, Dict[str, Any]]],
-        tools: Optional[List[Tool]] = None,
-        temperature: Optional[float] = None,
-        max_tokens: Optional[int] = None,
-        model_tier: Optional[str] = None,
+        messages: Sequence[ChatMessage | dict[str, Any]],
+        tools: list[Tool] | None = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
+        model_tier: str | None = None,
     ) -> ChatResponse:
         """Send a chat completion request.
 
@@ -630,7 +629,7 @@ class LLMClient:
             LLMClientError: If the request fails after all retries
         """
         # ── PII Desensitization ──
-        _des_mappings: List[Dict[str, str]] = []
+        _des_mappings: list[dict[str, str]] = []
         if self._desensitizer:
             _msgs = []
             for msg in messages:
@@ -693,7 +692,7 @@ class LLMClient:
                 resolved_base_url = "https://api.deepseek.com"
 
         # Build request kwargs
-        kwargs: Dict[str, Any] = {
+        kwargs: dict[str, Any] = {
             "model": resolved_model,
             "messages": formatted_messages,
             "temperature": temperature if temperature is not None else self.temperature,
@@ -712,7 +711,7 @@ class LLMClient:
             kwargs["tool_choice"] = "auto"
 
         # Retry logic with exponential backoff
-        last_error: Optional[Exception] = None
+        last_error: Exception | None = None
         for attempt in range(self.max_retries):
             try:
                 logger.debug(
@@ -723,7 +722,7 @@ class LLMClient:
                 # Use Router if available, else direct completion
                 if self._router is not None:
                     router_name = self._resolve_router_model_name(model_tier)
-                    router_kwargs: Dict[str, Any] = {
+                    router_kwargs: dict[str, Any] = {
                         "model": router_name,
                         "messages": formatted_messages,
                         "temperature": kwargs["temperature"],
@@ -789,10 +788,10 @@ class LLMClient:
 
     async def stream_chat(
         self,
-        messages: Sequence[Union[ChatMessage, Dict[str, Any]]],
-        tools: Optional[List[Tool]] = None,
-        temperature: Optional[float] = None,
-        max_tokens: Optional[int] = None,
+        messages: Sequence[ChatMessage | dict[str, Any]],
+        tools: list[Tool] | None = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
     ) -> AsyncGenerator[str, None]:
         """Stream a chat completion response.
 
@@ -819,7 +818,7 @@ class LLMClient:
                 formatted_messages.append(msg)
 
         # Build request kwargs
-        kwargs: Dict[str, Any] = {
+        kwargs: dict[str, Any] = {
             "model": self.model,
             "messages": formatted_messages,
             "temperature": temperature if temperature is not None else self.temperature,
@@ -839,7 +838,7 @@ class LLMClient:
             kwargs["tool_choice"] = "auto"
 
         # Retry logic with exponential backoff
-        last_error: Optional[Exception] = None
+        last_error: Exception | None = None
         for attempt in range(self.max_retries):
             try:
                 logger.debug(
@@ -872,9 +871,9 @@ class LLMClient:
 
     def execute_tool_calls(
         self,
-        tool_calls: List[ToolCall],
-        tools: List[Tool],
-    ) -> List[ToolResult]:
+        tool_calls: list[ToolCall],
+        tools: list[Tool],
+    ) -> list[ToolResult]:
         """Execute tool calls from LLM response.
 
         Args:
@@ -973,7 +972,7 @@ class LLMClient:
 
         return results
 
-    def _summarize_history(self, messages: List[Dict[str, Any]]) -> str:
+    def _summarize_history(self, messages: list[dict[str, Any]]) -> str:
         """Summarize old conversation messages using LLM.
 
         Args:
@@ -995,7 +994,7 @@ class LLMClient:
             return ""
 
         try:
-            summary_messages: List[Union[ChatMessage, Dict[str, Any]]] = [
+            summary_messages: list[ChatMessage | dict[str, Any]] = [
                 ChatMessage(
                     role="system",
                     content="用一句话总结以下对话历史的关键信息。",
@@ -1012,9 +1011,9 @@ class LLMClient:
 
     def _compress_conversation(
         self,
-        conversation: List[Dict[str, Any]],
+        conversation: list[dict[str, Any]],
         level: str = "level3",
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Apply context management to keep conversation within limits.
 
         Levels (matching DCI-Agent-Lite):
@@ -1092,15 +1091,15 @@ class LLMClient:
 
     def chat_with_tools(
         self,
-        messages: Sequence[Union[ChatMessage, Dict[str, Any]]],
-        tools: List[Tool],
+        messages: Sequence[ChatMessage | dict[str, Any]],
+        tools: list[Tool],
         max_iterations: int = 5,
-        temperature: Optional[float] = None,
-        max_tokens: Optional[int] = None,
-        max_total_tokens: Optional[int] = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
+        max_total_tokens: int | None = None,
         context_management: str = "level3",
-        on_tool_call: Optional[Callable] = None,
-        should_stop: Optional[Callable[[], bool]] = None,
+        on_tool_call: Callable | None = None,
+        should_stop: Callable[[], bool] | None = None,
     ) -> ChatResponse:
         """Send a chat request with automatic tool execution.
 
@@ -1128,7 +1127,7 @@ class LLMClient:
             ChatResponse: The final response
         """
         # Convert messages to dict format for mutation
-        conversation: List[Dict[str, Any]] = []
+        conversation: list[dict[str, Any]] = []
         for msg in messages:
             if isinstance(msg, ChatMessage):
                 conversation.append(msg.to_dict())
@@ -1176,7 +1175,7 @@ class LLMClient:
                 return response
 
             # Add assistant message with tool calls
-            assistant_message: Dict[str, Any] = {
+            assistant_message: dict[str, Any] = {
                 "role": "assistant",
                 "content": response.content,
             }

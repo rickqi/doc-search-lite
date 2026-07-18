@@ -22,7 +22,6 @@ import json
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +40,7 @@ class IndexMeta:
     """
 
     path: str
-    tags: List[str] = field(default_factory=list)
+    tags: list[str] = field(default_factory=list)
     profile: str = "general"
     name: str = ""
     doc_count: int = 0
@@ -60,7 +59,7 @@ class QueryRouter:
     """
 
     # Domain keyword mapping (expandable)
-    DOMAIN_KEYWORDS: Dict[str, List[str]] = {
+    DOMAIN_KEYWORDS: dict[str, list[str]] = {
         "hr": [
             "人事", "员工", "招聘", "薪资", "福利", "请假", "年假",
             "考勤", "入职", "离职", "加班", "hr", "人力资源",
@@ -127,7 +126,7 @@ class QueryRouter:
     }
 
     # Colloquial-to-standard term mapping for routing
-    _ROUTING_REWRITE_MAP: Dict[str, str] = {
+    _ROUTING_REWRITE_MAP: dict[str, str] = {
         "多少钱": "费用 价格 报价 成本",
         "怎么办手续": "流程 办理 步骤",
         "能不能": "规定 政策 是否允许",
@@ -153,12 +152,12 @@ class QueryRouter:
         '{{"selected": ["索引名1", "索引名2"], "reason": "选择原因"}}'
     )
 
-    def __init__(self, indexes: Dict[str, IndexMeta]):
-        self._indexes: Dict[str, IndexMeta] = indexes
+    def __init__(self, indexes: dict[str, IndexMeta]):
+        self._indexes: dict[str, IndexMeta] = indexes
         self._last_max_score: float = 0.0
 
     @property
-    def indexes(self) -> Dict[str, IndexMeta]:
+    def indexes(self) -> dict[str, IndexMeta]:
         """Return the registered indexes."""
         return self._indexes
 
@@ -181,7 +180,7 @@ class QueryRouter:
                 expanded_parts.append(standard)
         return " ".join(expanded_parts)
 
-    def route(self, query: str, top_k: Optional[int] = None) -> List[str]:
+    def route(self, query: str, top_k: int | None = None) -> list[str]:
         """Route a query to relevant indexes.
 
         Args:
@@ -202,7 +201,7 @@ class QueryRouter:
         expanded_query = self.rewrite_for_routing(query)
 
         # Score each index (use expanded_query instead of raw query)
-        scores: Dict[str, float] = {}
+        scores: dict[str, float] = {}
         for path, meta in self._indexes.items():
             scores[path] = self._score_index(expanded_query, meta)
 
@@ -226,9 +225,9 @@ class QueryRouter:
     def route_with_llm(
         self,
         query: str,
-        top_k: Optional[int] = None,
+        top_k: int | None = None,
         llm_client=None,
-    ) -> List[str]:
+    ) -> list[str]:
         """Route a query, falling back to LLM when keyword confidence is low.
 
         First performs keyword routing via :meth:`route`. If the highest keyword
@@ -255,7 +254,7 @@ class QueryRouter:
             return keyword_results
 
         # 3. Build index list string for the LLM prompt
-        index_lines: List[str] = []
+        index_lines: list[str] = []
         for path, meta in self._indexes.items():
             parts = [f"- 名称: {meta.name or Path(path).name}"]
             if meta.tags:
@@ -295,7 +294,7 @@ class QueryRouter:
                 cleaned = "\n".join(lines)
 
             data = json.loads(cleaned)
-            selected_names: List[str] = data.get("selected", [])
+            selected_names: list[str] = data.get("selected", [])
         except (json.JSONDecodeError, AttributeError):
             logger.warning("LLM routing response parse failed: %s", raw[:100])
             return keyword_results
@@ -304,14 +303,14 @@ class QueryRouter:
             return keyword_results
 
         # 6. Match LLM-selected names to index paths
-        path_map: Dict[str, str] = {}
+        path_map: dict[str, str] = {}
         for path, meta in self._indexes.items():
             dir_name = Path(path).name
             if meta.name:
                 path_map[meta.name.lower()] = path
             path_map[dir_name.lower()] = path
 
-        matched: List[str] = []
+        matched: list[str] = []
         for name in selected_names:
             key = name.lower().strip()
             if key in path_map and path_map[key] not in matched:
@@ -381,7 +380,7 @@ class QueryRouter:
 
         return score
 
-    def route_by_tags(self, query_tags: List[str], top_k: Optional[int] = None) -> List[str]:
+    def route_by_tags(self, query_tags: list[str], top_k: int | None = None) -> list[str]:
         """Route based on explicit tags (for recall scenario).
 
         Instead of matching query text → index tags (like route()), this matches
@@ -411,7 +410,7 @@ class QueryRouter:
         query_tags_lower = [t.lower() for t in query_tags]
 
         # Score each index by tag overlap
-        scores: Dict[str, float] = {}
+        scores: dict[str, float] = {}
         for path, meta in self._indexes.items():
             score = 0.0
             index_tags_lower = [t.lower() for t in meta.tags]

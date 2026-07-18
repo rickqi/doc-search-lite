@@ -7,13 +7,12 @@
 """
 
 import re
-from typing import List, Dict
 
 # 最大提取标题数，防止超长文档消耗过多 token
 MAX_HEADINGS = 30
 
 
-def extract_headings(markdown: str) -> List[Dict]:
+def extract_headings(markdown: str) -> list[dict]:
     """从 Markdown 内容中提取标题层级结构。
 
     仅提取 ``#`` 开头的标准 Markdown 标题行，
@@ -31,7 +30,7 @@ def extract_headings(markdown: str) -> List[Dict]:
     if not markdown:
         return []
 
-    headings: List[Dict] = []
+    headings: list[dict] = []
     in_code_block = False
 
     for line_num, line in enumerate(markdown.split("\n"), start=1):

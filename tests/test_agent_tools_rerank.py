@@ -11,11 +11,8 @@ Tests verify:
 import json
 from unittest.mock import MagicMock, patch
 
-import pytest
-
-from src.agent.base import ToolResult
-from src.search.reranker import RerankResult
 from src.agent.tools.rerank import RerankTool
+from src.search.reranker import RerankResult
 
 
 def _make_mock_reranker(available=True):
@@ -181,8 +178,9 @@ class TestRerankToolRegistration:
 
     def test_rerank_registered_when_available(self):
         """RerankTool registered when reranker.available=True."""
-        from src.agent.search_agent import create_search_agent
         from types import SimpleNamespace
+
+        from src.agent.search_agent import create_search_agent
 
         config = SimpleNamespace(
             glm_api_key="test-key",
@@ -200,7 +198,8 @@ class TestRerankToolRegistration:
             tiered_routing=False,
         )
 
-        import tempfile, os
+        import os
+        import tempfile
         from pathlib import Path
         with tempfile.TemporaryDirectory() as tmp:
             idx = Path(tmp) / "index"
@@ -222,8 +221,9 @@ class TestRerankToolRegistration:
 
     def test_rerank_not_registered_when_unavailable(self):
         """RerankTool NOT registered when reranker.available=False (no API key)."""
-        from src.agent.search_agent import create_search_agent
         from types import SimpleNamespace
+
+        from src.agent.search_agent import create_search_agent
 
         config = SimpleNamespace(
             glm_api_key="test-key",
@@ -241,7 +241,8 @@ class TestRerankToolRegistration:
             tiered_routing=False,
         )
 
-        import tempfile, os
+        import os
+        import tempfile
         from pathlib import Path
         with tempfile.TemporaryDirectory() as tmp:
             idx = Path(tmp) / "index"

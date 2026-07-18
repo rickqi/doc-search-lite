@@ -10,11 +10,11 @@ All operations return results with source references.
 import json
 import logging
 import time
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any
 
 from src.agent.base import Agent, AgentResponse
 from src.agent.llm_client import ChatMessage, LLMClient
-from src.agent.tools.analyze import AnalyzeTool, LLMClientProtocol
+from src.agent.tools.analyze import AnalyzeTool
 from src.storage.markdown_store import MarkdownStore
 
 if TYPE_CHECKING:
@@ -41,7 +41,7 @@ class LLMClientAdapter:
     def generate(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None,
+        system_prompt: str | None = None,
         temperature: float = 0.7,
         max_tokens: int = 2000,
     ) -> str:
@@ -56,7 +56,7 @@ class LLMClientAdapter:
         Returns:
             Generated text response
         """
-        messages: List[ChatMessage] = []
+        messages: list[ChatMessage] = []
 
         if system_prompt:
             messages.append(ChatMessage(role="system", content=system_prompt))
@@ -135,7 +135,7 @@ class AnalysisAgent(Agent):
     def run(
         self,
         query: str,
-        context: Optional[Dict[str, Any]] = None,
+        context: dict[str, Any] | None = None,
     ) -> AgentResponse:
         """Execute analysis based on query and context.
 
@@ -195,8 +195,8 @@ class AnalysisAgent(Agent):
 
     def compare(
         self,
-        doc_ids: List[str],
-        aspect: Optional[str] = None,
+        doc_ids: list[str],
+        aspect: str | None = None,
     ) -> AgentResponse:
         """Compare multiple documents and find differences/similarities.
 
@@ -268,9 +268,9 @@ class AnalysisAgent(Agent):
 
     def extract(
         self,
-        doc_id: Optional[str],
-        query: Optional[str] = None,
-        schema: Optional[Dict[str, Any]] = None,
+        doc_id: str | None,
+        query: str | None = None,
+        schema: dict[str, Any] | None = None,
     ) -> AgentResponse:
         """Extract structured information from a document.
 
@@ -423,7 +423,7 @@ class AnalysisAgent(Agent):
             schema=table_schema,
         )
 
-    def summarize(self, doc_id: str, focus: Optional[str] = None) -> AgentResponse:
+    def summarize(self, doc_id: str, focus: str | None = None) -> AgentResponse:
         """Generate a summary of a document.
 
         Convenience method for document summarization.
@@ -435,7 +435,7 @@ class AnalysisAgent(Agent):
         Returns:
             AgentResponse with document summary
         """
-        query = f"Summarize this document"
+        query = "Summarize this document"
         if focus:
             query += f", focusing on: {focus}"
 
@@ -444,8 +444,8 @@ class AnalysisAgent(Agent):
 
 def create_analysis_agent(
     config: "Config",
-    raw_dir: Optional[str] = None,
-    output_base: Optional[str] = None,
+    raw_dir: str | None = None,
+    output_base: str | None = None,
 ) -> "AnalysisAgent":
     """Factory function to create a fully configured AnalysisAgent.
 
@@ -458,6 +458,7 @@ def create_analysis_agent(
         Configured AnalysisAgent instance ready for compare/extract/summarize
     """
     from pathlib import Path
+
     from src.storage.markdown_store import MarkdownStore
 
     output_dir = Path(output_base) if output_base else (Path(raw_dir) if raw_dir else Path("."))
@@ -472,9 +473,9 @@ def search_and_analyze(
     index_path: str,
     config: "Config",
     mode: str = "extract",
-    raw_dir: Optional[str] = None,
+    raw_dir: str | None = None,
     top_k: int = 3,
-    aspect: Optional[str] = None,
+    aspect: str | None = None,
 ) -> "AgentResponse":
     """Search for relevant documents then analyze them in one step.
 
@@ -495,6 +496,7 @@ def search_and_analyze(
         AgentResponse with analysis result.
     """
     from pathlib import Path
+
     from src.search.bm25_search import create_searcher
 
     # 1. Search

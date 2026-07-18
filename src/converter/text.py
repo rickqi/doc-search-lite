@@ -9,9 +9,8 @@ Supports automatic encoding detection for Chinese text files.
 
 import time
 from pathlib import Path
-from typing import Dict, List, Optional
 
-from src.converter.base import ConvertResult, Converter
+from src.converter.base import Converter, ConvertResult
 
 
 class TextConverter(Converter):
@@ -33,7 +32,7 @@ class TextConverter(Converter):
         return "0.1.0"
 
     @property
-    def supported_formats(self) -> List[str]:
+    def supported_formats(self) -> list[str]:
         """Get list of supported file extensions."""
         return [".txt", ".md"]
 
@@ -49,11 +48,11 @@ class TextConverter(Converter):
             (text_content, encoding_used) 元组
         """
         encodings = ["utf-8", "utf-8-sig", "gbk", "gb2312", "latin-1"]
-        last_error: Optional[Exception] = None
+        last_error: Exception | None = None
 
         for enc in encodings:
             try:
-                with open(source, "r", encoding=enc) as f:
+                with open(source, encoding=enc) as f:
                     content = f.read()
                 return content, enc
             except (UnicodeDecodeError, UnicodeError) as e:
@@ -68,7 +67,7 @@ class TextConverter(Converter):
         self,
         source: Path,
         output_dir: Path,
-        options: Optional[Dict] = None,
+        options: dict | None = None,
     ) -> ConvertResult:
         """
         Convert a plain text file to Markdown.
@@ -83,8 +82,8 @@ class TextConverter(Converter):
             ConvertResult containing conversion results.
         """
         options = options or {}
-        errors: List[str] = []
-        metadata: Dict = {}
+        errors: list[str] = []
+        metadata: dict = {}
         start_time = time.time()
 
         # 验证文件格式
@@ -123,7 +122,7 @@ class TextConverter(Converter):
         try:
             with open(source, "rb") as f:
                 f.read(8)
-        except IOError as e:
+        except OSError as e:
             error_msg = f"Cannot read source file (may be corrupted or locked): {e}"
             return ConvertResult(
                 success=False,
@@ -172,7 +171,7 @@ class TextConverter(Converter):
             force_encoding = options.get("encoding")
             if force_encoding:
                 try:
-                    with open(source, "r", encoding=force_encoding) as f:
+                    with open(source, encoding=force_encoding) as f:
                         text_content = f.read()
                     encoding_used = force_encoding
                 except (UnicodeDecodeError, UnicodeError):

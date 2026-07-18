@@ -17,15 +17,14 @@ import shutil
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple
 
 from src.utils.hash import calculate_hash
 
 # Default directories to skip during scanning
-_DEFAULT_SKIP_DIRS: Set[str] = {"index", "_ocr_temp", ".git", "__pycache__"}
+_DEFAULT_SKIP_DIRS: set[str] = {"index", "_ocr_temp", ".git", "__pycache__"}
 
 # Extensions that are never useful for document comparison
-SKIP_EXTENSIONS: Set[str] = {
+SKIP_EXTENSIONS: set[str] = {
     ".crdownload", ".js", ".css", ".woff", ".ttf",
     ".m4a", ".mp3", ".wav", ".mp4",
     ".xmind", ".egg-info", ".pyc", ".pyo",
@@ -64,8 +63,8 @@ class DiffEntry:
 
     relative_path: str
     status: str
-    base: Optional[FileMeta] = None
-    compare: Optional[FileMeta] = None
+    base: FileMeta | None = None
+    compare: FileMeta | None = None
     # When status == "moved", stores the relative path of the matching
     # file in base_dir that has identical content (same hash).
     moved_from: str = ""
@@ -83,30 +82,30 @@ class DiffResult:
 
     base_dir: Path
     compare_dir: Path
-    entries: List[DiffEntry] = field(default_factory=list)
+    entries: list[DiffEntry] = field(default_factory=list)
 
     @property
-    def added(self) -> List[DiffEntry]:
+    def added(self) -> list[DiffEntry]:
         """Entries with status 'added' (genuine new content in compare)."""
         return [e for e in self.entries if e.status == "added"]
 
     @property
-    def moved(self) -> List[DiffEntry]:
+    def moved(self) -> list[DiffEntry]:
         """Entries with status 'moved' (same content, different path in base)."""
         return [e for e in self.entries if e.status == "moved"]
 
     @property
-    def changed(self) -> List[DiffEntry]:
+    def changed(self) -> list[DiffEntry]:
         """Entries with status 'changed' (hash or size differs)."""
         return [e for e in self.entries if e.status == "changed"]
 
     @property
-    def deleted(self) -> List[DiffEntry]:
+    def deleted(self) -> list[DiffEntry]:
         """Entries with status 'deleted' (present in base, absent in compare)."""
         return [e for e in self.entries if e.status == "deleted"]
 
     @property
-    def unchanged(self) -> List[DiffEntry]:
+    def unchanged(self) -> list[DiffEntry]:
         """Entries with status 'unchanged' (identical in both)."""
         return [e for e in self.entries if e.status == "unchanged"]
 
@@ -115,7 +114,7 @@ class DiffResult:
         """True if there are any genuinely added or changed entries."""
         return bool(self.added or self.changed or self.deleted)
 
-    def summary(self) -> Dict[str, int]:
+    def summary(self) -> dict[str, int]:
         """Return a summary count of each status.
 
         Returns:
@@ -141,17 +140,17 @@ class CopyResult:
         errors: list of (relative_path, error_message) tuples
     """
 
-    copied: List[str] = field(default_factory=list)
-    skipped: List[str] = field(default_factory=list)
-    errors: List[Tuple[str, str]] = field(default_factory=list)
+    copied: list[str] = field(default_factory=list)
+    skipped: list[str] = field(default_factory=list)
+    errors: list[tuple[str, str]] = field(default_factory=list)
 
 
 def scan_directory(
     root: Path,
-    extensions: Optional[Set[str]] = None,
-    skip_dirs: Optional[Set[str]] = None,
+    extensions: set[str] | None = None,
+    skip_dirs: set[str] | None = None,
     large_file_threshold: int = 50 * 1024 * 1024,
-) -> Dict[str, FileMeta]:
+) -> dict[str, FileMeta]:
     """Recursively scan a directory and return file metadata.
 
     Walks ``root`` using :func:`os.walk`, collecting file metadata for each
@@ -175,7 +174,7 @@ def scan_directory(
         skip_dirs = _DEFAULT_SKIP_DIRS
 
     root = Path(root)
-    result: Dict[str, FileMeta] = {}
+    result: dict[str, FileMeta] = {}
 
     if not root.exists() or not root.is_dir():
         return result
@@ -228,8 +227,8 @@ def scan_directory(
 def compare_directories(
     base_dir: Path,
     compare_dir: Path,
-    extensions: Optional[Set[str]] = None,
-    skip_dirs: Optional[Set[str]] = None,
+    extensions: set[str] | None = None,
+    skip_dirs: set[str] | None = None,
 ) -> DiffResult:
     """Compare two directories and return a :class:`DiffResult`.
 
@@ -263,14 +262,14 @@ def compare_directories(
 
     # Build a reverse hash index of base_dir for "moved" detection.
     # Maps file_hash → relative_path for every base file with a non-empty hash.
-    base_hash_index: Dict[str, str] = {}
+    base_hash_index: dict[str, str] = {}
     for rel, meta in base_scan.items():
         if meta.file_hash:
             base_hash_index[meta.file_hash] = rel
 
-    all_paths: Set[str] = set(base_scan.keys()) | set(compare_scan.keys())
+    all_paths: set[str] = set(base_scan.keys()) | set(compare_scan.keys())
 
-    entries: List[DiffEntry] = []
+    entries: list[DiffEntry] = []
     for rel_path in sorted(all_paths):
         base_meta = base_scan.get(rel_path)
         compare_meta = compare_scan.get(rel_path)
@@ -350,7 +349,7 @@ def copy_incremental(
     result = CopyResult()
     target_path = Path(target_dir)
 
-    candidates: List[DiffEntry] = []
+    candidates: list[DiffEntry] = []
     if copy_added:
         candidates.extend(diff_result.added)
     if copy_changed:

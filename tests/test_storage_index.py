@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from src.storage.index import TantivyIndexManager
 from src.storage.base import SearchHit, SearchResult
+from src.storage.index import TantivyIndexManager
 
 
 @pytest.fixture

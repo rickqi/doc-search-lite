@@ -12,22 +12,21 @@ Tests cover:
 
 import json
 import time
-from pathlib import Path
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, PropertyMock, patch
 
 import pytest
 
-from src.agent.base import AgentResponse, ToolResult
-from src.agent.llm_client import ChatMessage, ChatResponse, ToolCall
+from src.agent.base import ToolResult
+from src.agent.llm_client import ChatResponse
 from src.agent.search_agent import (
+    QUERY_ANALYSIS_PROMPT,
+    SYSTEM_PROMPT,
     SearchAgent,
     SearchResult,
-    SYSTEM_PROMPT,
-    QUERY_ANALYSIS_PROMPT,
     create_search_agent,
 )
-from src.agent.tools.search import SearchTool
 from src.agent.tools.read import ReadTool
+from src.agent.tools.search import SearchTool
 from src.utils.config import Config
 
 

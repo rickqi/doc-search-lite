@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ class DesensitizeResult:
     """
 
     masked_text: str = ""
-    mapping: Dict[str, str] = field(default_factory=dict)
+    mapping: dict[str, str] = field(default_factory=dict)
     counter: int = 0
 
 
@@ -40,10 +40,9 @@ class Desensitizer:
         print(restored)             # "手机号 13800138000"
     """
 
-    def __init__(self, config_path: Optional[Path] = None):
-        from src.security.maskers import PIIMasker
+    def __init__(self, config_path: Path | None = None):
 
-        self.maskers: List[Any] = []
+        self.maskers: list[Any] = []
         self._init_default_maskers()
 
     def _init_default_maskers(self):
@@ -72,7 +71,7 @@ class Desensitizer:
             logger.warning("Desensitization failed, using original: %s", e)
             return DesensitizeResult(masked_text=text)
 
-    def restore(self, masked_text: str, mapping: Dict[str, str]) -> str:
+    def restore(self, masked_text: str, mapping: dict[str, str]) -> str:
         """将脱敏标记恢复为原始值.
 
         Args:

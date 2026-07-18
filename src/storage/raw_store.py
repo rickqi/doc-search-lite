@@ -12,7 +12,6 @@
 import json
 import shutil
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 
 class RawStore:
@@ -141,7 +140,7 @@ class RawStore:
         source_file: Path,
         markdown: str,
         metadata: dict,
-        images: List[Path],
+        images: list[Path],
     ) -> Path:
         """保存 Markdown + 元数据 + 复制图片到 {stem}_images/ 目录。
 
@@ -171,7 +170,7 @@ class RawStore:
 
     # ── Read Operations ───────────────────────────
 
-    def load_markdown(self, source_file: Path) -> Optional[str]:
+    def load_markdown(self, source_file: Path) -> str | None:
         """加载转换后的 Markdown 内容。
 
         Args:
@@ -185,7 +184,7 @@ class RawStore:
             return None
         return md_path.read_text(encoding="utf-8")
 
-    def load_metadata(self, source_file: Path) -> Optional[dict]:
+    def load_metadata(self, source_file: Path) -> dict | None:
         """加载元数据 JSON。
 
         Args:
@@ -202,7 +201,7 @@ class RawStore:
         except (json.JSONDecodeError, OSError):
             return None
 
-    def load_by_output(self, output_path: Path) -> Optional[Tuple[str, dict]]:
+    def load_by_output(self, output_path: Path) -> tuple[str, dict] | None:
         """通过输出 .md 路径直接加载 Markdown 和元数据。
 
         Args:
@@ -313,7 +312,7 @@ class RawStore:
 
     # ── Listing ───────────────────────────────────
 
-    def list_outputs(self) -> List[Path]:
+    def list_outputs(self) -> list[Path]:
         """列出输出目录树中所有 .md 文件。
 
         Returns:
@@ -324,7 +323,7 @@ class RawStore:
             return []
         return sorted(output_root.rglob("*.md"))
 
-    def list_directories(self) -> List[Path]:
+    def list_directories(self) -> list[Path]:
         """列出输出目录树中所有子目录。
 
         Returns:

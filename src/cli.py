@@ -21,7 +21,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Any, Optional
 
 import click
 from dotenv import load_dotenv
@@ -31,9 +31,9 @@ try:
     from rich.console import Console
     from rich.markdown import Markdown
     from rich.panel import Panel
+    from rich.table import Table
     from rich.text import Text
     from rich.theme import Theme
-    from rich.table import Table
 
     _doc_search_theme = Theme({
         "info": "cyan",
@@ -46,33 +46,32 @@ try:
         "tool": "magenta",
         "query": "bold yellow",
     })
-    console: Optional[Console] = Console(theme=_doc_search_theme)
+    console: Console | None = Console(theme=_doc_search_theme)
     _RICH_AVAILABLE = True
 except ImportError:
     _RICH_AVAILABLE = False
     console = None
 
-from src.converter.coordinator import ConverterCoordinator
 from src.converter.base import ConvertResult
-from src.storage.markdown_store import MarkdownStore
-from src.storage.index import TantivyIndexManager
-from src.storage.metadata import MetadataManager
-from src.storage.base import DocumentRecord
-from src.search.bm25_search import BM25Searcher, create_searcher, SearchPreview
-from src.search.result_formatter import ResultFormatter, SearchResult, format_results
-from src.utils.file_watcher import FileWatcher, ChangeSet
-from src.utils.hash import calculate_hash
-from src.storage.convert_db import ConvertDB
-from src.storage.raw_store import RawStore
-from src.converter.image import ImageConverter
+from src.converter.coordinator import ConverterCoordinator
 from src.converter.csv import CSVConverter
-from src.converter.text import TextConverter
+from src.converter.image import ImageConverter
 from src.converter.ocr import OCRServiceConfig
+from src.converter.text import TextConverter
+from src.search.bm25_search import create_searcher
+from src.search.result_formatter import ResultFormatter, SearchResult
 from src.stats.search_logger import SearchLogger
+from src.storage.base import DocumentRecord
+from src.storage.convert_db import ConvertDB
+from src.storage.index import TantivyIndexManager
+from src.storage.markdown_store import MarkdownStore
+from src.storage.metadata import MetadataManager
+from src.storage.raw_store import RawStore
 from src.utils.dir_diff import (
-    DiffResult, DiffEntry, FileMeta, CopyResult,
-    scan_directory, compare_directories, copy_incremental,
+    compare_directories,
 )
+from src.utils.file_watcher import ChangeSet, FileWatcher
+from src.utils.hash import calculate_hash
 
 logger = logging.getLogger(__name__)
 
@@ -125,24 +124,24 @@ class TaskManager:
 
     _instance: Optional["TaskManager"] = None
 
-    def __init__(self, task_dir: Optional[Path] = None):
+    def __init__(self, task_dir: Path | None = None):
         self.task_dir = task_dir or Path.cwd() / ".doc-search" / "tasks"
         self.task_dir.mkdir(parents=True, exist_ok=True)
-        self._tasks: Dict[str, Dict] = self._load_tasks()
+        self._tasks: dict[str, dict] = self._load_tasks()
 
     @classmethod
-    def get_instance(cls, task_dir: Optional[Path] = None) -> "TaskManager":
+    def get_instance(cls, task_dir: Path | None = None) -> "TaskManager":
         if cls._instance is None:
             cls._instance = cls(task_dir)
         return cls._instance
 
-    def _load_tasks(self) -> Dict[str, Dict]:
+    def _load_tasks(self) -> dict[str, dict]:
         """Load tasks from disk."""
         tasks_file = self.task_dir / "tasks.json"
         if tasks_file.exists():
             try:
                 return json.loads(tasks_file.read_text(encoding="utf-8"))
-            except (json.JSONDecodeError, IOError):
+            except (OSError, json.JSONDecodeError):
                 return {}
         return {}
 
@@ -154,10 +153,10 @@ class TaskManager:
                 json.dumps(self._tasks, ensure_ascii=False, indent=2), encoding="utf-8"
             )
             return True
-        except IOError:
+        except OSError:
             return False
 
-    def create_task(self, task_type: str, params: Dict) -> str:
+    def create_task(self, task_type: str, params: dict) -> str:
         """Create a new task and return its ID."""
         task_id = f"{task_type}_{int(time.time() * 1000)}"
         self._tasks[task_id] = {
@@ -183,11 +182,11 @@ class TaskManager:
         self._tasks[task_id]["updated_at"] = datetime.now().isoformat()
         return self._save_tasks()
 
-    def get_task(self, task_id: str) -> Optional[Dict]:
+    def get_task(self, task_id: str) -> dict | None:
         """Get a task by ID."""
         return self._tasks.get(task_id)
 
-    def list_tasks(self, status: Optional[str] = None) -> List[Dict]:
+    def list_tasks(self, status: str | None = None) -> list[dict]:
         """List all tasks, optionally filtered by status."""
         tasks = list(self._tasks.values())
         if status and status != "all":
@@ -209,7 +208,7 @@ def cli():
     pass
 
 
-def _collect_files(source: Path, formats: tuple, recursive: bool = True) -> List[Path]:
+def _collect_files(source: Path, formats: tuple, recursive: bool = True) -> list[Path]:
     """Collect files from source directory based on formats."""
     files = []
     extensions = set(
@@ -269,7 +268,7 @@ def _scan_and_sync(db: ConvertDB, source_root: Path) -> int:
         待处理文件数量
     """
     # 1. Walk source_root recursively
-    dir_cache: Dict[str, int] = {}  # relative_path -> dir_id
+    dir_cache: dict[str, int] = {}  # relative_path -> dir_id
 
     # Register root directory
     root_id = db.upsert_directory(".", parent_id=None, depth=0, name=source_root.name)
@@ -593,10 +592,10 @@ def _parse_index_paths(index_arg):
 
 
 def _export_search_results(
-    results: List[Dict[str, Any]],
+    results: list[dict[str, Any]],
     export_path: Path,
     query_text: str = "",
-    sources_items: Optional[List[Dict]] = None,
+    sources_items: list[dict] | None = None,
 ) -> None:
     """Export search results to file (JSON/CSV/Markdown).
 
@@ -840,11 +839,11 @@ def _interactive_query_loop(
     agent: bool,
     agent_mode: str,
     output_format: str,
-    model: Optional[str],
-    sources: Optional[str],
+    model: str | None,
+    sources: str | None,
     use_rerank: bool = False,
     search_mode: str = "tool_loop",
-    skill: Optional[str] = None,
+    skill: str | None = None,
 ):
     """Interactive query REPL mode."""
     current_mode = "agent" if agent else "bm25"
@@ -1154,8 +1153,8 @@ def _execute_list_search(
     limit: int,
     output_format: str,
     sources_detail: str = "file",
-    export_path: Optional[Path] = None,
-    index_paths: Optional[list] = None,
+    export_path: Path | None = None,
+    index_paths: list | None = None,
 ):
     """Unified dispatcher for list-mode search strategies (bm25/grep/hybrid/tag/multi_index)."""
     _META = {
@@ -1677,9 +1676,9 @@ def _query_with_bm25(
     index_path: Path,
     limit: int,
     output_format: str,
-    sources: Optional[str],
+    sources: str | None,
     sources_detail: str = "file",
-    export_path: Optional[Path] = None,
+    export_path: Path | None = None,
 ):
     """Execute BM25 keyword search."""
     _execute_list_search(
@@ -1693,7 +1692,7 @@ def _query_with_grep(
     limit: int,
     output_format: str,
     sources_detail: str = "file",
-    export_path: Optional[Path] = None,
+    export_path: Path | None = None,
 ):
     """Execute GrepTool search on raw markdown files (no BM25 index needed)."""
     _execute_list_search(
@@ -1707,7 +1706,7 @@ def _query_with_hybrid(
     limit: int,
     output_format: str,
     sources_detail: str = "file",
-    export_path: Optional[Path] = None,
+    export_path: Path | None = None,
 ):
     """Execute hybrid BM25 + Grep search with RRF fusion."""
     _execute_list_search(
@@ -1721,7 +1720,7 @@ def _query_with_tag(
     limit: int,
     output_format: str,
     sources_detail: str = "file",
-    export_path: Optional[Path] = None,
+    export_path: Path | None = None,
 ):
     """Execute tag-based recall search."""
     _execute_list_search(
@@ -1735,7 +1734,7 @@ def _query_with_multi_index(
     limit: int,
     output_format: str,
     sources_detail: str = "file",
-    export_path: Optional[Path] = None,
+    export_path: Path | None = None,
 ):
     """Execute multi-index search with cross-index RRF merge."""
     _execute_list_search(
@@ -1749,13 +1748,13 @@ def _query_with_agent(
     limit: int,
     agent_mode: str,
     output_format: str,
-    model: Optional[str],
+    model: str | None,
     use_rerank: bool = False,
     mode: str = "tool_loop",
-    skill: Optional[str] = None,
-    load_skill: Optional[str] = None,
+    skill: str | None = None,
+    load_skill: str | None = None,
     sources_detail: str = "file",
-    export_path: Optional[Path] = None,
+    export_path: Path | None = None,
 ):
     """Execute semantic Q&A with SearchAgent."""
     try:
@@ -1903,7 +1902,7 @@ def _query_with_agent(
                         console.print(" | ".join(meta_parts), style="dim")
                 else:
                     # Fallback plain text
-                    click.echo(f"\n📄 回答:")
+                    click.echo("\n📄 回答:")
                     click.echo(response.answer)
 
                     if response.sources:
@@ -1981,7 +1980,7 @@ def status(path, detailed, show_tasks, show_errors, show_metrics):
         try:
             index_manager = TantivyIndexManager(index_path=index_path)
             stats = index_manager.get_stats()
-            click.echo(f"📇 索引状态:")
+            click.echo("📇 索引状态:")
             click.echo(f"   文档数: {stats.get('num_docs', 0)}")
             click.echo(f"   路径: {stats.get('index_path', 'N/A')}")
             click.echo(
@@ -2135,7 +2134,7 @@ def update(source, output, strategy, dry_run, parallel):
         extensions=extensions,
     )
 
-    click.echo(f"\n📊 变更统计:")
+    click.echo("\n📊 变更统计:")
     click.echo(f"  ➕ 新增: {len(changes.added)}")
     click.echo(f"  ✏️ 修改: {len(changes.modified)}")
     click.echo(f"  ➖ 删除: {len(changes.deleted)}")
@@ -2154,7 +2153,7 @@ def update(source, output, strategy, dry_run, parallel):
         for f in changes.deleted[:5]:
             click.echo(f"  ➖ {f.name}")
         if len(changes.added) + len(changes.modified) + len(changes.deleted) > 15:
-            click.echo(f"  ... 还有更多")
+            click.echo("  ... 还有更多")
         return
 
     # Initialize components for update
@@ -2250,7 +2249,7 @@ def update(source, output, strategy, dry_run, parallel):
     if index_manager:
         index_manager.commit()
 
-    click.echo(f"\n📊 更新完成:")
+    click.echo("\n📊 更新完成:")
     click.echo(f"  ✅ 成功: {success_count}")
     click.echo(f"  ❌ 失败: {failed_count}")
     click.echo(f"  🗑️ 已删除: {len(changes.deleted)}")
@@ -2381,7 +2380,7 @@ def task_resume(task_id, path):
         return
 
     params = task.get("params", {})
-    click.echo(f"📋 任务信息:")
+    click.echo("📋 任务信息:")
     click.echo(f"   源目录: {params.get('source', 'N/A')}")
     click.echo(f"   输出目录: {params.get('output', 'N/A')}")
     click.echo(f"   总文件数: {params.get('total_files', 0)}")
@@ -2437,7 +2436,7 @@ def task_retry(task_id, force, path):
         return
 
     if task["status"] != "failed" and not force:
-        click.echo(f"❌ 只有失败的任务才能重试。使用 --force 强制重试")
+        click.echo("❌ 只有失败的任务才能重试。使用 --force 强制重试")
         return
 
     params = task.get("params", {})
@@ -2469,13 +2468,13 @@ def _get_cli_pypdf():
 
 
 def _convert_one_file(
-    file_record: Dict,
+    file_record: dict,
     source_root: Path,
     raw_root_path: Path,
     ocr: bool,
-    ocr_config: Optional[OCRServiceConfig],
+    ocr_config: OCRServiceConfig | None,
     ocr_engine: str = "zhipu",
-) -> Dict:
+) -> dict:
     """Convert a single file in a worker thread.
 
     Each thread gets its own ConverterCoordinator and RawStore instance
@@ -2501,7 +2500,7 @@ def _convert_one_file(
 
         store = RawStore(source_root, raw_root_path)
 
-        options: Dict[str, Any] = {}
+        options: dict[str, Any] = {}
         if ocr:
             options["ocr_api_key"] = os.environ.get("GLM_API_KEY", "")
             options["ocr_base_url"] = os.environ.get("GLM_BASE_URL", "")
@@ -2689,7 +2688,7 @@ def batch_convert(source, raw_root, mode, parallel, ocr, ocr_engine, generate_in
         failed_count = 0
         skipped_count = 0
 
-        def _process_result(conv_result: Dict) -> None:
+        def _process_result(conv_result: dict) -> None:
             """Process a single conversion result and update DB/counters.
 
             Called from the main thread only (DB writes are serialized).
@@ -2740,7 +2739,7 @@ def batch_convert(source, raw_root, mode, parallel, ocr, ocr_engine, generate_in
                 except OSError:
                     pass
 
-            update_kwargs: Dict[str, Any] = dict(
+            update_kwargs: dict[str, Any] = dict(
                 converter=result.converter_name,
                 convert_time=result.convert_time,
                 output_path=str(output_path),
@@ -2856,7 +2855,7 @@ def batch_convert(source, raw_root, mode, parallel, ocr, ocr_engine, generate_in
 
         # Print summary
         click.echo(f"\n{'='*50}")
-        click.echo(f"📊 转换完成")
+        click.echo("📊 转换完成")
         click.echo(f"   ✅ 成功: {success_count}")
         click.echo(f"   ❌ 失败: {failed_count}")
         click.echo(f"   ⏭️  跳过: {skipped_count}")
@@ -2873,7 +2872,7 @@ def batch_convert(source, raw_root, mode, parallel, ocr, ocr_engine, generate_in
         # Token usage summary for this batch
         token_summary = db.get_token_summary()
         if token_summary.get("total_tokens", 0) > 0:
-            click.echo(f"\n   💰 Token 使用量:")
+            click.echo("\n   💰 Token 使用量:")
             click.echo(f"      输入: {token_summary['input_tokens']:,}")
             click.echo(f"      输出: {token_summary['output_tokens']:,}")
             click.echo(f"      合计: {token_summary['total_tokens']:,}")
@@ -3046,8 +3045,8 @@ def catalog_status(raw_dir, detailed):
 
         if detailed:
             # Show file extension breakdown
-            click.echo(f"\n📋 文件类型分布:")
-            ext_stats: Dict[str, Dict[str, int]] = {}
+            click.echo("\n📋 文件类型分布:")
+            ext_stats: dict[str, dict[str, int]] = {}
             for status in ("success", "failed", "pending", "skipped"):
                 for f in db.get_files_by_status(status):
                     ext = f.get("extension", "unknown")
@@ -3221,10 +3220,11 @@ def catalog_repair(raw_dir, fix_types, dry_run, backup, force):
       all      — 应用全部修复 (默认)
     """
     import hashlib
-    from src.converter.table_fix import fix_table_alignment
-    from src.converter.ocr_postprocess import postprocess_ocr_result
-    from src.converter.tag_extractor import TagExtractor
+
     from src.converter.headings import extract_headings
+    from src.converter.ocr_postprocess import postprocess_ocr_result
+    from src.converter.table_fix import fix_table_alignment
+    from src.converter.tag_extractor import TagExtractor
     from src.storage.convert_db import PIPELINE_VERSION
 
     raw_path = Path(raw_dir).resolve()
@@ -3303,7 +3303,7 @@ def catalog_repair(raw_dir, fix_types, dry_run, backup, force):
                 continue
 
             # Strip frontmatter before processing to avoid YAML corruption (H2 fix)
-            from src.converter.frontmatter import strip_frontmatter, inject_frontmatter
+            from src.converter.frontmatter import inject_frontmatter, strip_frontmatter
             fm_existed, content = strip_frontmatter(content)
 
             modified = False
@@ -3433,13 +3433,13 @@ def catalog_repair(raw_dir, fix_types, dry_run, backup, force):
 
     # Summary
     click.echo(f"\n{'='*40}")
-    click.echo(f"📊 修复完成:")
+    click.echo("📊 修复完成:")
     click.echo(f"  ✅ 已修复: {repaired}")
     click.echo(f"  ⏭️  跳过: {skipped} (已最新: {skipped_reasons['already_current']}, 无需修复: {skipped_reasons['no_fix_needed']})")
     if errors:
         click.echo(f"  ❌ 错误: {errors}")
     if dry_run:
-        click.echo(f"  📋 (dry-run 模式，未实际修改文件)")
+        click.echo("  📋 (dry-run 模式，未实际修改文件)")
 
 
 @catalog.command("backfill-headings")
@@ -3535,14 +3535,14 @@ def catalog_backfill_headings(raw_dir, dry_run, force):
 
     # Summary
     click.echo(f"\n{'='*40}")
-    click.echo(f"📊 标题回填完成:")
+    click.echo("📊 标题回填完成:")
     click.echo(f"  ✅ 已更新: {updated}")
     click.echo(f"  ⏭️  已有标题跳过: {skipped}")
     click.echo(f"  📄 无标题文档: {no_headings}")
     if errors:
         click.echo(f"  ❌ 错误: {errors}")
     if dry_run:
-        click.echo(f"  📋 (dry-run 模式，未实际修改文件)")
+        click.echo("  📋 (dry-run 模式，未实际修改文件)")
 
 
 @catalog.command("inject-frontmatter")
@@ -3565,7 +3565,7 @@ def catalog_inject_frontmatter(raw_dir, dry_run, force):
         catalog inject-frontmatter "./my-raw" --dry-run
         catalog inject-frontmatter "./my-raw" --force
     """
-    from src.converter.frontmatter import inject_frontmatter, has_frontmatter, strip_frontmatter
+    from src.converter.frontmatter import has_frontmatter, inject_frontmatter, strip_frontmatter
 
     raw_path = Path(raw_dir).resolve()
     md_files = list(raw_path.rglob("*.md"))
@@ -3651,14 +3651,14 @@ def catalog_inject_frontmatter(raw_dir, dry_run, force):
             click.echo(f"  ⚠️ 注入失败: {rel} — {e}")
 
     click.echo(f"\n{'='*40}")
-    click.echo(f"📊 Frontmatter 注入完成:")
+    click.echo("📊 Frontmatter 注入完成:")
     click.echo(f"  ✅ 注入/更新: {injected}")
     click.echo(f"  ⏭️  已有 frontmatter 跳过: {skipped_has_fm}")
     click.echo(f"  📄 无 .md.json (最小元数据): {skipped_no_json}")
     if errors:
         click.echo(f"  ❌ 错误: {errors}")
     if dry_run:
-        click.echo(f"  📋 (dry-run 模式，未实际修改文件)")
+        click.echo("  📋 (dry-run 模式，未实际修改文件)")
 
 
 # ── build-index 命令 ─────────────────────────────
@@ -3736,7 +3736,7 @@ def diff_migrate(base_dir, compare_dir, export_new, extensions,
     compare_path = Path(compare_dir).resolve()
 
     # Parse extensions filter
-    ext_set: Optional[set] = None
+    ext_set: set | None = None
     if extensions:
         ext_set = set()
         for ext in extensions.split(","):
@@ -4020,7 +4020,7 @@ def build_index(raw_dir, max_content_size, sample_threshold, chunk_mode, chunk_m
     stats = index_mgr.get_stats()
 
     # Summary
-    click.echo(f"\n--- Index Summary ---")
+    click.echo("\n--- Index Summary ---")
     click.echo(f"Indexed: {count} docs in {elapsed:.1f}s ({elapsed / max(count, 1):.2f}s/doc)")
     click.echo(f"Truncated (<=threshold, head only): {truncated_count}")
     click.echo(f"Sampled (>threshold, head+mid+tail): {sampled_count}")
@@ -4145,12 +4145,13 @@ def tui(index, raw_dir, pi, api_port, model, thinking, web, host, port, open_bro
 
     if web:
         import uvicorn
+
         from src.api import app
 
         # Pre-set index path and raw dir as defaults for the web UI
         index_abs = str(Path(index).resolve())
         url = f"http://{host}:{port}"
-        click.echo(f"doc-search Web 模式")
+        click.echo("doc-search Web 模式")
         click.echo(f"  索引: {index_abs}")
         if raw_dir:
             click.echo(f"  Raw:  {Path(raw_dir).resolve()}")
@@ -4159,8 +4160,8 @@ def tui(index, raw_dir, pi, api_port, model, thinking, web, host, port, open_bro
         click.echo(f"  API:  {url}/docs")
 
         if open_browser:
-            import webbrowser
             import threading
+            import webbrowser
             from urllib.parse import urlencode
             params = {"index_path": index_abs}
             if raw_dir:
@@ -4171,9 +4172,9 @@ def tui(index, raw_dir, pi, api_port, model, thinking, web, host, port, open_bro
                 time.sleep(1.5)
                 webbrowser.open(browser_url)
             threading.Thread(target=_open, daemon=True).start()
-            click.echo(f"  浏览器: 自动打开中...")
+            click.echo("  浏览器: 自动打开中...")
 
-        click.echo(f"\n按 Ctrl+C 停止服务")
+        click.echo("\n按 Ctrl+C 停止服务")
         uvicorn.run(app, host=host, port=port, log_level="warning")
     elif pi:
         from src.pi_bridge import PiBridge
@@ -4259,7 +4260,7 @@ def benchmark(queries, index, modes, limit, runs, warmup, output):
     # Parse modes
     mode_list = [m.strip() for m in modes.split(",") if m.strip()]
 
-    click.echo(f"📊 搜索基准测试")
+    click.echo("📊 搜索基准测试")
     click.echo(f"   索引: {actual_index}")
     click.echo(f"   Raw:  {raw_dir}")
     click.echo(f"   查询: {len(query_specs)} 个")
@@ -4331,7 +4332,7 @@ def benchmark(queries, index, modes, limit, runs, warmup, output):
 def ab_test(cases, index_a, raw_a, mode_a, name_a,
             index_b, raw_b, mode_b, name_b,
             runs, limit, domain, difficulty, output, seed):
-    """A/B 测试: 对比两个 Agent 配置的搜索质量与性能.
+    r"""A/B 测试: 对比两个 Agent 配置的搜索质量与性能.
 
     从 QA 案例文件中读取测试问题，分别在 A/B 两个配置上运行，
     统计数据显著性差异。
@@ -4343,7 +4344,9 @@ def ab_test(cases, index_a, raw_a, mode_a, name_a,
             --runs 3 --limit 20 -o results.json
     """
     from src.search.ab_testing import (
-        ABTestRunner, RunnerConfig, load_queries_from_benchmark,
+        ABTestRunner,
+        RunnerConfig,
+        load_queries_from_benchmark,
     )
 
     click.echo("📊 A/B 测试")
@@ -4502,7 +4505,7 @@ def summary(source_dir, days):
                 click.echo(f"    Input: {t['input']:,} | Output: {t['output']:,} | Total: {t['total']:,}")
                 click.echo(f"    费用: ¥{t['cost'] / 100000:.4f}")
 
-        click.echo(f"\n  合计:")
+        click.echo("\n  合计:")
         click.echo(f"    调用次数: {grand_calls}")
         click.echo(f"    Input: {grand_input:,} | Output: {grand_output:,} | Total: {grand_total_tokens:,}")
         click.echo(f"    费用: ¥{grand_cost / 100000:.4f}")
@@ -4882,8 +4885,8 @@ def analyze(query_text, index, raw_dir, mode, doc_ids, doc_id, aspect, output_fo
       doc-search analyze "差旅标准" -i ./index --mode compare --doc-ids abc123,def456 --raw-dir ./raw
       doc-search analyze "报销" -i ./index --mode extract --doc-id abc123
     """
-    from src.utils.config import Config
     from src.agent.analysis_agent import create_analysis_agent, search_and_analyze
+    from src.utils.config import Config
 
     # Honor --no-log
     if no_log:
@@ -5577,6 +5580,7 @@ def pdf_enhance(pdf_path, output, dpi, glm_key, glm_model, la_model, la_device,
       doc-search pdf-enhance "合同.pdf" --la-device cpu    # CPU 模式
     """
     import time as _time
+
     from src.processor.pdf_enhance import PDFEnhancePipeline
 
     pdf_path = Path(pdf_path).resolve()

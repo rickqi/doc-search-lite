@@ -1,10 +1,8 @@
 """Tests for SummarizeTool — document summarization via LLM."""
 
-from unittest.mock import MagicMock, patch
-import pytest
+from unittest.mock import MagicMock
 
 from src.agent.tools.summarize import SummarizeTool
-from src.agent.base import ToolResult
 
 
 class TestSummarizeToolBasics:

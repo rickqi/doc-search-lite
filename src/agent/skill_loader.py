@@ -14,7 +14,6 @@ Search paths (in priority order):
 import logging
 import os
 from pathlib import Path
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +77,7 @@ def list_available_skills() -> dict[str, str]:
     return skills
 
 
-def load_skill_content(skill_name: str) -> Optional[str]:
+def load_skill_content(skill_name: str) -> str | None:
     """Load a SKILL.md file by skill name or direct file path.
 
     Lookup order:

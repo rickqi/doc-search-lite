@@ -12,10 +12,7 @@ import os
 import time
 import urllib.error
 import urllib.request
-from dataclasses import dataclass, field
-from typing import List, Optional
-
-from src.utils.config import Config
+from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +27,7 @@ class RerankResult:
 
     index: int  # Original index in the input list
     relevance_score: float
-    document: Optional[str] = None
+    document: str | None = None
 
 
 @dataclass
@@ -63,7 +60,7 @@ class ZhipuAIReranker:
 
     def __init__(
         self,
-        api_key: Optional[str] = None,
+        api_key: str | None = None,
         timeout: float = 30.0,
         max_retries: int = 2,
         usage_tracker=None,
@@ -103,9 +100,9 @@ class ZhipuAIReranker:
     def rerank(
         self,
         query: str,
-        documents: List[str],
+        documents: list[str],
         top_n: int = 5,
-    ) -> List[RerankResult]:
+    ) -> list[RerankResult]:
         """Rerank documents by relevance to the query.
 
         Args:
@@ -156,9 +153,9 @@ class ZhipuAIReranker:
     def _call_api(
         self,
         query: str,
-        documents: List[str],
+        documents: list[str],
         top_n: int,
-    ) -> List[RerankResult]:
+    ) -> list[RerankResult]:
         """Make the actual HTTP call to the ZhipuAI Rerank API."""
         headers = {
             "Authorization": f"Bearer {self._api_key}",
@@ -200,7 +197,7 @@ class ZhipuAIReranker:
             )
 
         # Parse results
-        results: List[RerankResult] = []
+        results: list[RerankResult] = []
         for r in data.get("results", []):
             results.append(
                 RerankResult(
@@ -213,9 +210,9 @@ class ZhipuAIReranker:
 
     @staticmethod
     def _fallback_order(
-        documents: List[str],
+        documents: list[str],
         top_n: int,
-    ) -> List[RerankResult]:
+    ) -> list[RerankResult]:
         """Fallback: return documents in original order with decreasing scores."""
         return [
             RerankResult(index=i, relevance_score=round(1.0 - i * 0.01, 4))

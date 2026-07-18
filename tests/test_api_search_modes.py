@@ -2,8 +2,6 @@
 Tests for search mode endpoints: grep, hybrid, tag.
 """
 
-import os
-from pathlib import Path
 
 from fastapi.testclient import TestClient
 

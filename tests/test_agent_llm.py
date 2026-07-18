@@ -7,10 +7,7 @@ This module tests the LLMClient class including:
 - Error handling and retry logic
 """
 
-import asyncio
-import json
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -30,7 +27,6 @@ from src.agent.llm_client import (
 )
 from src.stats.budget_guard import BudgetAlert, BudgetCheckResult
 from src.utils.config import Config
-
 
 # =============================================================================
 # Fixtures
@@ -77,7 +73,7 @@ def mock_tool() -> Tool:
             location = kwargs.get("location", "unknown")
             return f"Weather in {location}: sunny, 25°C"
 
-        def to_openai_tool(self) -> Dict[str, Any]:
+        def to_openai_tool(self) -> dict[str, Any]:
             return {
                 "type": "function",
                 "function": {
@@ -101,7 +97,7 @@ def mock_tool() -> Tool:
 
 def create_mock_response(
     content: str = "Hello, I'm an AI assistant.",
-    tool_calls: Optional[List[Dict[str, Any]]] = None,
+    tool_calls: list[dict[str, Any]] | None = None,
     finish_reason: str = "stop",
     prompt_tokens: int = 10,
     completion_tokens: int = 20,
@@ -582,7 +578,7 @@ class TestLLMClientExecuteToolCalls:
             def execute(self, **kwargs: Any) -> Any:
                 return "result1"
 
-            def to_openai_tool(self) -> Dict[str, Any]:
+            def to_openai_tool(self) -> dict[str, Any]:
                 return {"type": "function", "function": {"name": self.name}}
 
         class Tool2(Tool):
@@ -597,7 +593,7 @@ class TestLLMClientExecuteToolCalls:
             def execute(self, **kwargs: Any) -> Any:
                 return {"data": "result2"}
 
-            def to_openai_tool(self) -> Dict[str, Any]:
+            def to_openai_tool(self) -> dict[str, Any]:
                 return {"type": "function", "function": {"name": self.name}}
 
         tool_calls = [
@@ -636,7 +632,7 @@ class TestLLMClientExecuteToolCalls:
             def execute(self, **kwargs: Any) -> Any:
                 raise ValueError("Something went wrong")
 
-            def to_openai_tool(self) -> Dict[str, Any]:
+            def to_openai_tool(self) -> dict[str, Any]:
                 return {"type": "function", "function": {"name": self.name}}
 
         tool_calls = [ToolCall(id="call_1", name="error_tool", arguments={})]
@@ -662,7 +658,7 @@ class TestLLMClientExecuteToolCalls:
             def execute(self, **kwargs: Any) -> Any:
                 return {"temperature": 25, "humidity": 60}
 
-            def to_openai_tool(self) -> Dict[str, Any]:
+            def to_openai_tool(self) -> dict[str, Any]:
                 return {"type": "function", "function": {"name": self.name}}
 
         tool_calls = [ToolCall(id="call_1", name="dict_tool", arguments={})]
@@ -966,7 +962,7 @@ class TestToolCallDedup:
                 call_count += 1
                 return f"invocation_{call_count}"
 
-            def to_openai_tool(self) -> Dict[str, Any]:
+            def to_openai_tool(self) -> dict[str, Any]:
                 return {"type": "function", "function": {"name": self.name}}
 
         tool = CountingTool()
@@ -1008,7 +1004,7 @@ class TestToolCallDedup:
                 call_count += 1
                 return f"invocation_{call_count}"
 
-            def to_openai_tool(self) -> Dict[str, Any]:
+            def to_openai_tool(self) -> dict[str, Any]:
                 return {"type": "function", "function": {"name": self.name}}
 
         tool = CountingTool()
@@ -1045,7 +1041,7 @@ class TestToolCallDedup:
                 call_count += 1
                 return f"invocation_{call_count}"
 
-            def to_openai_tool(self) -> Dict[str, Any]:
+            def to_openai_tool(self) -> dict[str, Any]:
                 return {"type": "function", "function": {"name": self.name}}
 
         tool = CountingTool()
@@ -1119,7 +1115,7 @@ class TestToolCallDedup:
             def execute(self, **kwargs: Any) -> Any:
                 return "ok"
 
-            def to_openai_tool(self) -> Dict[str, Any]:
+            def to_openai_tool(self) -> dict[str, Any]:
                 return {"type": "function", "function": {"name": self.name}}
 
         tc = ToolCall(id="c1", name="simple", arguments={})

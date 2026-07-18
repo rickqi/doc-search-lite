@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional, Set
 
 from src.storage.metadata import MetadataManager
 from src.utils.hash import calculate_hash
@@ -19,10 +18,10 @@ class ChangeSet:
         unchanged: List of unchanged file paths
     """
 
-    added: List[Path] = field(default_factory=list)
-    modified: List[Path] = field(default_factory=list)
-    deleted: List[Path] = field(default_factory=list)
-    unchanged: List[Path] = field(default_factory=list)
+    added: list[Path] = field(default_factory=list)
+    modified: list[Path] = field(default_factory=list)
+    deleted: list[Path] = field(default_factory=list)
+    unchanged: list[Path] = field(default_factory=list)
 
     @property
     def has_changes(self) -> bool:
@@ -79,7 +78,7 @@ class FileWatcher:
         self,
         source_dir: Path,
         metadata_manager: MetadataManager,
-        extensions: Optional[Set[str]] = None,
+        extensions: set[str] | None = None,
         recursive: bool = True,
     ) -> ChangeSet:
         """Detect file changes in source directory.
@@ -127,8 +126,8 @@ class FileWatcher:
         return change_set
 
     def _scan_directory_recursive(
-        self, directory: Path, extensions: Optional[Set[str]]
-    ) -> Set[Path]:
+        self, directory: Path, extensions: set[str] | None
+    ) -> set[Path]:
         """Scan directory recursively for files.
 
         Args:
@@ -138,7 +137,7 @@ class FileWatcher:
         Returns:
             Set of file paths found
         """
-        files: Set[Path] = set()
+        files: set[Path] = set()
 
         if not directory.exists():
             return files
@@ -151,8 +150,8 @@ class FileWatcher:
         return files
 
     def _scan_directory_flat(
-        self, directory: Path, extensions: Optional[Set[str]]
-    ) -> Set[Path]:
+        self, directory: Path, extensions: set[str] | None
+    ) -> set[Path]:
         """Scan directory non-recursively for files.
 
         Args:
@@ -162,7 +161,7 @@ class FileWatcher:
         Returns:
             Set of file paths found
         """
-        files: Set[Path] = set()
+        files: set[Path] = set()
 
         if not directory.exists():
             return files
@@ -176,7 +175,7 @@ class FileWatcher:
 
     def _get_metadata_files(
         self, metadata_manager: MetadataManager, source_dir: Path
-    ) -> Set[Path]:
+    ) -> set[Path]:
         """Get all file paths stored in metadata.
 
         Args:
@@ -186,7 +185,7 @@ class FileWatcher:
         Returns:
             Set of file paths from metadata that are under source_dir
         """
-        files: Set[Path] = set()
+        files: set[Path] = set()
         source_dir = source_dir.resolve()
 
         for metadata in metadata_manager.list_all():
@@ -242,7 +241,7 @@ class FileWatcher:
                 try:
                     current_hash = calculate_hash(file_path, self.hash_algorithm)
                     return current_hash != stored_hash
-                except (FileNotFoundError, IOError):
+                except (OSError, FileNotFoundError):
                     return True
 
         return False

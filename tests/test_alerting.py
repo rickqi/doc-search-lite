@@ -1,9 +1,7 @@
 """Tests for AlertManager — real-time webhook alerting."""
 
 import time
-from unittest.mock import patch, MagicMock
-
-import pytest
+from unittest.mock import patch
 
 from src.stats.alerting import AlertManager
 from src.stats.budget_guard import BudgetAlert, BudgetCheckResult

@@ -3,11 +3,8 @@
 import os
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from src.security.desensitizer import Desensitizer, DesensitizeResult
-from src.security.maskers import PIIMasker, KeywordMasker, RegexMasker
-
+from src.security.maskers import KeywordMasker, PIIMasker, RegexMasker
 
 # ── Desensitizer 基础 ────────────────────────────────────────────────
 
@@ -176,7 +173,7 @@ class TestRegexMasker:
     def test_custom_pattern(self):
         m = RegexMasker(rules=[{"name": "保单号", "pattern": r"[A-Z]{2}\d{8}"}])
         result = m.process(DesensitizeResult("保单 AB12345678"))
-        placeholder = f"[保单号_0]"
+        placeholder = "[保单号_0]"
         assert placeholder in result.masked_text, f"预期 {placeholder} 在 {result.masked_text}"
 
     def test_custom_pattern_multiple(self):
@@ -267,7 +264,7 @@ class TestLLMClientIntegration:
 
     def test_chat_desensitizes_and_restores(self):
         """chat() 应对消息脱敏并恢复回答."""
-        from src.agent.llm_client import LLMClient, ChatMessage, ChatResponse
+        from src.agent.llm_client import ChatMessage, ChatResponse, LLMClient
         from src.utils.config import Config
 
         config = MagicMock(spec=Config)
@@ -310,7 +307,7 @@ class TestLLMClientIntegration:
 
     def test_chat_system_message_desensitized(self):
         """system 消息也应被脱敏."""
-        from src.agent.llm_client import LLMClient, ChatMessage, ChatResponse
+        from src.agent.llm_client import ChatMessage, LLMClient
         from src.utils.config import Config
 
         config = MagicMock(spec=Config)
@@ -351,7 +348,7 @@ class TestLLMClientIntegration:
 
     def test_chat_with_dict_messages(self):
         """支持 dict 格式消息."""
-        from src.agent.llm_client import LLMClient, ChatResponse
+        from src.agent.llm_client import LLMClient
         from src.utils.config import Config
 
         config = MagicMock(spec=Config)
@@ -386,7 +383,7 @@ class TestLLMClientIntegration:
 
     def test_chat_no_content_response(self):
         """LLM 返回空内容时不应崩溃."""
-        from src.agent.llm_client import LLMClient, ChatMessage
+        from src.agent.llm_client import ChatMessage, LLMClient
         from src.utils.config import Config
 
         config = MagicMock(spec=Config)

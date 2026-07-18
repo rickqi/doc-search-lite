@@ -7,9 +7,8 @@ supporting Chinese encodings (GBK, GB2312) and large file truncation.
 
 import time
 from pathlib import Path
-from typing import Dict, List, Optional
 
-from src.converter.base import ConvertResult, Converter
+from src.converter.base import Converter, ConvertResult
 
 
 class CSVConverter(Converter):
@@ -34,11 +33,11 @@ class CSVConverter(Converter):
         return "0.1.0"
 
     @property
-    def supported_formats(self) -> List[str]:
+    def supported_formats(self) -> list[str]:
         """Get list of supported file extensions."""
         return [".csv"]
 
-    def _read_csv(self, source: Path, options: Dict) -> tuple:
+    def _read_csv(self, source: Path, options: dict) -> tuple:
         """读取 CSV 文件，自动检测编码。
 
         Args:
@@ -59,7 +58,7 @@ class CSVConverter(Converter):
 
         # 如果指定了编码，直接使用
         if encoding:
-            read_kwargs: Dict = {"encoding": encoding}
+            read_kwargs: dict = {"encoding": encoding}
             if delimiter:
                 read_kwargs["sep"] = delimiter
             if max_rows > 0:
@@ -69,7 +68,7 @@ class CSVConverter(Converter):
 
         # 自动检测编码 - 按优先级尝试
         encodings_to_try = ["utf-8", "utf-8-sig", "gbk", "gb2312", "latin-1"]
-        last_error: Optional[Exception] = None
+        last_error: Exception | None = None
 
         for enc in encodings_to_try:
             try:
@@ -113,7 +112,7 @@ class CSVConverter(Converter):
         self,
         source: Path,
         output_dir: Path,
-        options: Optional[Dict] = None,
+        options: dict | None = None,
     ) -> ConvertResult:
         """
         Convert a CSV file to Markdown table.
@@ -130,8 +129,8 @@ class CSVConverter(Converter):
             ConvertResult containing conversion results.
         """
         options = options or {}
-        errors: List[str] = []
-        metadata: Dict = {}
+        errors: list[str] = []
+        metadata: dict = {}
         start_time = time.time()
 
         # 验证文件格式
@@ -168,7 +167,7 @@ class CSVConverter(Converter):
         try:
             with open(source, "rb") as f:
                 f.read(8)
-        except IOError as e:
+        except OSError as e:
             error_msg = f"Cannot read source file (may be corrupted or locked): {e}"
             return ConvertResult(
                 success=False,

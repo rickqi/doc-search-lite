@@ -8,8 +8,8 @@ import hashlib
 import json
 import logging
 import time
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,7 @@ class LLMCallRecord:
     call_type: str
     call_sequence: int = 0
     latency_ms: float = 0.0
-    ttft_ms: Optional[float] = None
+    ttft_ms: float | None = None
     input_tokens: int = 0
     output_tokens: int = 0
     total_tokens: int = 0
@@ -50,9 +50,9 @@ class DiagnosticsCollector:
             db: ConvertDB instance (optional — if None, no data is persisted)
         """
         self._db = db
-        self._steps: Dict[str, float] = {}
-        self._llm_calls: List[LLMCallRecord] = []
-        self._step_starts: Dict[str, float] = {}
+        self._steps: dict[str, float] = {}
+        self._llm_calls: list[LLMCallRecord] = []
+        self._step_starts: dict[str, float] = {}
         self._tool_call_count: int = 0
         self._tool_cache_hits: int = 0
         self._query_hash: str = ""
@@ -109,7 +109,7 @@ class DiagnosticsCollector:
         retry_count: int = 0,
         cache_hit: bool = False,
         cached_tokens: int = 0,
-        ttft_ms: Optional[float] = None,
+        ttft_ms: float | None = None,
     ) -> None:
         """Record a single LLM API call."""
         self._llm_calls.append(LLMCallRecord(
@@ -141,12 +141,12 @@ class DiagnosticsCollector:
         search_count: int = 0,
         read_count: int = 0,
         result_count: int = 0,
-        coverage_score: Optional[float] = None,
+        coverage_score: float | None = None,
         feedback_rounds: int = 0,
         final_sufficient: bool = False,
         search_mode: str = "agent",
         source_dir: str = "",
-    ) -> Optional[int]:
+    ) -> int | None:
         """Finish tracking and persist to DB. Returns diagnostic_id or None."""
         self._finished = True
         if not self._db:
@@ -211,11 +211,11 @@ class DiagnosticsCollector:
             logger.warning(f"Failed to persist diagnostics: {e}")
             return None
 
-    def get_step_timings(self) -> Dict[str, float]:
+    def get_step_timings(self) -> dict[str, float]:
         """Get current step timings."""
         return dict(self._steps)
 
-    def get_llm_stats(self) -> Dict[str, Any]:
+    def get_llm_stats(self) -> dict[str, Any]:
         """Get aggregated LLM stats."""
         return {
             "call_count": len(self._llm_calls),

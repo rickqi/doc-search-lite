@@ -10,7 +10,6 @@ import os
 import threading
 import time
 from datetime import datetime, timezone
-from typing import Dict, Optional
 
 import httpx
 
@@ -26,14 +25,14 @@ class AlertManager:
 
     def __init__(
         self,
-        webhook_url: Optional[str] = None,
+        webhook_url: str | None = None,
         error_threshold: int = 3,
         budget_warning_threshold: float = 0.8,
     ):
         self.webhook_url = webhook_url or os.environ.get("ALERT_WEBHOOK_URL", "")
         self.error_threshold = error_threshold
         self.budget_warning_threshold = budget_warning_threshold
-        self._last_sent: Dict[str, float] = {}
+        self._last_sent: dict[str, float] = {}
         self._lock = threading.Lock()
 
     def _is_rate_limited(self, category: str) -> bool:

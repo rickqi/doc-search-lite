@@ -16,8 +16,7 @@ Usage:
 
 import logging
 import re
-from dataclasses import dataclass, field
-from typing import Dict, List, Optional
+from dataclasses import dataclass
 
 logger = logging.getLogger(__name__)
 
@@ -33,9 +32,9 @@ class TagExtractionResult:
         confidence: Extraction confidence in [0.0, 1.0].
     """
 
-    tags: List[str]
+    tags: list[str]
     doc_type: str
-    keywords: List[str]
+    keywords: list[str]
     confidence: float
 
 
@@ -53,7 +52,7 @@ class TagExtractor:
     """
 
     # Document type patterns: doc_type → list of indicative keywords
-    DOC_TYPE_PATTERNS: Dict[str, List[str]] = {
+    DOC_TYPE_PATTERNS: dict[str, list[str]] = {
         "regulation": [
             "制度", "规定", "办法", "通知", "公告", "条例", "规范",
             "实施细则", "指导意见", "监管规定",
@@ -79,7 +78,7 @@ class TagExtractor:
     }
 
     # Insurance domain keywords for tagging: tag_name → list of keywords
-    DOMAIN_TAGS: Dict[str, List[str]] = {
+    DOMAIN_TAGS: dict[str, list[str]] = {
         "消保审查": [
             "消费者权益保护", "消保", "投诉", "信息披露", "适当性",
             "消费者保护", "投诉处理", "消保审查",
@@ -183,7 +182,7 @@ class TagExtractor:
         content_lower = markdown.lower()
         filename_lower = filename.lower()
 
-        scores: Dict[str, float] = {}
+        scores: dict[str, float] = {}
         for doc_type, patterns in self.DOC_TYPE_PATTERNS.items():
             score = 0.0
             for pattern in patterns:
@@ -198,7 +197,7 @@ class TagExtractor:
 
         return max(scores, key=lambda k: scores[k])
 
-    def _extract_domain_tags(self, markdown: str) -> List[str]:
+    def _extract_domain_tags(self, markdown: str) -> list[str]:
         """Extract domain tags based on keyword matching.
 
         A domain tag is included if at least one of its keywords appears
@@ -219,7 +218,7 @@ class TagExtractor:
 
         return matched_tags
 
-    def _extract_keywords(self, markdown: str) -> List[str]:
+    def _extract_keywords(self, markdown: str) -> list[str]:
         """Extract key terms from content.
 
         Uses simple regex to find Chinese character sequences (2+ chars)
@@ -239,7 +238,7 @@ class TagExtractor:
         words = cjk_pattern.findall(cleaned)
 
         # Count frequencies, excluding stop words
-        freq: Dict[str, int] = {}
+        freq: dict[str, int] = {}
         for word in words:
             if word in self._STOP_WORDS:
                 continue
@@ -254,7 +253,7 @@ class TagExtractor:
     def _compute_confidence(
         self,
         markdown: str,
-        tags: List[str],
+        tags: list[str],
         doc_type: str,
     ) -> float:
         """Compute extraction confidence based on match density.

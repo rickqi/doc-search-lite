@@ -15,21 +15,22 @@ import shutil
 import tempfile
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List, Optional, Type
+from typing import TYPE_CHECKING, Optional
 
-from .base import ConvertResult, Converter
+from src.storage.convert_db import PIPELINE_VERSION
+
+from .archive import ArchiveConverter
+from .base import Converter, ConvertResult
 from .csv import CSVConverter
 from .html import HTMLConverter
 from .image import ImageConverter
 from .msg import MsgConverter
 from .ocr import OCRService, OCRServiceConfig
+from .ocr_postprocess import postprocess_ocr_result
 from .office import OfficeConverter
 from .pdf import PDFConverter
-from .text import TextConverter
-from .archive import ArchiveConverter
 from .tag_extractor import TagExtractor
-from .ocr_postprocess import postprocess_ocr_result
-from src.storage.convert_db import PIPELINE_VERSION
+from .text import TextConverter
 
 if TYPE_CHECKING:
     from src.stats.usage_tracker import UsageTracker
@@ -70,7 +71,7 @@ def _get_coordinator_pil():
 class UnsupportedFormatError(Exception):
     """Exception raised when file format is not supported."""
 
-    def __init__(self, extension: str, supported_extensions: List[str]):
+    def __init__(self, extension: str, supported_extensions: list[str]):
         self.extension = extension
         self.supported_extensions = supported_extensions
         super().__init__(
@@ -105,7 +106,7 @@ class ConverterCoordinator:
 
     def __init__(
         self,
-        ocr_config: Optional[OCRServiceConfig] = None,
+        ocr_config: OCRServiceConfig | None = None,
         scanned_pdf_threshold: int = SCANNED_PDF_THRESHOLD,
         enable_ocr_fallback: bool = True,
         usage_tracker: Optional["UsageTracker"] = None,
@@ -127,13 +128,13 @@ class ConverterCoordinator:
         self._msg_converter = MsgConverter()
 
         self._ocr_config = ocr_config
-        self._ocr_service: Optional[OCRService] = None
+        self._ocr_service: OCRService | None = None
         self._scanned_pdf_threshold = scanned_pdf_threshold
         self._enable_ocr_fallback = enable_ocr_fallback
         self._usage_tracker = usage_tracker
 
         # Build extension to converter mapping
-        self._converters: Dict[str, Converter] = {}
+        self._converters: dict[str, Converter] = {}
         self._register_converter(self._pdf_converter)
         self._register_converter(self._office_converter)
         self._register_converter(self._html_converter)
@@ -162,7 +163,7 @@ class ConverterCoordinator:
             self._converters[ext.lower()] = converter
 
     @property
-    def supported_extensions(self) -> List[str]:
+    def supported_extensions(self) -> list[str]:
         """
         Get list of all supported file extensions.
 
@@ -203,7 +204,7 @@ class ConverterCoordinator:
         """
         return source.suffix.lower() in self._converters
 
-    def _get_ocr_service(self) -> Optional[OCRService]:
+    def _get_ocr_service(self) -> OCRService | None:
         """
         Get or create OCR service lazily.
 
@@ -278,7 +279,7 @@ class ConverterCoordinator:
                     return True
 
             return False
-        except (IOError, OSError):
+        except OSError:
             # If we can't read the file, assume it's not HTML
             return False
 
@@ -305,7 +306,7 @@ class ConverterCoordinator:
         temp_dir = output_dir / "_ocr_temp"
         temp_dir.mkdir(parents=True, exist_ok=True)
 
-        image_paths: List[Path] = []
+        image_paths: list[Path] = []
         try:
             with pdfplumber.open(str(source)) as pdf:
                 for page_num, page in enumerate(pdf.pages, start=1):
@@ -326,7 +327,7 @@ class ConverterCoordinator:
         self,
         source: Path,
         output_dir: Path,
-        options: Optional[Dict],
+        options: dict | None,
         initial_result: ConvertResult,
     ) -> ConvertResult:
         """
@@ -442,7 +443,7 @@ class ConverterCoordinator:
         temp_dir = output_dir / "_ocr_temp"
         temp_dir.mkdir(parents=True, exist_ok=True)
 
-        ocr_texts: List[str] = []
+        ocr_texts: list[str] = []
         ocr_start_time = time.time()
         ocr_pages = 0
         total_token_usage = {
@@ -455,7 +456,7 @@ class ConverterCoordinator:
             with pdfplumber.open(str(source)) as pdf:  # type: ignore[union-attr]
                 total_pages = len(pdf.pages)
                 for page_num, page in enumerate(pdf.pages, start=1):
-                    image_path: Optional[Path] = None
+                    image_path: Path | None = None
                     try:
                         # Render single page to image
                         im = page.to_image(resolution=dpi)
@@ -542,7 +543,7 @@ class ConverterCoordinator:
 
         if image_paths:
             try:
-                ocr_texts: List[str] = []
+                ocr_texts: list[str] = []
                 ocr_start_time = time.time()
                 ocr_pages = 0
 
@@ -586,10 +587,10 @@ class ConverterCoordinator:
 
     def _finalize_ocr_result(
         self,
-        ocr_texts: List[str],
+        ocr_texts: list[str],
         ocr_pages: int,
         ocr_start_time: float,
-        total_token_usage: Dict[str, int],
+        total_token_usage: dict[str, int],
         initial_result: ConvertResult,
         source: Path,
         output_dir: Path,
@@ -634,7 +635,7 @@ class ConverterCoordinator:
         self,
         source: Path,
         output_dir: Path,
-        options: Optional[Dict] = None,
+        options: dict | None = None,
     ) -> ConvertResult:
         """
         Convert a document file to markdown using the appropriate converter.
@@ -772,8 +773,9 @@ class ConverterCoordinator:
             # Inject YAML frontmatter into .md content (OKF-compatible)
             # headings are already extracted above with correct line numbers
             try:
-                from .frontmatter import inject_frontmatter
                 from datetime import datetime as _dt
+
+                from .frontmatter import inject_frontmatter
 
                 frontmatter_meta = {
                     "title": source.stem if source else "",
@@ -837,11 +839,11 @@ class ConverterCoordinator:
 
 
 # Module-level coordinator instance for convenience
-_default_coordinator: Optional[ConverterCoordinator] = None
+_default_coordinator: ConverterCoordinator | None = None
 
 
 def get_coordinator(
-    ocr_config: Optional[OCRServiceConfig] = None,
+    ocr_config: OCRServiceConfig | None = None,
     usage_tracker: Optional["UsageTracker"] = None,
     **kwargs,
 ) -> ConverterCoordinator:

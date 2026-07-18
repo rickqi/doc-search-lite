@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional
 
 
 @dataclass
@@ -15,19 +14,19 @@ class ConvertResult:
     markdown: str
     """Converted markdown content."""
 
-    images: List[Path] = field(default_factory=list)
+    images: list[Path] = field(default_factory=list)
     """List of extracted image file paths."""
 
-    metadata: Dict = field(default_factory=dict)
+    metadata: dict = field(default_factory=dict)
     """Additional metadata about the conversion."""
 
-    errors: List[str] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
     """List of error messages if conversion failed."""
 
-    source_file: Optional[Path] = None
+    source_file: Path | None = None
     """Source file path."""
 
-    output_file: Optional[Path] = None
+    output_file: Path | None = None
     """Output file path."""
 
     convert_time: float = 0.0
@@ -54,7 +53,7 @@ class ConvertResult:
     ocr_time: float = 0.0
     """Time taken for OCR processing in seconds."""
 
-    token_usage: Dict = field(default_factory=dict)
+    token_usage: dict = field(default_factory=dict)
     """Token usage from LLM/OCR API, e.g. {'input_tokens': 100, 'output_tokens': 500, 'total_tokens': 600}."""
 
 
@@ -73,7 +72,7 @@ class Converter(ABC):
 
     @property
     @abstractmethod
-    def supported_formats(self) -> List[str]:
+    def supported_formats(self) -> list[str]:
         """Get list of supported file extensions (e.g., ['.pdf', '.docx'])."""
 
     @abstractmethod
@@ -81,7 +80,7 @@ class Converter(ABC):
         self,
         source: Path,
         output_dir: Path,
-        options: Optional[Dict] = None,
+        options: dict | None = None,
     ) -> ConvertResult:
         """
         Convert a document file to markdown.

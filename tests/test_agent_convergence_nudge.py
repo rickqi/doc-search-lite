@@ -10,8 +10,6 @@ standalone method. Tests inspect _run_tool_loop source to verify the logic.
 
 import inspect
 
-import pytest
-
 from src.agent.search_agent import SearchAgent
 
 

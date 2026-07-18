@@ -23,7 +23,7 @@ import sqlite3
 import threading
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,7 @@ class AgentMemory:
     feedback(): 记录用户反馈
     """
 
-    def __init__(self, db_path: Optional[Path] = None):
+    def __init__(self, db_path: Path | None = None):
         self._db_path = db_path or (_DEFAULT_LOG_DIR / "search_logs.db")
         self._lock = threading.Lock()
         self._ensure_feedback_table()
@@ -48,7 +48,7 @@ class AgentMemory:
     # 召回
     # ------------------------------------------------------------------
 
-    def recall(self, query: str) -> Optional[Dict[str, Any]]:
+    def recall(self, query: str) -> dict[str, Any] | None:
         """从 search_logs 中召回历史答案.
 
         三层策略:
@@ -74,7 +74,7 @@ class AgentMemory:
         # Layer 2: 模糊匹配
         return self._fuzzy_match(query)
 
-    def _exact_match(self, query: str) -> Optional[Dict[str, Any]]:
+    def _exact_match(self, query: str) -> dict[str, Any] | None:
         """精确匹配: query 完全一致."""
         try:
             with self._lock:
@@ -106,7 +106,7 @@ class AgentMemory:
             "source": "exact_hit",
         }
 
-    def _fuzzy_match(self, query: str) -> Optional[Dict[str, Any]]:
+    def _fuzzy_match(self, query: str) -> dict[str, Any] | None:
         """模糊匹配: 提取关键词 LIKE 搜索."""
         clean = query.strip()
         if len(clean) < 2:
@@ -165,7 +165,7 @@ class AgentMemory:
     # Context 注入
     # ------------------------------------------------------------------
 
-    def format_context(self, recall_result: Optional[Dict[str, Any]], max_entries: int = 3) -> Optional[str]:
+    def format_context(self, recall_result: dict[str, Any] | None, max_entries: int = 3) -> str | None:
         """将模糊匹配结果格式化为 Agent context 注入文本.
 
         适合注入到 system prompt 中, 帮助 LLM 参考历史问答.
@@ -194,7 +194,7 @@ class AgentMemory:
     # 学习
     # ------------------------------------------------------------------
 
-    def learn(self, session_id: str, metadata: Dict[str, Any]):
+    def learn(self, session_id: str, metadata: dict[str, Any]):
         """从一次成功的 Agent 执行中学习.
 
         更新 search_logs 的 tags 字段, 记录有效的搜索策略.
@@ -251,7 +251,7 @@ class AgentMemory:
         except Exception as e:
             logger.warning("AgentMemory feedback failed: %s", e)
 
-    def get_feedback_stats(self) -> Dict[str, Any]:
+    def get_feedback_stats(self) -> dict[str, Any]:
         """获取反馈统计."""
         try:
             with self._lock:

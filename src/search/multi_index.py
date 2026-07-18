@@ -10,7 +10,6 @@ Architecture:
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
 from src.search.bm25_search import BM25Searcher, PaginatedResults, create_searcher
 from src.search.query_router import QueryRouter
@@ -24,8 +23,8 @@ class SearcherPool:
     Uses TTL-based expiry and LRU eviction when at capacity.
     """
 
-    _instances: Dict[str, BM25Searcher] = {}
-    _timestamps: Dict[str, float] = {}
+    _instances: dict[str, BM25Searcher] = {}
+    _timestamps: dict[str, float] = {}
     _ttl: float = 600.0  # 10 min TTL
     _max_size: int = 16
 
@@ -116,8 +115,8 @@ class MultiIndexSearcher:
 
     def __init__(
         self,
-        index_paths: List[Path],
-        query_router: Optional[QueryRouter] = None,
+        index_paths: list[Path],
+        query_router: QueryRouter | None = None,
     ):
         self._index_paths = [Path(p) for p in index_paths]
         self._router = query_router
@@ -145,7 +144,7 @@ class MultiIndexSearcher:
 
         # Determine which indexes to search via optional router
         target_paths = self._resolve_target_indexes(query)
-        index_results: List[Tuple[str, List[UnifiedSearchResult]]] = []
+        index_results: list[tuple[str, list[UnifiedSearchResult]]] = []
 
         with ThreadPoolExecutor(max_workers=len(target_paths) or 1) as pool:
             futures = {}
@@ -230,7 +229,7 @@ class MultiIndexSearcher:
 
     # ── Internal helpers ───────────────────────────────────────
 
-    def _resolve_target_indexes(self, query: str) -> List[Path]:
+    def _resolve_target_indexes(self, query: str) -> list[Path]:
         """Determine which indexes to search based on optional router.
 
         Args:
@@ -245,7 +244,7 @@ class MultiIndexSearcher:
 
         # Map index paths to string keys for router matching
         # Derive index name consistently with search() logic
-        path_to_name: Dict[str, Path] = {}
+        path_to_name: dict[str, Path] = {}
         for idx_path in self._index_paths:
             name = idx_path.parent.name if idx_path.name == "index" else idx_path.name
             path_to_name[name] = idx_path
@@ -270,12 +269,12 @@ class MultiIndexSearcher:
         query: str,
         limit: int,
         index_name: str,
-    ) -> List[UnifiedSearchResult]:
+    ) -> list[UnifiedSearchResult]:
         """Search a single index and return UnifiedSearchResult list."""
         searcher = SearcherPool.get(index_path=index_path, use_jieba=True, readonly=True)
         paginated: PaginatedResults = searcher.search(query, limit=limit)
 
-        results: List[UnifiedSearchResult] = []
+        results: list[UnifiedSearchResult] = []
         for preview in paginated.results:
             results.append(
                 UnifiedSearchResult(
@@ -293,7 +292,7 @@ class MultiIndexSearcher:
         return results
 
     @staticmethod
-    def _minmax_normalize(results: List[UnifiedSearchResult]) -> None:
+    def _minmax_normalize(results: list[UnifiedSearchResult]) -> None:
         """Min-max normalize raw_score to [0, 1] in-place."""
         if not results:
             return
@@ -309,14 +308,14 @@ class MultiIndexSearcher:
 
     def _cross_index_rrf(
         self,
-        index_results: List[Tuple[str, List[UnifiedSearchResult]]],
-    ) -> List[UnifiedSearchResult]:
+        index_results: list[tuple[str, list[UnifiedSearchResult]]],
+    ) -> list[UnifiedSearchResult]:
         """RRF merge results from multiple indexes.
 
         Uses (index_name, original doc_id deduped by source_path) as key.
         """
-        key_to_result: Dict[str, UnifiedSearchResult] = {}
-        rrf_scores: Dict[str, float] = {}
+        key_to_result: dict[str, UnifiedSearchResult] = {}
+        rrf_scores: dict[str, float] = {}
 
         for index_name, results in index_results:
             for rank, r in enumerate(results, 1):
