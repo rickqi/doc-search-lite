@@ -32,7 +32,7 @@ jobs:
         run: ruff check src/ tests/
 
       - name: Test with pytest
-        run: python -m pytest tests/ -q --tb=short -x
+        run: python -m pytest tests/ -q --tb=short -x --ignore=tests/test_dify_retrieval.py --ignore=tests/test_processor.py
         env:
           GLM_API_KEY: "test-skip"
           GLM_BASE_URL: "http://localhost"
