@@ -32,6 +32,30 @@ stripped of enterprise features and internal data. **No vector database, no loca
 | OpenCode Skill | ✅ | ❌ |
 | License | PolyForm Strict | **MIT** |
 
+### Comparison with DCI-Agent-Lite
+
+[DCI-Agent-Lite](https://github.com/DCI-Agent/DCI-Agent-Lite) is an academic
+research framework for the **Direct Corpus Interaction** paradigm —
+an agent searches raw text corpora using terminal tools (`rg`, `find`, `sed`)
+with no indexing. Both projects share the philosophy of **no vector databases**,
+but target different use cases:
+
+| Dimension | doc-search-lite | DCI-Agent-Lite |
+|-----------|----------------|----------------|
+| **Purpose** | Production document search system | Academic benchmark/evaluation |
+| **Corpus** | Your own PDF/DOCX/XLSX/PPTX/HTML | Pre-formatted JSONL datasets (Wikipedia, BrowseComp) |
+| **Indexing** | Tantivy BM25 (Rust) + jieba Bigram | **Zero index** — raw `rg`/`find` on text files |
+| **Search modes** | BM25 / Grep / Hybrid (RRF) / Tag / Agent | Agent-only (bash tool loop) |
+| **Document support** | 11 formats + OCR for images | Plain text / JSONL only |
+| **Agent framework** | Custom SearchAgent (COMPILOT P0-P6) | Pi coding agent (bash + context mgmt) |
+| **Interface** | CLI + Web UI + REST API + MCP 4 tools | Pi TUI only (`--terminal`) |
+| **APIs** | FastAPI (21 routes), FastMCP (4 tools), SSE | None |
+| **Observability** | Usage tracking, budget guard, 14-step diagnostics, search logging | None |
+| **Security** | PII desensitization, API key auth | None |
+| **Target audience** | Teams deploying document search | Researchers benchmarking agentic search |
+| **License** | MIT | Apache 2.0 |
+| **Paper** | — | [arXiv:2605.05242](https://arxiv.org/abs/2605.05242) |
+
 ## Quick Start
 
 ```bash
