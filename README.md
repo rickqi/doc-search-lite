@@ -22,7 +22,7 @@
 hundreds of insurance product clauses and medical diagnostic manuals
 scattered across folders — impossible to search by keywords alone.
 
-Over two years of iteration (v0.1 → v0.21), it grew into a full-featured
+Over 50 releases in two months (v0.1 → v0.21, May–July 2026), it grew into a full-featured
 **local document intelligence system** that converts any business document
 to Markdown, builds a Tantivy BM25 index, and lets an LLM agent
 search, read, cross-reference, and answer questions from your own knowledge base.
