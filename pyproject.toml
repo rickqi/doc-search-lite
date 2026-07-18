@@ -1,10 +1,10 @@
 [project]
-name = "doc-search"
+name = "doc-search-lite"
 version = "0.21.0"
 description = "Local document intelligent search system — convert, index, and search with LLM agents"
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "PolyForm Strict License 1.0.0"}
+license = {text = "MIT License"}
 authors = [
     {name = "rick qi", email = "rickqi@users.noreply.github.com"},
 ]
@@ -15,7 +15,7 @@ keywords = [
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
-    "License :: Other/Proprietary License",
+    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
@@ -75,14 +75,13 @@ ocr = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/rickqi/doc-search"
-Repository = "https://github.com/rickqi/doc-search"
-Issues = "https://github.com/rickqi/doc-search/issues"
-Changelog = "https://github.com/rickqi/doc-search/blob/master/CHANGELOG.md"
-Documentation = "https://github.com/rickqi/doc-search#readme"
+Homepage = "https://github.com/rickqi/doc-search-lite"
+Repository = "https://github.com/rickqi/doc-search-lite"
+Issues = "https://github.com/rickqi/doc-search-lite/issues"
+Documentation = "https://github.com/rickqi/doc-search-lite#readme"
 
 [project.scripts]
-doc-search = "src.cli:cli"
+doc-search-lite = "src.cli:cli"
 
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
@@ -136,3 +135,31 @@ ignore = [
 
 [tool.ruff.lint.isort]
 known-first-party = ["src"]
+
+# ── Mypy (progressive) ──────────────────────────────
+[tool.mypy]
+python_version = "3.10"
+warn_unused_configs = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_unreachable = true
+strict_optional = true
+ignore_missing_imports = true
+check_untyped_defs = false
+disallow_untyped_defs = false
+# Existing codebase has many implicit Optional and untyped returns —
+# switch to strict mode gradually, not all at once.
+no_implicit_optional = false
+warn_return_any = false
+
+[[tool.mypy.overrides]]
+module = [
+    "src.cli",
+    "src.api",
+    "src.mcp_server",
+    "src.converter.*",
+    "src.web.*",
+    "src.stats.*",
+    "tests.*",
+]
+ignore_errors = true

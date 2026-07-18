@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [master, main]
+    branches: [master]
   pull_request:
-    branches: [master, main]
+    branches: [master]
 
 jobs:
   test:
@@ -12,34 +12,27 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
         python-version: ["3.10", "3.11", "3.12"]
 
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev,mcp]"
-
-      - name: Run fast tests (excluding slow integration)
-        run: python -m pytest tests/ -q --tb=short --ignore=tests/test_e2e.py --ignore=tests/test_converter_integration.py -m "not slow"
-
-      - name: Run full test suite
-        if: matrix.python-version == '3.12' && matrix.os == 'ubuntu-latest'
-        run: |
-          python -m pytest tests/ -q --tb=short
+          pip install -e ".[dev]"
 
       - name: Lint with ruff
-        run: ruff check src/
+        run: ruff check src/ tests/
 
-      - name: Smoke test CLI
-        run: |
-          python -m src.cli --help
-          python -m src.cli --version
+      - name: Test with pytest
+        run: python -m pytest tests/ -q --tb=short -x
+        env:
+          GLM_API_KEY: "test-skip"
+          GLM_BASE_URL: "http://localhost"

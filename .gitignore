@@ -24,8 +24,6 @@ wheels/
 .env
 .env.cloud
 .env.local
-.pi/doc-search-api-key
-
 # Virtual environments
 .venv/
 venv/
@@ -68,12 +66,8 @@ Thumbs.db
 *.tmp
 *.temp
 nul
-pi-doc.bat
-
 # Runtime files
 *.pid
-.pi_system_prompt.md
-
 # Internal planning
 .sisyphus/
 
@@ -89,7 +83,6 @@ docs/issue/
 dify_kb_map.json
 
 # Local scripts with secrets
-start-web-here.bat
 tokens.json
 
 # Temp files
@@ -98,8 +91,6 @@ _cli_result.txt
 _run_cli.py
 pi-session-*.html
 
-# Internal development guide
-AGENTS.md
 # Large model files
 models/
 # QA evaluation data
