@@ -38,6 +38,16 @@ def mock_config():
     return config
 
 
+@pytest.fixture(autouse=True)
+def _clear_searcher_pool():
+    """Clear SearcherPool cache between tests to prevent cross-test pollution."""
+    from src.search.multi_index import SearcherPool
+
+    SearcherPool.clear()
+    yield
+    SearcherPool.clear()
+
+
 @pytest.fixture
 def tmp_output_dir(tmp_path: Path) -> Path:
     """Create a temporary output directory under tmp_path."""
