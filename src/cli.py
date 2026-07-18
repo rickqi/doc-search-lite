@@ -722,7 +722,7 @@ def query(
         doc-search query "年假如何申请？" -i ./output --agent
         doc-search query "年假" -i ./output  (自动检测: 无索引则用 Grep)
         doc-search query "年假" -i ./output --search-mode hybrid
-        doc-search query "制度" -i "./raw/company-policies/index,./raw/DLP/index"
+        doc-search query "制度" -i "./raw/公司规章制度/index,./raw/DLP/index"
     """
     # Honor --no-log by setting env var (checked by _log_search_cli helper)
     if no_log:
@@ -2555,9 +2555,9 @@ def batch_convert(source, raw_root, mode, parallel, ocr, ocr_engine, generate_in
     支持断点续传: 自动检测上次中断位置继续执行
 
     示例:
-        doc-search batch-convert "./my-docs" --raw-root "./raw"
+        doc-search batch-convert "./my-docs" --raw-root "D:\\docs\\raw"
         doc-search batch-convert "./my-docs" --mode resume
-        doc-search batch-convert "./my-docs" --raw-root "./raw" --parallel 4
+        doc-search batch-convert "./my-docs" --raw-root "D:\\docs\\raw" --parallel 4
         doc-search batch-convert "./my-docs" --force
         doc-search batch-convert "./my-docs" --log-file "D:\\logs\\convert.log"
     """
@@ -3142,8 +3142,8 @@ def catalog_reindex(raw_dir):
             else:
                 source_root = raw_path
 
-        # raw_path is the output root (e.g. ./raw\example-data)
-        # raw_root is its parent (e.g. ./raw)
+        # raw_path is the output root (e.g. D:\docs\raw\DLP案件反馈)
+        # raw_root is its parent (e.g. D:\docs\raw)
         raw_root = raw_path.parent
         store = RawStore(source_root, raw_root)
 

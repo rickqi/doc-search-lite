@@ -27,7 +27,7 @@ class TagExtractionResult:
     """Result of tag extraction from a document.
 
     Attributes:
-        tags: Extracted domain tags (e.g. ["合规审查", "产品条款"]).
+        tags: Extracted domain tags (e.g. ["消保审查", "产品条款"]).
         doc_type: Document type classification (e.g. "regulation", "review_point").
         keywords: Key terms extracted from the content.
         confidence: Extraction confidence in [0.0, 1.0].
@@ -47,7 +47,7 @@ class TagExtractor:
 
     The extractor identifies:
     1. Document type (regulation, review_point, insurance_product, service, contract, report)
-    2. Domain tags (合规审查, 产品条款, 销售合规, 理赔服务, 健康管理, 个人信息)
+    2. Domain tags (消保审查, 产品条款, 销售合规, 理赔服务, 健康管理, 个人信息)
     3. Key terms (high-frequency meaningful words)
     4. Confidence score based on match density
     """
@@ -80,9 +80,9 @@ class TagExtractor:
 
     # Insurance domain keywords for tagging: tag_name → list of keywords
     DOMAIN_TAGS: Dict[str, List[str]] = {
-        "合规审查": [
+        "消保审查": [
             "消费者权益保护", "消保", "投诉", "信息披露", "适当性",
-            "消费者保护", "投诉处理", "合规审查",
+            "消费者保护", "投诉处理", "消保审查",
         ],
         "产品条款": [
             "保险条款", "责任免除", "保险责任", "等待期", "免赔额",

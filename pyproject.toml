@@ -4,7 +4,7 @@ version = "0.21.0"
 description = "Local document intelligent search system — convert, index, and search with LLM agents"
 readme = "README.md"
 requires-python = ">=3.10"
-license = {text = "MIT License"}
+license = {text = "PolyForm Strict License 1.0.0"}
 authors = [
     {name = "rick qi", email = "rickqi@users.noreply.github.com"},
 ]
@@ -46,13 +46,18 @@ dependencies = [
     "httpx>=0.28.1",
     "rich>=13.0",
     "watchdog>=4.0",
+    # Document processing
     "pdfplumber>=0.10",
     "pypdf>=4.0",
     "jieba>=0.42",
+    # Data processing (used in converter/csv.py)
     "pandas>=2.0,<3.0",
 ]
 
 [project.optional-dependencies]
+tui = [
+    "textual>=0.40",
+]
 mcp = [
     "mcp>=1.0",
 ]
@@ -64,11 +69,15 @@ dev = [
     "python-pptx>=0.6",
     "openpyxl>=3.0",
 ]
+ocr = [
+    "paddleocr>=3.6",
+    "paddlepaddle-gpu>=2.6; platform_system == 'Linux'",
+]
 
 [project.urls]
-Homepage = "https://github.com/rickqi/doc-search-lite"
-Repository = "https://github.com/rickqi/doc-search-lite"
-Issues = "https://github.com/rickqi/doc-search-lite/issues"
+Homepage = "https://github.com/rickqi/doc-search"
+Repository = "https://github.com/rickqi/doc-search"
+Issues = "https://github.com/rickqi/doc-search/issues"
 Changelog = "https://github.com/rickqi/doc-search/blob/master/CHANGELOG.md"
 Documentation = "https://github.com/rickqi/doc-search#readme"
 

@@ -98,7 +98,7 @@
       'skill.detailed': '详细分析',
       'skill.timeline': '时间线',
       'skill.action_items': '行动项',
-      'skill.review': '合规审查',
+      'skill.review': '消保审查',
     },
     'en': {
       'tab.sessions': 'Sessions',

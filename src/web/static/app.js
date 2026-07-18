@@ -731,7 +731,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             query: prompt, mode: mode,
-            index_path: indexPath || './raw/制度/index',
+            index_path: indexPath || 'D:/docs/raw/制度/index',
             limit: 10,
           }),
         });

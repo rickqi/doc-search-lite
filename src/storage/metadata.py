@@ -10,7 +10,7 @@ class MetadataManager:
     """Manages document metadata in JSON format with index.json file.
 
     Metadata entries support the following conventional fields:
-        - tags: List[str] — Domain tags extracted by TagExtractor (e.g. ["合规审查", "产品条款"])
+        - tags: List[str] — Domain tags extracted by TagExtractor (e.g. ["消保审查", "产品条款"])
         - doc_type: str — Document type classification (e.g. "regulation", "insurance_product")
         - keywords: List[str] — Key terms extracted from the document
     """

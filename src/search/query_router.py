@@ -116,7 +116,7 @@ class QueryRouter:
         ],
         "insurance": [
             # Review (审查)
-            "消保", "合规审查", "宣传材料", "条款", "费率", "说明书",
+            "消保", "消保审查", "宣传材料", "条款", "费率", "说明书",
             # Claims (理赔)
             "理赔", "赔付", "理赔申请", "赔款", "免赔额",
             # Product (产品)
@@ -394,7 +394,7 @@ class QueryRouter:
         - Partial tag overlap (shared substring >= 2 chars): 0.5 per pair
 
         Args:
-            query_tags: List of tags to match (e.g. ["合规审查", "产品条款"]).
+            query_tags: List of tags to match (e.g. ["消保审查", "产品条款"]).
             top_k: If set, return at most top_k index paths. None = return all matches.
 
         Returns:

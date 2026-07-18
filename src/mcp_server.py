@@ -75,7 +75,7 @@ def _load_dotenv() -> None:
 # ── Auto-discover indexes (mirrors pi-doc.py discover_indexes) ─
 
 _DEFAULT_RAW_ROOTS: Dict[str, List[str]] = {
-    "win32": [r"./raw"],
+    "win32": [r"D:\docs\raw"],
     "linux": [
         str(Path.home() / "docs" / "raw"),
         str(Path(__file__).resolve().parent.parent.parent / "raw"),

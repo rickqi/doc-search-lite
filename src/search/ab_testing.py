@@ -9,9 +9,9 @@
     
     # 定义 A/B 配置
     config_a = RunnerConfig(name="CLI Agent", mode="tool_loop",
-        index_path=r"./raw\制度\index", raw_dir=r"./raw\制度")
+        index_path=r"D:\docs\raw\制度\index", raw_dir=r"D:\docs\raw\制度")
     config_b = RunnerConfig(name="MCP Pipeline", mode="pipeline",
-        index_path=r"./raw\制度\index", raw_dir=r"./raw\制度")
+        index_path=r"D:\docs\raw\制度\index", raw_dir=r"D:\docs\raw\制度")
     
     # 加载测试查询
     queries = load_queries_from_benchmark("docs/qa_benchmark_cases.json", limit=10)
