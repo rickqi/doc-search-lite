@@ -1,12 +1,5 @@
 """
 Tests for Dify External Knowledge Base API integration.
-
-Covers:
-- ScoreNormalizer: sigmoid normalization
-- KnowledgeBaseMapping: config loading, resolve, error handling
-- MetadataConditionEvaluator: filter operators
-- Pydantic model validation
-- /retrieval endpoint (route registration + auth + error formats)
 """
 
 import json
@@ -14,6 +7,10 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile
 
 import pytest
+
+# Skip this module in lite — dify_retrieval module not present
+pytest.importorskip("src.web.dify_retrieval")
+
 from fastapi.testclient import TestClient
 
 from src.api import app

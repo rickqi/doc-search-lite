@@ -1,19 +1,13 @@
-"""Unit tests for src/processor/ module — PDF Enhance Pipeline.
-
-Tests cover:
-  - Coordinate utilities (normalize_bbox, calculate_iou, parse_la_boxes)
-  - Data models (PipelineState save/load, GapTarget, Supplement)
-  - GapAnalyzer (seal-empty, coverage gaps, special elements)
-  - LocateAnythingWorker (stub mode, box parsing)
-  - ComparisonReportGenerator (metrics computation, report generation)
-  - PDFEnhancePipeline (mock end-to-end)
-"""
+"""Unit tests for src/processor/ module — PDF Enhance Pipeline."""
 
 import json
 import tempfile
 from pathlib import Path
 
 import pytest
+
+# Skip this module in lite — processor module not present
+pytest.importorskip("src.processor.coords")
 
 from src.processor.comparison_report import ComparisonReportGenerator
 from src.processor.coords import (
