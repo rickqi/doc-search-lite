@@ -126,6 +126,47 @@ Documents (PDF/DOCX/XLSX/PPTX/HTML/CSV/TXT/Images)
     LLM (GLM / DeepSeek) → Answer with citations
 ```
 
+### Local Database (convert.db)
+
+Each raw directory gets a `convert.db` (SQLite, WAL mode) that tracks every file's lifecycle end-to-end:
+
+```
+convert.db (per raw/ directory)
+├── Schema: "2.1" (auto-migrated from 1.1 → 2.0 → 2.1)
+├── WAL mode, foreign keys enabled
+│
+├── directories/     # Directory tree mirroring source structure
+├── files/           # Per-file state machine
+│   ├── status: pending → converting → success | failed | skipped
+│   ├── source_hash, mtime for incremental detection
+│   ├── converter, convert_time, ocr_tokens, pipeline_version
+│   └── metadata_json, last_error
+├── batches/         # Conversion batch history (resume support)
+├── skipped/         # Skip reasons (unsupported format, password-protected)
+├── config/          # Schema version, pipeline metadata
+│
+├── token_usage/     # OCR/LLM token consumption (per-file, per-model)
+├── pricing/         # Model price mapping (millicents per token)
+├── budget/          # Monthly/total budget limits and spending
+│
+├── search_feedback/ # 👍/👎 user relevance feedback
+├── auth_log/        # API authentication audit trail
+│
+├── query_diagnostics/  # 14-step query performance timing
+└── llm_call_log/       # Per-call LLM latency, tokens, retry count
+```
+
+**File lifecycle**: `pending → converting → success | failed | skipped`. On startup, interrupted (`running`) batches auto-reset to `interrupted` for clean resume.
+
+**Uses**:
+- **CLI** `batch-convert`: Resume broken conversions, skip unchanged files
+- **CLI** `build-index`: Read file paths from DB
+- **CLI** `stats`: Token usage, budget, diagnostics reports
+- **Web UI** DB panel: Conversion stats, file list, token chart
+- **CLI** `catalog`: List failed/pending files, reindex
+- **API** `/api/db/*`: Stats, files, batches, token endpoints
+- **Stats** `UsageTracker`/`BudgetGuard`: Record and enforce costs
+
 ## Commands
 
 ### Document Conversion
