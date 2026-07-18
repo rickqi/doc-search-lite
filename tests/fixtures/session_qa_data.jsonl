@@ -1,0 +1,5 @@
+{"session_id": "ses_demo_001", "query": "年假有几天?", "answer": "根据公司规定，正式员工每年享有 15 天年假。"}
+{"session_id": "ses_demo_002", "query": "差旅报销标准是什么?", "answer": "住宿标准为每天 500 元，交通费实报实销。"}
+{"session_id": "ses_demo_003", "query": "加班费怎么计算?", "answer": "平日 1.5 倍、周末 2 倍、法定节假日 3 倍。"}
+{"session_id": "ses_demo_004", "query": "医保报销比例是多少?", "answer": "门诊报销 70%，住院报销 85%，上限 20 万。"}
+{"session_id": "ses_demo_005", "query": "如何申请产假?", "answer": "产假 98 天，需提前 15 天提交申请。"}
