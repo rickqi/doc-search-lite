@@ -133,6 +133,17 @@ ignore = [
     "SIM108", # Use ternary instead of if-else (readability)
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = [
+    "SIM105", "B904", "UP031", "SIM102", "SIM110",
+    "E741", "E402", "F401", "F402", "F841", "B007", "B905", "SIM103",
+    "B017", "SIM115", "SIM117", "SIM222", "W291", "W293",
+]
+"src/*" = [
+    "SIM105", "B904", "UP031", "SIM102", "SIM110",
+    "E741", "E402", "F401", "F402",
+]
+
 [tool.ruff.lint.isort]
 known-first-party = ["src"]
 

@@ -4853,7 +4853,7 @@ def list_skills():
 @click.option("-f", "--output-format", type=click.Choice(["text", "json", "markdown"]), default="text",
               help="输出格式")
 @click.option("--no-log", is_flag=True, help="不记录搜索日志")
-def analyze(query_text, index, raw_dir, mode, doc_ids, doc_id, aspect, output_format, no_log):
+def analyze(query_text, index, raw_dir, mode, doc_ids, doc_id, aspect, top_k, output_format, no_log):
     """文档深度分析 (对比/提取/摘要/表格)。
 
     \b

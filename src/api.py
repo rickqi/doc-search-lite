@@ -1325,7 +1325,7 @@ async def query_agent(request: AgentQueryRequest):
     history = None
     if request.session_id:
         try:
-            sess_mgr = get_session_manager()
+            sess_mgr = _get_session_manager()
             sess_ctx = sess_mgr.get(request.session_id)
             if sess_ctx and sess_ctx.messages:
                 history = [
