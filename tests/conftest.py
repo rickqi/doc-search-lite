@@ -1,77 +1,54 @@
-"""
-Pytest configuration and shared fixtures for doc-search tests.
-"""
+"""Pytest configuration and shared fixtures for doc-search-lite tests."""
 
 import os
-import shutil
-from pathlib import Path
-from types import SimpleNamespace
+from unittest.mock import MagicMock
+
 import pytest
 
+from src.utils.config import Config
+
 # ── Global test environment ────────────────────────────────────────────
-# Disable SearchLogger during tests to prevent leakage into production
-# D:/docs/search_logs/ directory. Individual tests that need logging
-# (e.g. test_search_logger.py) re-enable it via monkeypatch.
+# Disable SearchLogger during tests to prevent leakage.
 os.environ.setdefault("NO_SEARCH_LOG", "1")
-# Disable authentication during tests — test endpoints don't send API keys
-os.environ["PI_FORCE_AUTH"] = "0"
-
-
-@pytest.fixture
-def tmp_output_dir(tmp_path: Path) -> Path:
-    """
-    Create a temporary directory for test outputs.
-
-    Args:
-        tmp_path: pytest's built-in temporary directory fixture
-
-    Returns:
-        Path object for the temporary output directory
-    """
-    output_dir = tmp_path / "output"
-    output_dir.mkdir()
-    return output_dir
 
 
 @pytest.fixture
 def mock_config():
-    """
-    Provide mock configuration values for testing.
+    """Create a mock Config with sensible defaults for most tests.
 
-    Returns:
-        SimpleNamespace with test configuration values
+    Uses MagicMock(spec=Config) for type-safe attribute access.
+    Override specific attributes after retrieval in each test.
+
+    Usage:
+        def test_something(mock_config):
+            llm = LLMClient(config=mock_config)
     """
-    return SimpleNamespace(
-        index_dir=Path("test_index"),
-        output_dir=Path("test_output"),
-        collection_name="test_collection",
-        chunk_size=1000,
-        chunk_overlap=200,
-        llm_model="gpt-4o-mini",
-        embedding_model="text-embedding-3-small",
-    )
+    config = MagicMock(spec=Config)
+    config.active_api_key = "test-key"
+    config.active_base_url = "http://test"
+    config.llm_temperature = 0.7
+    config.llm_max_tokens = 500
+    config.litellm_model = "test-model"
+    config.deepseek_api_key = ""
+    config.glm_api_key = ""
+    config.llm_provider = "glm"
+    config.fast_model = "deepseek/deepseek-v4-flash"
+    config.power_model = "deepseek/deepseek-v4-pro"
+    return config
 
 
 @pytest.fixture(autouse=True)
-def _clear_searcher_pool():
-    """Clear SearcherPool cache between tests to prevent cross-test pollution."""
-    from src.search.multi_index import SearcherPool
-    SearcherPool.clear()
+def _env_snapshot():
+    """Snapshot and restore os.environ around each test.
+
+    Prevents env var mutations from leaking between tests.
+    Applied automatically to all tests in the suite.
+    """
+    snapshot = dict(os.environ)
     yield
-    SearcherPool.clear()
-
-
-@pytest.fixture
-def venv_python() -> str:
-    """
-    Return the path to the virtual environment Python executable.
-
-    Returns:
-        String path to the .venv Python executable
-    """
-    import sys
-    root = Path(__file__).resolve().parent.parent
-    if sys.platform == "win32":
-        return str(root / ".venv" / "Scripts" / "python.exe")
-    else:
-        return str(root / ".venv" / "bin" / "python")
+    for key in list(os.environ.keys()):
+        if key not in snapshot:
+            os.environ.pop(key, None)
+    for key, val in snapshot.items():
+        if os.environ.get(key) != val:
+            os.environ[key] = val

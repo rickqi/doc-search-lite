@@ -18,11 +18,11 @@ def calculate_hash(file_path: Path, algorithm: str = "sha256") -> str:
         FileNotFoundError: If file doesn't exist
         ValueError: If algorithm is not supported
     """
-    if not file_path.exists():
-        raise FileNotFoundError(f"File not found: {file_path}")
-
     if not isinstance(file_path, Path):
         file_path = Path(file_path)
+
+    if not file_path.exists():
+        raise FileNotFoundError(f"File not found: {file_path}")
 
     try:
         hasher = hashlib.new(algorithm)
