@@ -59,9 +59,9 @@ REVIEW_ENHANCEMENT = """
 
 def detect_review_mode(prompt: str) -> bool:
     """判断是否为合规模审查 prompt（含规则+格式约束）。
-    
+
     检测特征：角色设定 + 审查规则 + JSON输出格式
-    
+
     Returns:
         True 如果是合规审查 prompt，应直接调用 LLM 而非 Agent 搜索。
     """
@@ -81,13 +81,13 @@ def detect_review_mode(prompt: str) -> bool:
 
 def enhance_review_prompt(prompt: str) -> str:
     """增强合规审查 prompt：注入隐性违规示例库。
-    
+
     在原始 prompt 的"审查规则"部分之后插入增强指引。
     如果检测不到适合插入的位置，则原样返回。
-    
+
     Args:
         prompt: 原始合规审查 prompt
-        
+
     Returns:
         增强后的 prompt
     """

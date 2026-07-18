@@ -6,12 +6,12 @@
 Usage:
     from src.stats.memory import AgentMemory
     memory = AgentMemory()
-    
+
     # 查询前: 检查是否已有精确命中
     cached = memory.recall(query)
     if cached:
         return cached.answer  # 0 延迟
-    
+
     # 查询后: 记录学习
     memory.learn(session_id, result)
 """
@@ -79,9 +79,9 @@ class AgentMemory:
         try:
             with self._lock:
                 cur = self._conn().execute(
-                    """SELECT answer, search_mode, processing_time, 
+                    """SELECT answer, search_mode, processing_time,
                               tokens_used, tool_calls_json, index_path, session_id
-                       FROM search_logs 
+                       FROM search_logs
                        WHERE query = ? AND source = 'agent' AND success = 1
                        ORDER BY created_at DESC LIMIT 1""",
                     (query,),
@@ -125,8 +125,8 @@ class AgentMemory:
                        FROM search_logs
                        WHERE (query LIKE ? OR query LIKE ? OR query LIKE ?)
                          AND source = 'agent' AND success = 1
-                       ORDER BY 
-                         CASE 
+                       ORDER BY
+                         CASE
                            WHEN query = ? THEN 0
                            WHEN query LIKE ? THEN 1
                            ELSE 2
@@ -241,7 +241,7 @@ class AgentMemory:
         try:
             with self._lock:
                 self._conn().execute(
-                    """INSERT INTO answer_feedback 
+                    """INSERT INTO answer_feedback
                        (session_id, rating, comment, created_at)
                        VALUES (?, ?, ?, datetime('now'))""",
                     (session_id, rating, comment),

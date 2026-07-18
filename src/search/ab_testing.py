@@ -6,19 +6,19 @@
 用法::
 
     runner = ABTestRunner()
-    
+
     # 定义 A/B 配置
     config_a = RunnerConfig(name="CLI Agent", mode="tool_loop",
         index_path=r"D:\\docs\raw\\制度\\index", raw_dir=r"D:\\docs\raw\\制度")
     config_b = RunnerConfig(name="MCP Pipeline", mode="pipeline",
         index_path=r"D:\\docs\raw\\制度\\index", raw_dir=r"D:\\docs\raw\\制度")
-    
+
     # 加载测试查询
     queries = load_queries_from_benchmark("docs/qa_benchmark_cases.json", limit=10)
-    
+
     # 运行 A/B 测试
     result = runner.run(config_a, config_b, queries, runs=3)
-    
+
     # 生成报告
     print(result.summary())
     result.save_json("docs/ab_test_result.json")
@@ -105,28 +105,28 @@ class ArmResult:
     def get_accuracy(self) -> list[float]:
         """所有查询×所有运行的正确率列表."""
         scores = []
-        for qid, results in self.per_query.items():
+        for _qid, results in self.per_query.items():
             for r in results:
                 scores.append(r.accuracy)
         return scores
 
     def get_latency(self) -> list[float]:
         vals = []
-        for qid, results in self.per_query.items():
+        for _qid, results in self.per_query.items():
             for r in results:
                 vals.append(r.latency)
         return vals
 
     def get_tokens(self) -> list[int]:
         vals = []
-        for qid, results in self.per_query.items():
+        for _qid, results in self.per_query.items():
             for r in results:
                 vals.append(r.tokens_used)
         return vals
 
     def get_cost(self) -> list[float]:
         vals = []
-        for qid, results in self.per_query.items():
+        for _qid, results in self.per_query.items():
             for r in results:
                 if hasattr(r, 'cost_cents'):
                     vals.append(r.cost_cents)

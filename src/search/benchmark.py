@@ -4,6 +4,7 @@ Runs queries against BM25 (Tantivy) and Grep (regex) search backends,
 collecting latency, result count, hit rate, and MRR metrics.
 """
 
+import contextlib
 import json
 import logging
 import time
@@ -123,10 +124,8 @@ class BenchmarkRunner:
         dummy_spec = QuerySpec(query=query)
         for _ in range(count):
             for mode in modes:
-                try:
+                with contextlib.suppress(Exception):
                     self._run_single(dummy_spec, mode)
-                except Exception:
-                    pass
 
     # ------------------------------------------------------------------
     # Single execution

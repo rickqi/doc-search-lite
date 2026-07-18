@@ -9,6 +9,7 @@ This module provides the ConverterCoordinator class which:
 - Handles unsupported formats with clear error messages
 """
 
+import contextlib
 import gc
 import logging
 import shutil
@@ -274,11 +275,7 @@ class ConverterCoordinator:
                 b"<?xml",  # Some HTML files start with XML declaration
             ]
 
-            for marker in html_markers:
-                if header.startswith(marker):
-                    return True
-
-            return False
+            return any(header.startswith(marker) for marker in html_markers)
         except OSError:
             # If we can't read the file, assume it's not HTML
             return False
@@ -488,10 +485,8 @@ class ConverterCoordinator:
                         initial_result.errors.append(f"OCR failed for page {page_num}/{total_pages}: {e}")
 
                     # Delete page image immediately after OCR
-                    try:
+                    with contextlib.suppress(Exception):
                         image_path.unlink()
-                    except Exception:
-                        pass
 
                     # Periodic GC every 50 pages to release pdfplumber page caches
                     if page_num % 50 == 0:
@@ -507,10 +502,8 @@ class ConverterCoordinator:
         finally:
             # Clean up temp directory
             if temp_dir.exists():
-                try:
+                with contextlib.suppress(Exception):
                     shutil.rmtree(temp_dir, ignore_errors=True)
-                except Exception:
-                    pass
 
         # Combine OCR results and update initial_result
         if ocr_texts:
@@ -578,10 +571,8 @@ class ConverterCoordinator:
 
             finally:
                 if temp_dir and temp_dir.exists():
-                    try:
+                    with contextlib.suppress(Exception):
                         shutil.rmtree(temp_dir, ignore_errors=True)
-                    except Exception:
-                        pass
 
         return initial_result
 

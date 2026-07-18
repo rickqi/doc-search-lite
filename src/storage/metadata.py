@@ -1,5 +1,6 @@
 """JSON-based metadata manager for document metadata storage."""
 
+import contextlib
 import json
 from datetime import datetime
 from pathlib import Path
@@ -306,9 +307,7 @@ class MetadataManager:
 
         if success and old_path != self.index_path:
             # Optionally remove old file
-            try:
+            with contextlib.suppress(FileNotFoundError):
                 old_path.unlink()
-            except FileNotFoundError:
-                pass
 
         return success

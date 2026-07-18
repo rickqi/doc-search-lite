@@ -34,6 +34,7 @@ the raw root (mirrors pi-doc.py behavior).
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import logging
 import os
@@ -817,7 +818,7 @@ def _format_agent_response(resp: Any) -> str:
 
 def create_server(host: str = "127.0.0.1", port: int = 8000) -> FastMCP:  # type: ignore[valid-type]
     """Create and configure the FastMCP server with all tools.
-    
+
     Args:
         host: Bind address for SSE/HTTP transports (ignored for stdio).
         port: Listen port for SSE/HTTP transports (ignored for stdio).
@@ -1247,10 +1248,8 @@ def _register_shutdown_handlers() -> None:
 
     def _cleanup():
         _write_status("stopped")
-        try:
+        with contextlib.suppress(Exception):
             _MCP_PID_FILE.unlink(missing_ok=True)
-        except Exception:
-            pass
 
     atexit.register(_cleanup)
 

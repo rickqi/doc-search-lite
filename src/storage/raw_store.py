@@ -9,6 +9,7 @@
     -> /path/to/raw/my-data/subdir/file.xlsx_images/  (images)
 """
 
+import contextlib
 import json
 import shutil
 from pathlib import Path
@@ -373,10 +374,8 @@ class RawStore:
         if output_root.exists():
             for f in output_root.rglob("*"):
                 if f.is_file():
-                    try:
+                    with contextlib.suppress(OSError):
                         total_size += f.stat().st_size
-                    except OSError:
-                        pass
                     file_count += 1
                     if f.suffix == ".md":
                         md_count += 1

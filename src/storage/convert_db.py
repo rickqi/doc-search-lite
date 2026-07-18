@@ -763,7 +763,7 @@ class ConvertDB:
         Returns:
             目录记录 ID
         """
-        cursor = self.conn.execute(
+        self.conn.execute(
             """INSERT INTO directories (parent_id, name, relative_path, depth)
                VALUES (?, ?, ?, ?)
                ON CONFLICT(relative_path) DO UPDATE SET

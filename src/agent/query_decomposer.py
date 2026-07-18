@@ -157,9 +157,7 @@ class QueryDecomposer:
         # Need at least 2 compound signals OR one signal + long query
         if signal_count >= 2:
             return True
-        if signal_count >= 1 and len(query) > 15:
-            return True
-        return False
+        return bool(signal_count >= 1 and len(query) > 15)
 
     def _parse_response(self, content: str, original_query: str) -> DecompositionResult:
         """Parse LLM response into DecompositionResult."""

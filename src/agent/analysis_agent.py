@@ -241,7 +241,7 @@ class AnalysisAgent(Agent):
             tokens_used = result.metadata.get("tokens_used", 0)
 
             # Calculate confidence based on token usage and document count
-            confidence = self._calculate_confidence(tokens_used, len(doc_ids))
+            self._calculate_confidence(tokens_used, len(doc_ids))
 
             tool_call = self._record_tool_call(
                 tool_name="analyze",
@@ -324,7 +324,7 @@ class AnalysisAgent(Agent):
                 answer = str(extracted_data)
 
             # Calculate confidence based on token usage
-            confidence = self._calculate_confidence(tokens_used, 1)
+            self._calculate_confidence(tokens_used, 1)
 
             tool_call = self._record_tool_call(
                 tool_name="analyze",

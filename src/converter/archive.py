@@ -91,10 +91,7 @@ class ArchiveConverter(Converter):
             return True
         # Check compound extensions
         name_lower = file_path.name.lower()
-        for ext in _COMPOUND_EXTENSIONS:
-            if name_lower.endswith(ext):
-                return True
-        return False
+        return any(name_lower.endswith(ext) for ext in _COMPOUND_EXTENSIONS)
 
     def convert(
         self,
@@ -440,9 +437,8 @@ class ArchiveConverter(Converter):
 
             # Collect extracted files
             for f in dest.rglob("*"):
-                if f.is_file() and not f.is_symlink():
-                    if self._safe_extract_check(f, dest):
-                        extracted.append(f)
+                if f.is_file() and not f.is_symlink() and self._safe_extract_check(f, dest):
+                    extracted.append(f)
 
             return extracted, None
         except Exception as exc:
@@ -676,10 +672,7 @@ class ArchiveConverter(Converter):
             return True
         # Also check compound extensions
         name_lower = f.name.lower()
-        for ext in _COMPOUND_EXTENSIONS:
-            if name_lower.endswith(ext):
-                return True
-        return False
+        return any(name_lower.endswith(ext) for ext in _COMPOUND_EXTENSIONS)
 
     @staticmethod
     def _cleanup_extracted_originals(extract_dir: Path, converted_paths: set[Path]) -> None:
@@ -703,7 +696,7 @@ class ArchiveConverter(Converter):
                 pass
 
         # Also clean up empty directories left after file removal
-        for root, dirs, files in os.walk(str(extract_dir), topdown=False):
+        for root, _dirs, _files in os.walk(str(extract_dir), topdown=False):
             if root == str(extract_dir):
                 continue  # keep the extract root
             try:

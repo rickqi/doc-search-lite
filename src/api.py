@@ -78,6 +78,8 @@ app.add_middleware(
 )
 
 # Authentication — supports legacy WEB_API_KEY + multi-token + open mode
+import contextlib
+
 from src.web.auth import AuthMiddleware, TokenStore, get_auth_mode, get_web_api_key
 
 _auth_mode = get_auth_mode()
@@ -615,7 +617,7 @@ async def _sse_event_generator(ctx):
 
     q = ctx.event_queue
     abort = ctx.abort_event
-    last_heartbeat = time.time()
+    time.time()
 
     while True:
         # Check for abort
@@ -627,7 +629,7 @@ async def _sse_event_generator(ctx):
             # Wait for next event with timeout (for heartbeat)
             event_str = await asyncio.wait_for(q.get(), timeout=30.0)
             yield event_str
-            last_heartbeat = time.time()
+            time.time()
 
             # Stop after answer_complete or error
             if "answer_complete" in event_str or '"error"' in event_str.lower():
@@ -712,12 +714,12 @@ async def submit_prompt(
     skill: str = Query("", description="Skill name or __load__<path> for external skill"),
 ):
     """Submit a prompt to an existing session (starts async agent execution).
-    
+
     Mode detection:
     - 'auto': Auto-detect if prompt is compliance review → direct LLM
     - 'review': Force direct LLM review (skip search)
     - 'tool_loop': Force Agent search mode
-    
+
     Skill support:
     - Built-in: summarize, compare, extract-table, detailed, timeline, action-items
     - External: __load__skills/消保岗位专业技能矩阵.md (prefix triggers file loading)
@@ -742,7 +744,7 @@ async def submit_prompt(
     from src.web.review_prompts import detect_review_mode, enhance_review_prompt
 
     is_review = (mode == "review") or (mode == "auto" and detect_review_mode(prompt))
-    enhanced = enhance_review_prompt(prompt) if is_review else prompt
+    enhance_review_prompt(prompt) if is_review else prompt
 
     # Auto-detect direct mode (AI Assistant fast path)
     from src.web.intent_classifier import ExecutionMode, get_classifier
@@ -1895,7 +1897,6 @@ async def admin_benchmark(index_path: str = Query(...), raw_dir: str = Query("")
     if not idx.exists():
         raise HTTPException(400, f"Index not found: {index_path}")
 
-    queries = ["年假", "报销", "合同", "安全", "数据"]
     results = []
 
     for mode_name in modes.split(","):
@@ -2097,10 +2098,8 @@ async def submit_feedback(request: FeedbackRequest):
         logger.exception("Failed to persist feedback")
         return {"status": "ok", "persisted": False}
     finally:
-        try:
+        with contextlib.suppress(Exception):
             db.close()
-        except Exception:
-            pass
 
     logger.info("Feedback recorded: query=%s rating=%d", request.query[:60], request.rating)
     return {"status": "ok", "persisted": True}

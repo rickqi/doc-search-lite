@@ -454,9 +454,8 @@ class MarkdownStore(Storage):
                 record = self._deserialize_record(data)
 
                 # Apply filter if provided
-                if filter:
-                    if not self._matches_filter(record, filter):
-                        continue
+                if filter and not self._matches_filter(record, filter):
+                    continue
 
                 records.append(record)
             except (json.JSONDecodeError, KeyError, ValueError):

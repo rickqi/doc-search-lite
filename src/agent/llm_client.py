@@ -1198,7 +1198,7 @@ class LLMClient:
 
             # Invoke observability callback for each tool call / result pair
             if on_tool_call is not None:
-                for tc, result in zip(response.tool_calls, tool_results):
+                for tc, result in zip(response.tool_calls, tool_results, strict=False):
                     try:
                         on_tool_call(tc, result)
                     except Exception as cb_exc:
@@ -1286,7 +1286,7 @@ class LLMClient:
 
             tool_results = self.execute_tool_calls(response.tool_calls, tools)
             if on_tool_call is not None:
-                for tc, result in zip(response.tool_calls, tool_results):
+                for tc, result in zip(response.tool_calls, tool_results, strict=False):
                     try:
                         on_tool_call(tc, result)
                     except Exception as cb_exc:

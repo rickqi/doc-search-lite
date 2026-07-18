@@ -4,6 +4,7 @@ Also includes local PaddleOCR and remote HTTP PaddleOCR services.
 """
 
 import base64
+import contextlib
 import json as _json
 import logging
 import os
@@ -720,10 +721,8 @@ class OCRService:
                     )
 
                 # Cleanup chunk PDF immediately
-                try:
+                with contextlib.suppress(Exception):
                     chunk_path.unlink()
-                except Exception:
-                    pass
 
         except Exception as e:
             logger.error("PDF chunking failed: %s", e)
@@ -798,7 +797,7 @@ class PaddleOCRService:
             rec_texts = data.get("res", {}).get("rec_texts", [])
             rec_scores = data.get("res", {}).get("rec_scores", [])
 
-            filtered = [t for t, s in zip(rec_texts, rec_scores) if s >= 0.3]
+            filtered = [t for t, s in zip(rec_texts, rec_scores, strict=False) if s >= 0.3]
             text = "\n".join(filtered)
 
             avg_conf = (

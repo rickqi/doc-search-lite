@@ -1,5 +1,6 @@
 """doc-search CLI - 本地文档搜索系统命令行接口"""
 
+import contextlib
 import sys
 
 # Fix Windows console encoding for Chinese and emoji output.
@@ -9,10 +10,8 @@ if sys.platform == "win32":
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     except Exception:
         pass  # stdout may not be a real console (e.g., Task Scheduler)
-    try:
+    with contextlib.suppress(Exception):
         sys.stderr.reconfigure(encoding="utf-8", errors="replace")
-    except Exception:
-        pass
 
 import json
 import logging
@@ -51,6 +50,8 @@ try:
 except ImportError:
     _RICH_AVAILABLE = False
     console = None
+
+import contextlib
 
 from src.converter.base import ConvertResult
 from src.converter.coordinator import ConverterCoordinator
@@ -274,7 +275,7 @@ def _scan_and_sync(db: ConvertDB, source_root: Path) -> int:
     root_id = db.upsert_directory(".", parent_id=None, depth=0, name=source_root.name)
     dir_cache["."] = root_id
 
-    for dirpath, dirnames, filenames in os.walk(source_root):
+    for dirpath, _dirnames, filenames in os.walk(source_root):
         dir_path = Path(dirpath)
         rel_dir = dir_path.relative_to(source_root)
         rel_dir_str = str(rel_dir).replace("\\", "/")
@@ -1275,10 +1276,8 @@ def _execute_list_search(
                         if len(parts) >= 3:
                             match_idx += 1
                             file_display = parts[0]
-                            try:
+                            with contextlib.suppress(ValueError, TypeError):
                                 file_display = str(Path(parts[0]).relative_to(grep_raw_dir))
-                            except (ValueError, TypeError):
-                                pass
                             display_rows.append({
                                 "is_match": True,
                                 "idx": match_idx,
@@ -1531,7 +1530,7 @@ def _execute_list_search(
                 ))
 
         # ── Shared output pipeline ──
-        elapsed = time.time() - start_time
+        time.time() - start_time
 
         if not sources_items and not display_rows:
             if _RICH_AVAILABLE:
@@ -2728,16 +2727,12 @@ def batch_convert(source, raw_root, mode, parallel, ocr, ocr_engine, generate_in
             # Clean up duplicate file written by Converter internals
             converter_output = output_dir / f"{source_file.stem}.md"
             if converter_output.exists() and converter_output != output_path:
-                try:
+                with contextlib.suppress(OSError):
                     converter_output.unlink()
-                except OSError:
-                    pass
             converter_meta = output_dir / f"{source_file.stem}.md.json"
             if converter_meta.exists():
-                try:
+                with contextlib.suppress(OSError):
                     converter_meta.unlink()
-                except OSError:
-                    pass
 
             update_kwargs: dict[str, Any] = dict(
                 converter=result.converter_name,
@@ -3605,10 +3600,8 @@ def catalog_inject_frontmatter(raw_dir, dry_run, force):
         # Load metadata from .md.json
         metadata = {}
         if md_json_path.exists():
-            try:
+            with contextlib.suppress(Exception):
                 metadata = json.loads(md_json_path.read_text(encoding="utf-8"))
-            except Exception:
-                pass
 
         if not metadata:
             # No .md.json — generate minimal frontmatter from filename

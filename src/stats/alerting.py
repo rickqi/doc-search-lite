@@ -92,9 +92,8 @@ class AlertManager:
             if alert.is_exceeded:
                 if critical is None:
                     critical = alert
-            elif alert.usage_percent >= self.budget_warning_threshold * 100:
-                if warning is None:
-                    warning = alert
+            elif alert.usage_percent >= self.budget_warning_threshold * 100 and warning is None:
+                warning = alert
 
         target = critical or warning
         if target is None:

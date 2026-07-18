@@ -162,7 +162,7 @@ class BudgetGuard:
             spend_cents = spend_millicents // 1000
 
             limit_cents = b["limit_cents"]
-            threshold = b["alert_threshold"]
+            b["alert_threshold"]
             block = bool(b["block_exceed"])
 
             usage_pct = (spend_cents / limit_cents * 100) if limit_cents > 0 else 0.0

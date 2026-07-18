@@ -351,7 +351,7 @@ class BenchmarkReporter:
 
         bars = ""
         colors = ["#4ecca3", "#e94560", "#f0c040", "#6c63ff"]
-        for i, (mode, lat) in enumerate(zip(modes, latencies)):
+        for i, (mode, lat) in enumerate(zip(modes, latencies, strict=False)):
             y = i * (bar_height + gap) + 10
             w = max(2, (lat / max_lat) * bar_area)
             color = colors[i % len(colors)]

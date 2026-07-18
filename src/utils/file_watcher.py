@@ -143,9 +143,8 @@ class FileWatcher:
             return files
 
         for path in directory.rglob("*"):
-            if path.is_file():
-                if extensions is None or path.suffix.lower() in extensions:
-                    files.add(path.resolve())
+            if path.is_file() and (extensions is None or path.suffix.lower() in extensions):
+                files.add(path.resolve())
 
         return files
 
@@ -167,9 +166,8 @@ class FileWatcher:
             return files
 
         for path in directory.iterdir():
-            if path.is_file():
-                if extensions is None or path.suffix.lower() in extensions:
-                    files.add(path.resolve())
+            if path.is_file() and (extensions is None or path.suffix.lower() in extensions):
+                files.add(path.resolve())
 
         return files
 

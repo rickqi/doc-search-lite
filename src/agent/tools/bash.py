@@ -160,7 +160,7 @@ def _extract_positional_args(
     value_flags = value_flags or set()
     positionals: list[str] = []
     skip_next = False
-    for i, arg in enumerate(args):
+    for _i, arg in enumerate(args):
         if skip_next:
             skip_next = False
             continue
@@ -342,7 +342,7 @@ class BashTool(Tool):
         list_files = _has_flag(args, "-l")
         max_count = _parse_int_flag(args, "--max-count", 50)
         context_after = _parse_int_flag(args, "-A", 2)
-        context_before = _parse_int_flag(args, "-B", 2)
+        _parse_int_flag(args, "-B", 2)
 
         # Extract pattern and path from positional args
         positionals = _extract_positional_args(
@@ -396,7 +396,6 @@ class BashTool(Tool):
             files_searched += 1
             lines = _read_lines(md_file)
             matches_in_file = 0
-            file_counted = False
 
             for i, line in enumerate(lines):
                 if regex.search(line):
@@ -409,7 +408,6 @@ class BashTool(Tool):
                         matches_in_file += 1
                     elif list_files:
                         results.append(str(rel))
-                        file_counted = True
                         break
                     else:
                         results.append(f"{rel}:{i + 1}:{line.rstrip()}")

@@ -403,7 +403,7 @@ class PDFConverter(Converter):
         tables = page.find_tables()
         table_regions = set()
 
-        for table_idx, table in enumerate(tables):
+        for _table_idx, table in enumerate(tables):
             try:
                 table_md = self._table_to_markdown(table)
                 if table_md:
@@ -531,7 +531,7 @@ class PDFConverter(Converter):
             List of extracted image file paths
         """
         images: list[Path] = []
-        Image = _get_pil()
+        _get_pil()
 
         # Get page images
         try:
