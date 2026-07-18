@@ -1573,22 +1573,8 @@ class TestAnalyzeCommand:
         result = runner.invoke(cli, ["analyze", "test"])
         assert result.exit_code != 0
 
-    def test_analyze_mock(self, runner, tmp_path, monkeypatch):
+    def test_analyze_mock(self, runner, tmp_path):
         """analyze with mocked analysis agent returns answer."""
-        import src.cli as cli_module
-
-        # Workaround: analyze callback has a known signature bug (missing top_k param).
-        # Inject top_k at module scope and wrap callback to strip the extra kwarg.
-        monkeypatch.setattr(cli_module, "top_k", 3, raising=False)
-        analyze_cmd = cli.commands["analyze"]
-        original_cb = analyze_cmd.callback
-
-        def patched_cb(**kwargs):
-            kwargs.pop("top_k", None)
-            return original_cb(**kwargs)
-
-        monkeypatch.setattr(analyze_cmd, "callback", patched_cb)
-
         with patch("src.utils.config.Config.from_env") as mock_config, \
              patch("src.agent.analysis_agent.search_and_analyze") as mock_search:
             mock_config.return_value = MagicMock(
