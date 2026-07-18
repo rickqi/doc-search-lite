@@ -1,14 +1,38 @@
 # doc-search-lite
 
-**Local document intelligent search** — lightweight open-source edition.
+<p align="center">
+  <strong>Your personal document deep-research assistant.</strong>
+</p>
 
-Convert PDF/DOCX/XLSX/PPTX/HTML → Markdown → BM25 index → LLM-powered search.
+<div align="center">
+  🔍 PDF/DOCX/XLSX/PPTX → Markdown → BM25 Index → LLM-powered Search &nbsp;|&nbsp; 🚫 No vector DB &nbsp;|&nbsp; 🖥️ CLI + Web + API + MCP
+</div>
+
+<br>
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
 [![CI](https://github.com/rickqi/doc-search-lite/actions/workflows/ci.yml/badge.svg)](https://github.com/rickqi/doc-search-lite/actions/workflows/ci.yml)
 
 ---
+
+## 💥 Introduction
+
+**doc-search** started as a personal tool to solve a simple problem:
+hundreds of insurance policies, regulatory documents, PDFs, and Office files
+scattered across folders — impossible to search by keywords alone.
+
+Over two years of iteration (v0.1 → v0.21), it grew into a full-featured
+**local document intelligence system** that converts any business document
+to Markdown, builds a Tantivy BM25 index, and lets an LLM agent
+search, read, cross-reference, and answer questions from your own knowledge base.
+No documents ever leave your machine. No vector database required.
+
+**doc-search-lite** is the open-source MIT core of that personal tool,
+stripped of enterprise-specific features and internal configuration.
+If you have a folder full of PDFs, DOCXs, or spreadsheets and need
+to ask questions like *"What's our annual leave policy?"* or
+*"Show me all clauses about data protection"* — this is for you.
 
 ## Why doc-search-lite?
 
