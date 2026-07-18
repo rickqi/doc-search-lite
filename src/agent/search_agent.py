@@ -2331,7 +2331,7 @@ def create_search_agent(
 
     # Create search tool with TTL cache for repeated queries
     search_tool = SearchTool(searcher)
-    from src.agent.base import ToolCache
+    from src.agent.tool_types import ToolCache
     search_tool.set_cache(ToolCache(ttl=300, max_size=128))
 
     # Create read tool — support multiple raw dirs for source_path resolution

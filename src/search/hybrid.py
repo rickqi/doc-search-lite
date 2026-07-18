@@ -14,7 +14,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import List, Optional
 
-from src.agent.base import ToolResult
+from src.agent.tool_types import ToolResult
 from src.search.bm25_search import BM25Searcher, PaginatedResults
 from src.search.unified import SearchSource, UnifiedSearchResult, UnifiedSearchResults
 

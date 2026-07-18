@@ -11,7 +11,8 @@ import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from src.agent.base import Tool, ToolResult
+from src.agent.base import Tool
+from src.agent.tool_types import ToolResult
 from src.storage.markdown_store import MarkdownStore
 
 logger = logging.getLogger(__name__)

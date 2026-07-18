@@ -11,7 +11,8 @@ from typing import Any, Dict, List, Union
 
 logger = logging.getLogger(__name__)
 
-from src.agent.base import Tool, ToolResult
+from src.agent.base import Tool
+from src.agent.tool_types import ToolResult
 from src.search.reranker import RerankResult
 
 

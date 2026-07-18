@@ -10,7 +10,8 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List
 
-from src.agent.base import Tool, ToolCache, ToolResult
+from src.agent.base import Tool
+from src.agent.tool_types import ToolCache, ToolResult
 
 
 class GrepTool(Tool):

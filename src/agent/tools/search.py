@@ -13,7 +13,8 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-from src.agent.base import Tool, ToolCache, ToolResult
+from src.agent.base import Tool
+from src.agent.tool_types import ToolCache, ToolResult
 from src.search.bm25_search import BM25Searcher, PaginatedResults, SearchPreview
 
 

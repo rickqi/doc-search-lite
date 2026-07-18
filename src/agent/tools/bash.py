@@ -16,7 +16,8 @@ import time
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from src.agent.base import Tool, ToolResult
+from src.agent.base import Tool
+from src.agent.tool_types import ToolResult
 
 # Safety limits
 _MAX_OUTPUT_CHARS = 8000
