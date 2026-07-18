@@ -1,6 +1,7 @@
 """Pytest configuration and shared fixtures for doc-search-lite tests."""
 
 import os
+from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
@@ -35,6 +36,14 @@ def mock_config():
     config.fast_model = "deepseek/deepseek-v4-flash"
     config.power_model = "deepseek/deepseek-v4-pro"
     return config
+
+
+@pytest.fixture
+def tmp_output_dir(tmp_path: Path) -> Path:
+    """Create a temporary output directory under tmp_path."""
+    output_dir = tmp_path / "output"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    return output_dir
 
 
 @pytest.fixture(autouse=True)
