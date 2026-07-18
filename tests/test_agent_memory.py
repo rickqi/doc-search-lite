@@ -171,6 +171,7 @@ class TestFormatContext:
 # ═══════════════════════════════════════════════════════════════════════
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="Requires Windows paths (/index/test)")
 class TestSearchAgentIntegration:
     """search_agent.py run() 中的 AgentMemory 集成."""
 
