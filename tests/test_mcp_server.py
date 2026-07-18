@@ -20,7 +20,7 @@ import pytest
 
 try:
     import src.mcp_server as mcp_mod
-    _HAS_MCP = True
+    _HAS_MCP = bool(getattr(mcp_mod, "_MCP_AVAILABLE", False))
 except ImportError:
     _HAS_MCP = False
 
