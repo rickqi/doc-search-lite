@@ -109,6 +109,22 @@ copy .env.example .env
 > Requires **Python 3.10+** and a **ZhipuAI GLM API key** (also used for Rerank & OCR).
 > DeepSeek is supported as an alternative LLM provider.
 
+## Demo
+
+<p align="center">
+  <img src="docs/screenshots/web-ui.png" alt="doc-search-lite Web UI" width="80%">
+  <br>
+  <em>Web UI — Agent search with SSE streaming, tool call trace, and source citations. <a href="docs/screenshots/">More screenshots →</a></em>
+</p>
+
+<!--
+  TODO: Add screenshots:
+  1. docs/screenshots/web-ui.png    — Web UI with a completed Agent search
+  2. docs/screenshots/cli-demo.gif   — Terminal recording of CLI workflow
+  3. docs/screenshots/db-panel.png  — DB stats and token usage chart
+  4. docs/screenshots/mcp.png       — MCP tools in OpenCode/Claude
+-->
+
 ## Features
 
 - **Multi-format conversion**: PDF, DOCX, XLSX, PPTX, HTML, CSV, TXT, images (OCR), Outlook MSG, ZIP/7z/RAR archives
