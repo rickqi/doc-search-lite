@@ -9,9 +9,12 @@ authors = [
     {name = "rick qi", email = "rickqi@users.noreply.github.com"},
 ]
 keywords = [
-    "document-search", "full-text-search", "bm25", "tantivy",
-    "rag", "agent", "llm", "document-conversion", "ocr",
-    "chinese-search", "knowledge-base",
+    "document-search", "rag", "bm25", "tantivy",
+    "llm", "agent", "ocr", "fastapi",
+    "cli-tool", "local-first", "privacy",
+    "pdf", "document-conversion", "chinese-search",
+    "knowledge-base", "search-engine", "information-retrieval",
+    "mcp", "self-hosted", "agentic-rag",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
