@@ -141,9 +141,11 @@ copy .env.example .env
 
 ## Architecture
 
-<div align="center">
-<table style="border-collapse:collapse;width:100%;max-width:1100px;font-family:sans-serif;font-size:12px">
-<tr><td colspan="3" style="text-align:center;padding:10px;font-size:20px;font-weight:bold;color:#1e293b">doc-search-lite — System Architecture</td></tr>
+<p align="center">
+  <img src="docs/screenshots/architecture.png" alt="doc-search-lite System Architecture" width="100%">
+  <br>
+  <em>System architecture — 3-column layout: DevOps/Storage (left), 7-layer pipeline (center), Security/Budget/Lifecycle (right).</em>
+</p>
 <tr>
 <!-- LEFT SIDEBAR -->
 <td style="width:150px;vertical-align:top;padding-right:8px">
@@ -266,8 +268,11 @@ copy .env.example .env
 </tr>
 </table>
 </div>
-
-### Pipeline
+<p align="center">
+  <img src="docs/screenshots/architecture.png" alt="doc-search-lite System Architecture" width="100%">
+  <br>
+  <em>System architecture — 3-column layout: DevOps/Storage (left), 7-layer pipeline (center), Security/Budget/Lifecycle (right).</em>
+</p>
 
 ### Pipeline
 

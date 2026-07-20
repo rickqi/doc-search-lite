@@ -140,9 +140,11 @@ copy .env.example .env
 
 ## 架构
 
-<div align="center">
-<table style="border-collapse:collapse;width:100%;max-width:1100px;font-family:sans-serif;font-size:12px">
-<tr><td colspan="3" style="text-align:center;padding:10px;font-size:20px;font-weight:bold;color:#1e293b">doc-search-lite — System Architecture</td></tr>
+<p align="center">
+  <img src="docs/screenshots/architecture.png" alt="doc-search-lite 系统架构" width="100%">
+  <br>
+  <em>三栏系统架构图：DevOps/存储（左）、7 层管线（中）、安全/预算/生命周期（右）。</em>
+</p>
 <tr>
 <!-- LEFT SIDEBAR -->
 <td style="width:150px;vertical-align:top;padding-right:8px">
@@ -265,8 +267,6 @@ copy .env.example .env
 </tr>
 </table>
 </div>
-
-### 管线流程
 
 ### 管线流程
 
