@@ -433,7 +433,7 @@ OCR_ENGINE=zhipu
 
 ## 项目结构
 
-`
+```
 src/
 ├── cli.py              # Click CLI 入口（batch-convert / build-index / query / watch / stats）
 ├── api.py              # FastAPI 服务器（21+ 路由、SSE 流式、文件上传）
@@ -478,7 +478,7 @@ src/
     ├── config.py           # 多提供商 LLM 配置
     ├── hash.py             # 文件/内容哈希
     └── dir_diff.py         # 目录对比
-`
+```
 ## 环境变量
 
 | 变量 | 必需 | 默认值 | 说明 |
