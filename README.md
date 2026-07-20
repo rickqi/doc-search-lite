@@ -217,7 +217,6 @@ flowchart TB
     BM25 --> RK
     HY --> RK
     MI --> RK
-    KK --> LLM
     BM25 --> TIDX
     HY --> TIDX
     MI --> TIDX
