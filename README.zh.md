@@ -1,13 +1,13 @@
 # doc-search-lite
 
-<p align="right"><a href="README.zh.md">中文</a></p>
+<p align="right"><a href="README.md">English</a></p>
 
 <p align="center">
   <strong>Your personal document deep-research assistant.</strong>
 </p>
 
 <div align="center">
-  🔍 PDF/DOCX/XLSX/PPTX → Markdown → BM25 Index → LLM-powered Search &nbsp;|&nbsp; 🚫 No vector DB &nbsp;|&nbsp; 🖥️ CLI + Web + API + MCP
+  🔍 PDF/DOCX/XLSX/PPTX → Markdown → BM25 索引 → LLM 智能搜索 &nbsp;|&nbsp; 🚫 无向量数据库 &nbsp;|&nbsp; 🖥️ CLI + Web + API + MCP
 </div>
 
 <br>
@@ -18,30 +18,29 @@
 
 ---
 
-## 💥 Introduction
+## 💥 简介
 
-**doc-search** started as a personal tool to solve a simple problem:
-hundreds of insurance product clauses and medical diagnostic manuals
-scattered across folders — impossible to search by keywords alone.
+**doc-search** 始于一个个人工具，解决一个简单的问题：
+成百上千份保险产品条款和医疗诊断手册
+散落在各个文件夹中——仅靠关键词无法搜索。
 
-Over 50 releases in two months (v0.1 → v0.21, May–July 2026), it grew into a full-featured
-**local document intelligence system** that converts any business document
-to Markdown, builds a Tantivy BM25 index, and lets an LLM agent
-search, read, cross-reference, and answer questions from your own knowledge base.
-No documents ever leave your machine. No vector database required.
+在两个月内迭代 50+ 个版本（v0.1 → v0.21，2026年5月–7月），它成长为一个全功能的
+**本地文档智能系统**，可将任何业务文档
+转换为 Markdown，构建 Tantivy BM25 索引，让 LLM Agent
+在你的知识库中搜索、阅读、交叉引用并回答问题。
+文档从不离开你的机器。无需向量数据库。
 
 **doc-search-lite** is the open-source MIT core of that personal tool,
 stripped of enterprise-specific features and internal configuration.
-If you have a folder full of PDFs, DOCXs, or spreadsheets and need
-to ask questions like *"What's our annual leave policy?"* or
-*"Show me all clauses about data protection"* — this is for you.
+如果你有一个装满 PDF、DOCX 或电子表格的文件夹，需要
+提问诸如 *"年假怎么申请？"* 或 *"数据保护条款有哪些？"* 之类的问题——这就是为你准备的。
 
-## Why doc-search-lite?
+## 为什么选择 doc-search-lite？
 
-This is the open-source core of [doc-search](https://github.com/rickqi/doc-search),
-stripped of enterprise features and internal data. **No vector database, no local model inference.**
+这是 [doc-search](https://github.com/rickqi/doc-search) 的开源核心版本，
+去除了企业功能和内部数据。**无向量数据库，无本地模型推理。**
 
-| Feature | doc-search (enterprise) | doc-search-lite (OSS) |
+| 功能 | doc-search（企业版） | doc-search-lite（开源版） |
 |---------|:----------------------:|:---------------------:|
 | BM25 + Agent RAG search | ✅ | ✅ |
 | Multi-format document conversion | ✅ | ✅ |
@@ -58,13 +57,13 @@ stripped of enterprise features and internal data. **No vector database, no loca
 | OpenCode Skill | ✅ | ❌ |
 | License | PolyForm Strict | **MIT** |
 
-### Comparison with DCI-Agent-Lite
+### 与 DCI-Agent-Lite 对比
 
-[DCI-Agent-Lite](https://github.com/DCI-Agent/DCI-Agent-Lite) is an academic
-research framework for the **Direct Corpus Interaction** paradigm —
-an agent searches raw text corpora using terminal tools (`rg`, `find`, `sed`)
-with no indexing. Both projects share the philosophy of **no vector databases**,
-but target different use cases:
+[DCI-Agent-Lite](https://github.com/DCI-Agent/DCI-Agent-Lite) 是一个学术
+研究框架，基于 **直接语料交互** 范式——
+Agent 使用终端工具（`rg`、`find`、`sed`）直接搜索原始文本语料，
+无需索引。两个项目共享 **无向量数据库** 的理念，
+但针对不同的使用场景：
 
 | Dimension | doc-search-lite | DCI-Agent-Lite |
 |-----------|----------------|----------------|
@@ -82,36 +81,36 @@ but target different use cases:
 | **License** | MIT | Apache 2.0 |
 | **Paper** | — | [arXiv:2605.05242](https://arxiv.org/abs/2605.05242) |
 
-## Quick Start
+## 快速开始
 
 ```bash
-# 1. Install
+# 1. 安装
 git clone https://github.com/rickqi/doc-search-lite.git
 cd doc-search-lite
 python -m venv .venv
 .venv\Scripts\pip install -e ".[dev]"
 
-# 2. Copy env config
+# 2. 复制环境配置
 copy .env.example .env
-# Edit .env, set GLM_API_KEY=your-key
+# 编辑 .env，设置 GLM_API_KEY=your-key
 
-# 3. Convert documents
+# 3. 转换文档
 .venv\Scripts\python -m src.cli batch-convert ./docs --raw-root ./raw
 
-# 4. Build search index
+# 4. 构建搜索索引
 .venv\Scripts\python -m src.cli build-index ./raw
 
-# 5. Search
+# 5. 搜索
 .venv\Scripts\python -m src.cli query "search query" -i ./raw/index --agent
 
-# 6. Launch Web UI
+# 6. 启动 Web 界面
 .venv\Scripts\python -m src.api
 ```
 
-> Requires **Python 3.10+** and a **ZhipuAI GLM API key** (also used for Rerank & OCR).
-> DeepSeek is supported as an alternative LLM provider.
+> 需要 **Python 3.10+** 和 **ZhipuAI GLM API 密钥**（也用于 Rerank 和 OCR）。
+> DeepSeek 可作为备选 LLM 提供商。
 
-## Demo
+## 演示
 
 <p align="center">
   <img src="docs/screenshots/web-ui.png" alt="doc-search-lite Web UI" width="80%">
@@ -119,27 +118,27 @@ copy .env.example .env
   <em>Web UI — Agent search with SSE streaming, tool call trace, and source citations. <a href="docs/screenshots/">More screenshots →</a></em>
 </p>
 
-## Features
+## 功能特性
 
-- **Multi-format conversion**: PDF, DOCX, XLSX, PPTX, HTML, CSV, TXT, images (OCR), Outlook MSG, ZIP/7z/RAR archives
-- **BM25 full-text search**: Tantivy (Rust) + jieba Chinese tokenization + Bigram fallback
-- **Hybrid search**: BM25 + Grep parallel with RRF fusion, configurable profiles (legal/technical/faq/general)
-- **Multi-index search**: Cross-database search with metadata routing
-- **Agentic RAG**: LLM-driven tool loop (search/read/grep/rerank) with dynamic confidence, sufficiency checks, and convergence guards
-- **COMPILOT optimizations** (v0.14+): ReAct reasoning, Draft verification loop, Tool feedback signals, Convergence nudging, Best-of-K, Confidence calibration
-- **MCP Fast Pipeline** (v0.15+): Query rewriting + multi-query BM25 + speculative pre-read, ~12-18s vs 40-90s full tool loop
-- **MCP Server**: FastMCP with 4 tools (`doc_search`/`doc_agent`/`doc_read`/`doc_analyze`), auto-index discovery
-- **Dual LLM provider**: ZhipuAI GLM / DeepSeek, one-click switch
-- **Tiered Model Routing**: Fast model for intermediate steps, power model for final answer
-- **Web UI**: SSE streaming, session management, DB panel with token usage charts, file upload
-- **PII desensitization**: Phone/ID/bank card masking before LLM calls, automatic restore
-- **Directory watching**: Watchdog auto-indexing on file changes
-- **Search modes**: BM25 / Grep / Hybrid / Tag / Agent — CLI + API + MCP
-- **Skill system**: 6 built-in analysis skills + external SKILL.md loading
-- **Stats & budget**: Usage tracking (millicents), budget guard, search logging, diagnostics (14-step timing)
-- **5 complexity levels**: simple(2 rounds) / light(4) / medium(8) / complex(8 + decompose + verify + BOK)
+- **多格式转换**：PDF、DOCX、XLSX、PPTX、HTML、CSV、TXT、图片（OCR）、Outlook MSG、ZIP/7z/RAR 压缩包
+- **BM25 全文搜索**：Tantivy（Rust）+ jieba 中文分词 + Bigram 回退
+- **混合搜索**：BM25 + Grep 并行，RRF 融合排序，可配置策略（法律/技术/FAQ/通用）
+- **多索引搜索**：跨文档库搜索，元数据路由精准定位
+- **智能 Agent**：LLM 自主调用工具（搜索/读取/重排序），动态置信度控制迭代
+- **COMPILOT 优化**（v0.14+）：ReAct 推理、Draft 验证闭环、工具反馈信号、收敛推促、Best-of-K、置信度校准
+- **MCP 快速管线**（v0.15+）：查询改写 + 多查询 BM25 + 投机预读，~12-18s vs 全 tool_loop 40-90s
+- **MCP 服务器**：FastMCP 4 工具（`doc_search`/`doc_agent`/`doc_read`/`doc_analyze`），自动索引发现
+- **双 LLM 提供商**：ZhipuAI GLM / DeepSeek，一键切换
+- **分层模型路由**：中间步骤用快速模型，最终答案用高精度模型
+- **Web 界面**：SSE 流式推送、会话管理、DB 面板（Token 用量图表）、文件上传
+- **PII 脱敏**：手机号/身份证/银行卡在 LLM 调用前自动脱敏并恢复
+- **目录监控**：Watchdog 自动检测文件变更，增量更新索引
+- **搜索模式**：BM25 / Grep / Hybrid / Tag / Agent — CLI + API + MCP 全覆盖
+- **技能系统**：6 种内置分析技能 + 外部 SKILL.md 加载
+- **统计与预算**：用量追踪（毫分精度）、预算守卫、搜索日志、14 步诊断
+- **5 级复杂度**：simple（2轮）/ light（4轮）/ medium（8轮）/ complex（8轮 + 分解 + 验证 + BOK）
 
-## Architecture
+## 架构
 
 <div align="center">
 <table style="border-collapse:collapse;width:100%;max-width:1100px;font-family:sans-serif;font-size:12px">
@@ -267,12 +266,12 @@ copy .env.example .env
 </table>
 </div>
 
-### Pipeline
+### 管线流程
 
-### Pipeline
+### 管线流程
 
 ```
-Documents (PDF/DOCX/XLSX/PPTX/HTML/CSV/TXT/Images)
+文档（PDF/DOCX/XLSX/PPTX/HTML/CSV/TXT/图片）
     │
     ConverterCoordinator → Markdown → .md + .md.json (headings, tags)
     │
@@ -288,10 +287,10 @@ Documents (PDF/DOCX/XLSX/PPTX/HTML/CSV/TXT/Images)
     │  read → rerank → synthesize   │
     └────────────────────────────────┘
     │
-    LLM (GLM / DeepSeek) → Answer with citations
+    LLM（GLM / DeepSeek）→ 带引用的回答
 ```
 
-### Local Database (convert.db)
+### 本地数据库 (convert.db)
 
 Each raw directory gets a `convert.db` (SQLite, WAL mode) that tracks every file's lifecycle end-to-end:
 
@@ -321,9 +320,9 @@ convert.db (per raw/ directory)
 └── llm_call_log/       # Per-call LLM latency, tokens, retry count
 ```
 
-## Commands
+## 命令
 
-### Document Conversion
+### 文档转换
 
 ```bash
 python -m src.cli batch-convert ./docs --raw-root ./raw
@@ -333,7 +332,7 @@ python -m src.cli batch-convert ./docs --raw-root ./raw --force
 python -m src.cli batch-convert ./docs --raw-root ./raw --no-ocr
 ```
 
-### Index Management
+### 索引管理
 
 ```bash
 python -m src.cli build-index ./raw
@@ -341,7 +340,7 @@ python -m src.cli watch ./raw --debounce 1.0
 python -m src.cli build-index ./raw --chunk-mode
 ```
 
-### Search
+### 搜索
 
 ```bash
 python -m src.cli query "annual leave policy" -i ./raw/index -l 5
@@ -351,7 +350,7 @@ python -m src.cli query "报销" -i ./raw/index --search-mode tag
 python -m src.cli query "keyword" -i ./raw/index --export json -o results.json
 ```
 
-### Agent Search
+### Agent 智能搜索
 
 ```bash
 python -m src.cli query "How do I apply for annual leave?" -i ./raw/index --agent
@@ -360,14 +359,14 @@ python -m src.cli query "出差标准" -i ./raw/index --agent --skill summarize
 python -m src.cli query "" -i ./raw/index --interactive
 ```
 
-### Web UI
+### Web 界面
 
 ```bash
 python -m src.api
 python -m src.api --host 0.0.0.0 --port 8080
 ```
 
-### MCP Server
+### MCP 服务器
 
 ```bash
 pip install -e ".[mcp]"
@@ -383,7 +382,7 @@ python -m src.mcp_server
 | `doc_read` | Read full document content by doc_id or source_path |
 | `doc_analyze` | Deep document analysis (compare/extract/summarize/table) |
 
-### Stats & Diagnostics
+### 统计与诊断
 
 ```bash
 python -m src.cli stats summary --days 7
@@ -394,14 +393,14 @@ python -m src.cli stats diagnostics --days 7
 python -m src.cli stats slow-queries --threshold 30000
 ```
 
-### Directory Migration
+### 目录迁移
 
 ```bash
 python -m src.cli diff-migrate /path/to/base /path/to/compare
 python -m src.cli diff-migrate /path/to/base /path/to/compare --export-new /path/to/export
 ```
 
-## Supported Formats
+## 支持的格式
 
 | Format | Extension | Converter |
 |--------|-----------|-----------|
@@ -419,7 +418,7 @@ python -m src.cli diff-migrate /path/to/base /path/to/compare --export-new /path
 
 > `.doc` format requires pre-conversion to `.docx` via LibreOffice.
 
-## Configuration
+## 配置
 
 Copy `.env.example` to `.env` and configure:
 
@@ -434,7 +433,74 @@ WEB_API_KEY=your-secret-key
 OCR_ENGINE=zhipu
 ```
 
-## Tech Stack
+## 项目结构
+
+```
+src/
+├── cli.py              # Click CLI 入口（batch-convert / build-index / query / watch / stats）
+├── api.py              # FastAPI 服务器（21+ 路由、SSE 流式、文件上传）
+├── mcp_server.py       # FastMCP 服务器（4 个工具、自动索引发现）
+├── agent/              # SearchAgent + 7 个工具 + LLMClient
+│   ├── search_agent.py     # Agent 循环（COMPILOT P0-P6，8 轮）
+│   ├── llm_client.py       # LiteLLM 封装 + 分层路由
+│   ├── analysis_agent.py   # 文档分析
+│   └── tools/              # search / grep / read / rerank / summarize / bash / analyze
+├── converter/          # 文档→Markdown 管线
+│   ├── coordinator.py      # 自动路由 + OCR 回退
+│   ├── pdf.py / office.py / html.py / csv.py / text.py / image.py / msg.py / archive.py
+│   └── ocr.py              # 4 种 OCR 引擎
+├── search/             # 搜索管线
+│   ├── bm25_search.py      # BM25（jieba + Bigram + 标题加权）
+│   ├── hybrid.py           # BM25+Grep RRF 融合
+│   ├── multi_index.py      # 多索引搜索
+│   ├── query_router.py     # 关键词路由（零 LLM 开销）
+│   └── reranker.py         # ZhipuAI 云端 Rerank
+├── storage/            # 持久化层
+│   ├── index.py            # Tantivy BM25 索引（Schema v2）
+│   ├── convert_db.py       # SQLite（Schema v2.1）
+│   └── markdown_store.py   # Markdown 存储
+├── web/                # Web 界面（零构建 vanilla HTML/CSS/JS）
+│   ├── auth.py             # API Key 认证
+│   ├── session_manager.py  # 会话 CRUD
+│   ├── sse_events.py       # 11 种 SSE 事件类型
+│   ├── intent_classifier.py # 查询意图路由
+│   ├── upload_manager.py   # 文件上传管线
+│   └── static/             # HTML / CSS / JS / i18n
+├── stats/              # 用量 + 诊断 + 预算
+│   ├── usage_tracker.py    # OCR/LLM/Rerank 追踪
+│   ├── budget_guard.py     # 预算执行
+│   ├── search_logger.py    # 搜索日志
+│   └── diagnostics.py      # 14 步计时
+├── security/           # PII 脱敏
+│   ├── desensitizer.py     # 统一入口
+│   └── maskers.py          # PII/关键词/正则脱敏器
+├── watch/              # 目录监控
+│   └── index_watcher.py    # Watchdog → 增量索引
+└── utils/              # 配置 / 哈希 / 工具
+    ├── config.py           # 多提供商 LLM 配置
+    ├── hash.py             # 文件/内容哈希
+    └── dir_diff.py         # 目录对比
+```
+## 环境变量
+
+| 变量 | 必需 | 默认值 | 说明 |
+|----------|----------|---------|-------------|
+| GLM_API_KEY | ✅ | — | ZhipuAI GLM API 密钥（也用于 Rerank 和 OCR） |
+| GLM_BASE_URL | ✅ | https://open.bigmodel.cn/api/paas/v4 | GLM API 端点 |
+| DEEPSEEK_API_KEY | ❌ | — | DeepSeek API 密钥 |
+| LLM_PROVIDER | ❌ | glm | glm 或 deepseek |
+| LLM_MODEL | ❌ | glm-4 | 默认模型名称 |
+| LLM_TIERED_ROUTING | ❌ | alse | 启用快速/高精度分层路由 |
+| LLM_FAST_MODEL | ❌ | deepseek-v4-flash | 中间步骤快速模型 |
+| LLM_POWER_MODEL | ❌ | deepseek-v4-pro | 最终答案高精度模型 |
+| WEB_API_KEY | ❌ | — | API 认证 Bearer Token |
+| DESENSITIZE_ENABLED | ❌ | 	rue | LLM 调用时 PII 脱敏 |
+| OCR_ENGINE | ❌ | zhipu | OCR 引擎选择 |
+| SEARCH_DEFAULT_LIMIT | ❌ | 10 | 默认结果数量 |
+| LOG_LEVEL | ❌ | INFO | 日志级别 |
+| MAX_WORKERS | ❌ | 4 | 线程池大小 |
+
+## 技术栈
 
 | Layer | Technology |
 |-------|-----------|
@@ -449,16 +515,16 @@ OCR_ENGINE=zhipu
 | Storage | SQLite (WAL mode), Tantivy index, filesystem |
 | File watching | watchdog |
 
-## Key Design Decisions
+## 关键设计决策
 
-- **No vector database**: BM25 + jieba provides better keyword precision for legal/insurance/regulatory documents
-- **Whole-document indexing**: Preserves full context vs chunk-splitting that loses document structure
-- **Result-based error handling**: `ConvertResult(success, errors)` and `ToolResult.ok()/.fail()` throughout
-- **Optional traceability**: `UsageTracker=None` everywhere — zero cost when not configured
-- **Fail-safe desensitization**: PII masking failures fall back to original text, never block LLM calls
-- **Tiered routing**: Fast cheap model for intermediate steps, expensive model only for final answer
+- **无向量数据库**：BM25 + jieba 对保险/法律/监管文档提供更好的关键词精确匹配
+- **整篇文档索引**：保留完整上下文，避免分块丢失文档结构
+- **基于结果错误处理**：全栈使用 `ConvertResult(success, errors)` 和 `ToolResult.ok()/.fail()`
+- **可选追踪**：`UsageTracker=None` 在任何地方都合法——未配置时零开销
+- **安全脱敏**：PII 脱敏失败回退到原文，绝不阻断 LLM 调用
+- **分层路由**：中间步骤用便宜模型，最终答案才用昂贵模型
 
-## Development
+## 开发
 
 ```bash
 .venv\Scripts\python.exe -m pytest tests/ -q --tb=short
@@ -467,6 +533,6 @@ OCR_ENGINE=zhipu
 .venv\Scripts\ruff format src/ tests/
 ```
 
-## License
+## 许可协议
 
-MIT License — see [LICENSE](LICENSE).
+MIT 协议 — 详见 [LICENSE](LICENSE)。
