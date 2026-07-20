@@ -139,100 +139,131 @@ copy .env.example .env
 
 ## Architecture
 
-```mermaid
-flowchart TB
-    classDef user fill:#dbeafe,stroke:#3b82f6,stroke-width:2px
-    classDef gateway fill:#fef3c7,stroke:#eab308,stroke-width:2px
-    classDef agent fill:#d1fae5,stroke:#10b981,stroke-width:2px
-    classDef search fill:#ede9fe,stroke:#8b5cf6,stroke-width:2px
-    classDef convert fill:#e0e7ff,stroke:#6366f1,stroke-width:2px
-    classDef data fill:#fce7f3,stroke:#ec4899,stroke-width:2px
-    classDef external fill:#f8fafc,stroke:#94a3b8,stroke-width:2px,stroke-dasharray:6 4
-    classDef comp fill:#f3f4f6,stroke:#9ca3af,stroke-width:1px,font-size:9px
+<div align="center">
+<table style="border-collapse:collapse;width:100%;max-width:1100px;font-family:sans-serif;font-size:12px">
+<tr><td colspan="3" style="text-align:center;padding:10px;font-size:20px;font-weight:bold;color:#1e293b">doc-search-lite — System Architecture</td></tr>
+<tr>
+<!-- LEFT SIDEBAR -->
+<td style="width:150px;vertical-align:top;padding-right:8px">
+<div style="background:#f3f4f6;border:1px solid #9ca3af;border-radius:8px;padding:10px;margin-bottom:8px">
+<div style="font-weight:bold;text-align:center;font-size:12px;color:#1e293b;margin-bottom:6px">🖥️ DevOps</div>
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:5px;padding:5px;margin:3px 0;text-align:center;font-size:10px;color:#374151">CLI (Click)<br><span style="font-size:9px;color:#6b7280">batch-convert / build-index / query / watch / stats</span></div>
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:5px;padding:5px;margin:3px 0;text-align:center;font-size:10px;color:#374151">pip install<br><span style="font-size:9px;color:#6b7280">Python 3.10+</span></div>
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:5px;padding:5px;margin:3px 0;text-align:center;font-size:10px;color:#374151">.env Config<br><span style="font-size:9px;color:#6b7280">GLM/DeepSeek Keys</span></div>
+</div>
+<div style="background:#f3f4f6;border:1px solid #9ca3af;border-radius:8px;padding:10px;margin-bottom:8px">
+<div style="font-weight:bold;text-align:center;font-size:12px;color:#1e293b;margin-bottom:6px">📊 Observability</div>
+<div style="background:#dbeafe;border:1px solid #3b82f6;border-radius:5px;padding:5px;margin:3px 0;text-align:center;font-size:10px;color:#1e40af;font-weight:600">UsageTracker<br><span style="font-size:9px;color:#6b7280;font-weight:400">OCR/LLM/Rerank</span></div>
+<div style="background:#dbeafe;border:1px solid #3b82f6;border-radius:5px;padding:5px;margin:3px 0;text-align:center;font-size:10px;color:#1e40af;font-weight:600">BudgetGuard<br><span style="font-size:9px;color:#6b7280;font-weight:400">Monthly Caps</span></div>
+<div style="background:#dbeafe;border:1px solid #3b82f6;border-radius:5px;padding:5px;margin:3px 0;text-align:center;font-size:10px;color:#1e40af;font-weight:600">Diagnostics<br><span style="font-size:9px;color:#6b7280;font-weight:400">14-Step Timing</span></div>
+<div style="background:#dbeafe;border:1px solid #3b82f6;border-radius:5px;padding:5px;margin:3px 0;text-align:center;font-size:10px;color:#1e40af;font-weight:600">SearchLogger<br><span style="font-size:9px;color:#6b7280;font-weight:400">Async Logging</span></div>
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:5px;padding:5px;margin:3px 0;text-align:center;font-size:10px;color:#374151">AgentMemory<br><span style="font-size:9px;color:#6b7280">Q&A Recall</span></div>
+</div>
+<div style="background:#f3f4f6;border:1px solid #9ca3af;border-radius:8px;padding:10px;margin-bottom:8px">
+<div style="font-weight:bold;text-align:center;font-size:12px;color:#1e293b;margin-bottom:6px">📦 Storage</div>
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:5px;padding:5px;margin:3px 0;text-align:center;font-size:10px;color:#374151">Tantivy Index<br><span style="font-size:9px;color:#6b7280">BM25 Schema v2</span></div>
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:5px;padding:5px;margin:3px 0;text-align:center;font-size:10px;color:#374151">ConvertDB<br><span style="font-size:9px;color:#6b7280">SQLite Schema v2.1</span></div>
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:5px;padding:5px;margin:3px 0;text-align:center;font-size:10px;color:#374151">Markdown Files<br><span style="font-size:9px;color:#6b7280">.md + .md.json</span></div>
+</div>
+</td>
 
-    subgraph Users["🎯 User Interface Layer"]
-        CLI["CLI (Click)\ndoc-search-lite batch-convert / query"]
-        WebUI["Web UI\nFastAPI + vanilla CSS/JS + SSE"]
-        MCP["MCP Server\nFastMCP - 4 tools"]
-        REST["REST API\n21+ endpoints"]
-    end
-    subgraph Gateway["⚙️ API & Gateway Layer"]
-        Auth["Auth Middleware\nBearer / X-API-Key"]
-        Session["Session Manager\nSSE + SQLite persistence"]
-        Intent["Intent Classifier\n3-mode routing"]
-    end
-    subgraph Agent["🧠 Agent Intelligence Layer"]
-        SA["SearchAgent\ntool_loop (8 rounds) / pipeline"]
-        LLM["LLMClient\nLiteLLM - GLM / DeepSeek"]
-        Tools["6 Agent Tools\nSearch / Grep / Read / Rerank / Summarize / Bash"]
-        subgraph COMPILOT["COMPILOT Optimizations"]
-            direction LR
-            P0["P0 ReAct\nThought→Action"]
-            P1["P1 Draft Verify\nClosed-loop"]
-            P2["P2 Feedback\nTool signals"]
-            P3["P3-P6\nNudge / BOK / Confidence"]
-        end
-    end
-    subgraph Search["🔍 Search Pipeline Layer"]
-        BM25["BM25\nTantivy + jieba + Bigram"]
-        HY["Hybrid\nBM25+Grep RRF K=60"]
-        MI["Multi-Index\nFan-out + namespace"]
-        RK["Reranker\nZhipuAI / local bge"]
-    end
-    subgraph Convert["📄 Conversion Pipeline Layer"]
-        PDF["PDF\npdfplumber+pypdf+OCR"]
-        OFF["Office\nMarkItDown"]
-        CSV["HTML/CSV\ntable alignment fix"]
-        IMG["Images\nOCR 4 engines"]
-        ARC["Archives\nZIP/7z/RAR/tar"]
-    end
-    subgraph Data["🗄️ Data & Persistence Layer"]
-        TIDX["Tantivy Index\nBM25 - title boost + highlights"]
-        CDB["ConvertDB (SQLite)\nSchema v2.1"]
-        FS["File Store\n.md + .md.json"]
-    end
-    subgraph External["☁️ External Services"]
-        GLM["ZhipuAI GLM\nLLM + Rerank + OCR"]
-        DS["DeepSeek\nAlternative LLM"]
-        POCR["PaddleOCR\nLocal GPU OCR"]
-        LIT["LiteLLM\n200+ provider proxy"]
-    end
-    class CLI,WebUI,MCP,REST user
-    class Auth,Session,Intent gateway
-    class SA,LLM,Tools agent
-    class BM25,HY,MI,RK search
-    class PDF,OFF,CSV,IMG,ARC convert
-    class TIDX,CDB,FS data
-    class GLM,DS,POCR,LIT external
-    class P0,P1,P2,P3 comp
+<!-- MAIN CONTENT -->
+<td style="vertical-align:top;padding:0 8px">
+<div style="background:#dbeafe;border:2px solid #3b82f6;border-radius:8px;padding:10px;margin-bottom:8px">
+<div style="font-weight:bold;text-align:center;font-size:13px;color:#1e40af;margin-bottom:8px">🎯 User Interface Layer</div>
+<table style="width:100%;border-collapse:collapse"><tr>
+<td style="width:25%;background:#fff;border:2px solid #2563eb;border-radius:6px;padding:8px;text-align:center;font-weight:600;color:#1e293b">CLI (Click)<br><span style="font-size:10px;font-weight:400;color:#475569">batch-convert / query</span></td>
+<td style="width:25%;background:#fff;border:2px solid #2563eb;border-radius:6px;padding:8px;text-align:center;font-weight:600;color:#1e293b">Web UI<br><span style="font-size:10px;font-weight:400;color:#475569">FastAPI + vanilla CSS/JS + SSE</span></td>
+<td style="width:25%;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:8px;text-align:center;font-weight:600;color:#1e293b">MCP Server<br><span style="font-size:10px;font-weight:400;color:#475569">FastMCP — 4 tools</span></td>
+<td style="width:25%;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:8px;text-align:center;font-weight:600;color:#1e293b">REST API<br><span style="font-size:10px;font-weight:400;color:#475569">21+ endpoints</span></td>
+</tr></table></div>
 
-    CLI --> Auth
-    WebUI --> Auth
-    MCP --> Auth
-    REST --> Auth
-    Auth --> Session
-    Session --> Intent
-    Intent --> SA
-    SA --> Tools
-    SA --> COMPILOT
-    Tools --> BM25
-    Tools --> HY
-    Tools --> MI
-    BM25 --> RK
-    HY --> RK
-    MI --> RK
-    BM25 --> TIDX
-    HY --> TIDX
-    MI --> TIDX
-    PDF --> FS
-    OFF --> FS
-    CSV --> FS
-    IMG --> FS
-    ARC --> FS
-    FS --> TIDX
-    GLM --> LLM
-    DS --> LLM
-```
+<div style="background:#fef3c7;border:2px solid #eab308;border-radius:8px;padding:10px;margin-bottom:8px">
+<div style="font-weight:bold;text-align:center;font-size:13px;color:#854d0e;margin-bottom:8px">⚙️ API & Gateway Layer</div>
+<table style="width:100%;border-collapse:collapse"><tr>
+<td style="width:33%;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:8px;text-align:center;font-weight:600;color:#1e293b">Auth Middleware<br><span style="font-size:10px;font-weight:400;color:#475569">Bearer / X-API-Key</span></td>
+<td style="width:33%;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:8px;text-align:center;font-weight:600;color:#1e293b">Session Manager<br><span style="font-size:10px;font-weight:400;color:#475569">SSE + SQLite persistence</span></td>
+<td style="width:33%;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:8px;text-align:center;font-weight:600;color:#1e293b">Intent Classifier<br><span style="font-size:10px;font-weight:400;color:#475569">3-mode routing</span></td>
+</tr></table></div>
+
+<div style="background:#d1fae5;border:2px solid #10b981;border-radius:8px;padding:10px;margin-bottom:8px">
+<div style="font-weight:bold;text-align:center;font-size:13px;color:#065f46;margin-bottom:8px">🧠 Agent Intelligence Layer</div>
+<table style="width:100%;border-collapse:collapse"><tr>
+<td style="width:33%;background:#fff;border:2px solid #2563eb;border-radius:6px;padding:8px;text-align:center;font-weight:600;color:#1e293b">SearchAgent<br><span style="font-size:10px;font-weight:400;color:#475569">tool_loop (8 rounds) / pipeline</span></td>
+<td style="width:33%;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:8px;text-align:center;font-weight:600;color:#1e293b">LLMClient<br><span style="font-size:10px;font-weight:400;color:#475569">LiteLLM — GLM / DeepSeek</span></td>
+<td style="width:33%;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:8px;text-align:center;font-weight:600;color:#1e293b">6 Agent Tools<br><span style="font-size:10px;font-weight:400;color:#475569">Search / Grep / Read / Rerank / Summarize / Bash</span></td>
+</tr></table>
+<div style="margin-top:6px"><table style="width:100%;border-collapse:collapse"><tr>
+<td style="width:25%;background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;padding:4px;text-align:center;font-size:10px;color:#475569">P0 ReAct<br><span style="font-size:9px;color:#6b7280">Thought→Action</span></td>
+<td style="width:25%;background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;padding:4px;text-align:center;font-size:10px;color:#475569">P1 Draft Verify<br><span style="font-size:9px;color:#6b7280">Closed-loop</span></td>
+<td style="width:25%;background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;padding:4px;text-align:center;font-size:10px;color:#475569">P2 Feedback<br><span style="font-size:9px;color:#6b7280">Tool signals</span></td>
+<td style="width:25%;background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;padding:4px;text-align:center;font-size:10px;color:#475569">P3-P6<br><span style="font-size:9px;color:#6b7280">Nudge/BOK/Confidence</span></td>
+</tr></table></div></div>
+
+<div style="background:#ede9fe;border:2px solid #8b5cf6;border-radius:8px;padding:10px;margin-bottom:8px">
+<div style="font-weight:bold;text-align:center;font-size:13px;color:#5b21b6;margin-bottom:8px">🔍 Search Pipeline Layer</div>
+<table style="width:100%;border-collapse:collapse"><tr>
+<td style="width:25%;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:8px;text-align:center;font-weight:600;color:#1e293b">BM25<br><span style="font-size:10px;font-weight:400;color:#475569">Tantivy + jieba + Bigram</span></td>
+<td style="width:25%;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:8px;text-align:center;font-weight:600;color:#1e293b">Hybrid<br><span style="font-size:10px;font-weight:400;color:#475569">BM25+Grep RRF K=60</span></td>
+<td style="width:25%;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:8px;text-align:center;font-weight:600;color:#1e293b">Multi-Index<br><span style="font-size:10px;font-weight:400;color:#475569">Fan-out + namespace</span></td>
+<td style="width:25%;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:8px;text-align:center;font-weight:600;color:#1e293b">Reranker<br><span style="font-size:10px;font-weight:400;color:#475569">ZhipuAI / local bge</span></td>
+</tr></table></div>
+
+<div style="background:#e0e7ff;border:2px solid #6366f1;border-radius:8px;padding:10px;margin-bottom:8px">
+<div style="font-weight:bold;text-align:center;font-size:13px;color:#4338ca;margin-bottom:8px">📄 Conversion Pipeline Layer</div>
+<table style="width:100%;border-collapse:collapse"><tr>
+<td style="width:20%;background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;padding:5px;text-align:center;font-size:10px;color:#475569">PDF<br><span style="font-size:9px;color:#6b7280">pdfplumber+pypdf+OCR</span></td>
+<td style="width:20%;background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;padding:5px;text-align:center;font-size:10px;color:#475569">Office<br><span style="font-size:9px;color:#6b7280">MarkItDown</span></td>
+<td style="width:20%;background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;padding:5px;text-align:center;font-size:10px;color:#475569">HTML/CSV<br><span style="font-size:9px;color:#6b7280">table alignment fix</span></td>
+<td style="width:20%;background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;padding:5px;text-align:center;font-size:10px;color:#475569">Images<br><span style="font-size:9px;color:#6b7280">OCR 4 engines</span></td>
+<td style="width:20%;background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;padding:5px;text-align:center;font-size:10px;color:#475569">Archives<br><span style="font-size:9px;color:#6b7280">ZIP/7z/RAR/tar</span></td>
+</tr></table></div>
+
+<div style="background:#fce7f3;border:2px solid #ec4899;border-radius:8px;padding:10px;margin-bottom:8px">
+<div style="font-weight:bold;text-align:center;font-size:13px;color:#9d174d;margin-bottom:8px">🗄️ Data & Persistence Layer</div>
+<table style="width:100%;border-collapse:collapse"><tr>
+<td style="width:33%;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:8px;text-align:center;font-weight:600;color:#1e293b">Tantivy Index<br><span style="font-size:10px;font-weight:400;color:#475569">BM25 — title boost + highlights</span></td>
+<td style="width:33%;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:8px;text-align:center;font-weight:600;color:#1e293b">ConvertDB (SQLite)<br><span style="font-size:10px;font-weight:400;color:#475569">Schema v2.1</span></td>
+<td style="width:33%;background:#fff;border:1px solid #cbd5e1;border-radius:6px;padding:8px;text-align:center;font-weight:600;color:#1e293b">File Store<br><span style="font-size:10px;font-weight:400;color:#475569">.md + .md.json</span></td>
+</tr></table></div>
+
+<div style="background:#f8fafc;border:2px dashed #94a3b8;border-radius:8px;padding:10px;margin-bottom:8px">
+<div style="font-weight:bold;text-align:center;font-size:13px;color:#64748b;margin-bottom:8px">☁️ External Services</div>
+<table style="width:100%;border-collapse:collapse"><tr>
+<td style="width:25%;background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;padding:5px;text-align:center;font-size:10px;color:#475569">ZhipuAI GLM<br><span style="font-size:9px;color:#6b7280">LLM + Rerank + OCR</span></td>
+<td style="width:25%;background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;padding:5px;text-align:center;font-size:10px;color:#475569">DeepSeek<br><span style="font-size:9px;color:#6b7280">Alternative LLM</span></td>
+<td style="width:25%;background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;padding:5px;text-align:center;font-size:10px;color:#475569">PaddleOCR<br><span style="font-size:9px;color:#6b7280">Local GPU OCR</span></td>
+<td style="width:25%;background:#f8fafc;border:1px solid #cbd5e1;border-radius:4px;padding:5px;text-align:center;font-size:10px;color:#475569">LiteLLM<br><span style="font-size:9px;color:#6b7280">200+ provider proxy</span></td>
+</tr></table></div>
+</td>
+
+<!-- RIGHT SIDEBAR -->
+<td style="width:150px;vertical-align:top;padding-left:8px">
+<div style="background:#f3f4f6;border:1px solid #9ca3af;border-radius:8px;padding:10px;margin-bottom:8px">
+<div style="font-weight:bold;text-align:center;font-size:12px;color:#1e293b;margin-bottom:6px">🔒 Security</div>
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:5px;padding:5px;margin:3px 0;text-align:center;font-size:10px;color:#374151">PII Desensitizer<br><span style="font-size:9px;color:#6b7280">Phone/ID/Bank card masking</span></div>
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:5px;padding:5px;margin:3px 0;text-align:center;font-size:10px;color:#374151">API Key Auth<br><span style="font-size:9px;color:#6b7280">Bearer / X-API-Key</span></div>
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:5px;padding:5px;margin:3px 0;text-align:center;font-size:10px;color:#374151">Auth Audit Log<br><span style="font-size:9px;color:#6b7280">token/endpoint/IP/status</span></div>
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:5px;padding:5px;margin:3px 0;text-align:center;font-size:10px;color:#374151">Fail-safe Design<br><span style="font-size:9px;color:#6b7280">Never block on error</span></div>
+</div>
+<div style="background:#f3f4f6;border:1px solid #9ca3af;border-radius:8px;padding:10px;margin-bottom:8px">
+<div style="font-weight:bold;text-align:center;font-size:12px;color:#1e293b;margin-bottom:6px">📈 Cost & Budget</div>
+<div style="background:#dbeafe;border:1px solid #3b82f6;border-radius:5px;padding:5px;margin:3px 0;text-align:center;font-size:10px;color:#1e40af;font-weight:600">Tiered Routing<br><span style="font-size:9px;color:#6b7280;font-weight:400">Flash $0.005/query</span></div>
+<div style="background:#dbeafe;border:1px solid #3b82f6;border-radius:5px;padding:5px;margin:3px 0;text-align:center;font-size:10px;color:#1e40af;font-weight:600">Token Tracking<br><span style="font-size:9px;color:#6b7280;font-weight:400">Millicents precision</span></div>
+<div style="background:#dbeafe;border:1px solid #3b82f6;border-radius:5px;padding:5px;margin:3px 0;text-align:center;font-size:10px;color:#1e40af;font-weight:600">Budget Limits<br><span style="font-size:9px;color:#6b7280;font-weight:400">Monthly/total caps</span></div>
+<div style="background:#dbeafe;border:1px solid #3b82f6;border-radius:5px;padding:5px;margin:3px 0;text-align:center;font-size:10px;color:#1e40af;font-weight:600">AlertManager<br><span style="font-size:9px;color:#6b7280;font-weight:400">Webhook + dedup 5min</span></div>
+</div>
+<div style="background:#f3f4f6;border:1px solid #9ca3af;border-radius:8px;padding:10px;margin-bottom:8px">
+<div style="font-weight:bold;text-align:center;font-size:12px;color:#1e293b;margin-bottom:6px">🔄 Lifecycle</div>
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:5px;padding:5px;margin:3px 0;text-align:center;font-size:10px;color:#374151">File Status<br><span style="font-size:9px;color:#6b7280">pending→converting→success</span></div>
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:5px;padding:5px;margin:3px 0;text-align:center;font-size:10px;color:#374151">Batch Resume<br><span style="font-size:9px;color:#6b7280">Interrupted→restart</span></div>
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:5px;padding:5px;margin:3px 0;text-align:center;font-size:10px;color:#374151">Incremental<br><span style="font-size:9px;color:#6b7280">Hash + mtime detect</span></div>
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:5px;padding:5px;margin:3px 0;text-align:center;font-size:10px;color:#374151">Watchdog<br><span style="font-size:9px;color:#6b7280">Auto re-index</span></div>
+</div>
+</td>
+</tr>
+</table>
+</div>
 
 ### Pipeline
 
