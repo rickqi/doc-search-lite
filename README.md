@@ -7,7 +7,7 @@
 </p>
 
 <div align="center">
-  🔍 PDF/DOCX/XLSX/PPTX → Markdown → BM25 Index → LLM-powered Search &nbsp;|&nbsp; 🚫 No vector DB &nbsp;|&nbsp; 🖥️ CLI + Web + API + MCP
+  🔍 PDF/DOCX/XLSX/PPTX → Markdown → BM25 Index → LLM-powered Search  |  🚫 No vector DB  |  🖥️ CLI + Web + API + MCP
 </div>
 
 <br>
@@ -41,22 +41,23 @@ to ask questions like *"What's our annual leave policy?"* or
 This is the open-source core of [doc-search](https://github.com/rickqi/doc-search),
 stripped of enterprise features and internal data. **No vector database, no local model inference.**
 
-| Feature | doc-search (enterprise) | doc-search-lite (OSS) |
-|---------|:----------------------:|:---------------------:|
-| BM25 + Agent RAG search | ✅ | ✅ |
-| Multi-format document conversion | ✅ | ✅ |
-| Web UI + API + MCP | ✅ | ✅ |
-| PII desensitization | ✅ | ✅ |
-| Hybrid search (BM25+Grep RRF) | ✅ | ✅ |
-| Multi-index search | ✅ | ✅ |
-| Document structure awareness | ✅ | ✅ |
-| CLI stats / diagnostics / budget | ✅ | ✅ |
-| PDF enhancement (LA-3B) | ✅ | ❌ |
-| Dify external knowledge API | ✅ | ❌ |
-| Pi TUI | ✅ (deprecated) | ❌ |
-| QA benchmark scripts | ✅ | ❌ |
-| OpenCode Skill | ✅ | ❌ |
-| License | PolyForm Strict | **MIT** |
+
+| Feature                          | doc-search (enterprise) | doc-search-lite (OSS) |
+| ---------------------------------- | :-----------------------: | :---------------------: |
+| BM25 + Agent RAG search          |           ✅           |          ✅          |
+| Multi-format document conversion |           ✅           |          ✅          |
+| Web UI + API + MCP               |           ✅           |          ✅          |
+| PII desensitization              |           ✅           |          ✅          |
+| Hybrid search (BM25+Grep RRF)    |           ✅           |          ✅          |
+| Multi-index search               |           ✅           |          ✅          |
+| Document structure awareness     |           ✅           |          ✅          |
+| CLI stats / diagnostics / budget |           ✅           |          ✅          |
+| PDF enhancement (LA-3B)          |           ✅           |          ❌          |
+| Dify external knowledge API      |           ✅           |          ❌          |
+| Pi TUI                           |     ✅ (deprecated)     |          ❌          |
+| QA benchmark scripts             |           ✅           |          ❌          |
+| OpenCode Skill                   |           ✅           |          ❌          |
+| License                          |     PolyForm Strict     |        **MIT**        |
 
 ### Comparison with DCI-Agent-Lite
 
@@ -66,21 +67,22 @@ an agent searches raw text corpora using terminal tools (`rg`, `find`, `sed`)
 with no indexing. Both projects share the philosophy of **no vector databases**,
 but target different use cases:
 
-| Dimension | doc-search-lite | DCI-Agent-Lite |
-|-----------|----------------|----------------|
-| **Purpose** | Production document search system | Academic benchmark/evaluation |
-| **Corpus** | Your own PDF/DOCX/XLSX/PPTX/HTML | Pre-formatted JSONL datasets (Wikipedia, BrowseComp) |
-| **Indexing** | Tantivy BM25 (Rust) + jieba Bigram | **Zero index** — raw `rg`/`find` on text files |
-| **Search modes** | BM25 / Grep / Hybrid (RRF) / Tag / Agent | Agent-only (bash tool loop) |
-| **Document support** | 11 formats + OCR for images | Plain text / JSONL only |
-| **Agent framework** | Custom SearchAgent (COMPILOT P0-P6) | Pi coding agent (bash + context mgmt) |
-| **Interface** | CLI + Web UI + REST API + MCP 4 tools | Pi TUI only (`--terminal`) |
-| **APIs** | FastAPI (21 routes), FastMCP (4 tools), SSE | None |
-| **Observability** | Usage tracking, budget guard, 14-step diagnostics, search logging | None |
-| **Security** | PII desensitization, API key auth | None |
-| **Target audience** | Teams deploying document search | Researchers benchmarking agentic search |
-| **License** | MIT | Apache 2.0 |
-| **Paper** | — | [arXiv:2605.05242](https://arxiv.org/abs/2605.05242) |
+
+| Dimension            | doc-search-lite                                                   | DCI-Agent-Lite                                       |
+| ---------------------- | ------------------------------------------------------------------- | ------------------------------------------------------ |
+| **Purpose**          | Production document search system                                 | Academic benchmark/evaluation                        |
+| **Corpus**           | Your own PDF/DOCX/XLSX/PPTX/HTML                                  | Pre-formatted JSONL datasets (Wikipedia, BrowseComp) |
+| **Indexing**         | Tantivy BM25 (Rust) + jieba Bigram                                | **Zero index** — raw `rg`/`find` on text files      |
+| **Search modes**     | BM25 / Grep / Hybrid (RRF) / Tag / Agent                          | Agent-only (bash tool loop)                          |
+| **Document support** | 11 formats + OCR for images                                       | Plain text / JSONL only                              |
+| **Agent framework**  | Custom SearchAgent (COMPILOT P0-P6)                               | Pi coding agent (bash + context mgmt)                |
+| **Interface**        | CLI + Web UI + REST API + MCP 4 tools                             | Pi TUI only (`--terminal`)                           |
+| **APIs**             | FastAPI (21 routes), FastMCP (4 tools), SSE                       | None                                                 |
+| **Observability**    | Usage tracking, budget guard, 14-step diagnostics, search logging | None                                                 |
+| **Security**         | PII desensitization, API key auth                                 | None                                                 |
+| **Target audience**  | Teams deploying document search                                   | Researchers benchmarking agentic search              |
+| **License**          | MIT                                                               | Apache 2.0                                           |
+| **Paper**            | —                                                                | [arXiv:2605.05242](https://arxiv.org/abs/2605.05242) |
 
 ## Quick Start
 
@@ -145,7 +147,7 @@ copy .env.example .env
   <img src="docs/screenshots/architecture.png" alt="doc-search-lite System Architecture" width="100%">
   <br>
   <em>System architecture — 3-column layout: DevOps/Storage (left), 7-layer pipeline (center), Security/Budget/Lifecycle (right).</em>
-</p><
+</p>
 
 ### Pipeline
 
@@ -254,11 +256,12 @@ python -m src.mcp_server
 
 **MCP Tools**:
 
-| Tool | Description |
-|------|-------------|
-| `doc_search` | BM25 / Hybrid / Grep keyword search |
-| `doc_agent` | Agentic RAG with LLM answer generation |
-| `doc_read` | Read full document content by doc_id or source_path |
+
+| Tool          | Description                                              |
+| --------------- | ---------------------------------------------------------- |
+| `doc_search`  | BM25 / Hybrid / Grep keyword search                      |
+| `doc_agent`   | Agentic RAG with LLM answer generation                   |
+| `doc_read`    | Read full document content by doc_id or source_path      |
 | `doc_analyze` | Deep document analysis (compare/extract/summarize/table) |
 
 ### Stats & Diagnostics
@@ -281,19 +284,20 @@ python -m src.cli diff-migrate /path/to/base /path/to/compare --export-new /path
 
 ## Supported Formats
 
-| Format | Extension | Converter |
-|--------|-----------|-----------|
-| PDF | `.pdf` | pdfplumber + pypdf (scanned PDF auto OCR) |
-| Word | `.docx` | MarkItDown |
-| Excel | `.xlsx`, `.xls` | MarkItDown (>5MB auto LibreOffice → CSV) |
-| PowerPoint | `.pptx` | MarkItDown |
-| HTML | `.html`, `.htm` | MarkItDown + table alignment fix |
-| CSV | `.csv` | pandas + auto encoding detection |
-| Text | `.txt` | Auto encoding (utf-8/gbk/gb2312) |
-| Markdown | `.md` | Pass-through |
-| Images | `.png`, `.jpg`, `.jpeg`, `.bmp`, `.webp` | ZhipuAI / PaddleOCR / PP-StructureV3 |
-| Email | `.msg` | olefile (Outlook OLE2) |
-| Archives | `.zip`, `.7z`, `.rar`, `.tar`, `.gz` | Extract → convert → clean |
+
+| Format     | Extension                                | Converter                                 |
+| ------------ | ------------------------------------------ | ------------------------------------------- |
+| PDF        | `.pdf`                                   | pdfplumber + pypdf (scanned PDF auto OCR) |
+| Word       | `.docx`                                  | MarkItDown                                |
+| Excel      | `.xlsx`, `.xls`                          | MarkItDown (>5MB auto LibreOffice → CSV) |
+| PowerPoint | `.pptx`                                  | MarkItDown                                |
+| HTML       | `.html`, `.htm`                          | MarkItDown + table alignment fix          |
+| CSV        | `.csv`                                   | pandas + auto encoding detection          |
+| Text       | `.txt`                                   | Auto encoding (utf-8/gbk/gb2312)          |
+| Markdown   | `.md`                                    | Pass-through                              |
+| Images     | `.png`, `.jpg`, `.jpeg`, `.bmp`, `.webp` | ZhipuAI / PaddleOCR / PP-StructureV3      |
+| Email      | `.msg`                                   | olefile (Outlook OLE2)                    |
+| Archives   | `.zip`, `.7z`, `.rar`, `.tar`, `.gz`     | Extract → convert → clean               |
 
 > `.doc` format requires pre-conversion to `.docx` via LibreOffice.
 
@@ -314,18 +318,19 @@ OCR_ENGINE=zhipu
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Search engine | Tantivy (Rust, Python bindings) |
-| Chinese tokenization | jieba + Bigram fallback |
-| LLM integration | LiteLLM (GLM / DeepSeek / 200+ providers) |
-| Rerank | ZhipuAI cloud API (default) or local bge-reranker-v2-m3 |
-| OCR | ZhipuAI / PaddleOCR / PaddleOCR HTTP / PP-StructureV3 |
-| Document conversion | MarkItDown 0.1.x, pdfplumber, pypdf, olefile, pandas |
-| Web framework | FastAPI + SSE + vanilla CSS/JS + Chart.js |
-| CLI framework | Click + Rich |
-| Storage | SQLite (WAL mode), Tantivy index, filesystem |
-| File watching | watchdog |
+
+| Layer                | Technology                                              |
+| ---------------------- | --------------------------------------------------------- |
+| Search engine        | Tantivy (Rust, Python bindings)                         |
+| Chinese tokenization | jieba + Bigram fallback                                 |
+| LLM integration      | LiteLLM (GLM / DeepSeek / 200+ providers)               |
+| Rerank               | ZhipuAI cloud API (default) or local bge-reranker-v2-m3 |
+| OCR                  | ZhipuAI / PaddleOCR / PaddleOCR HTTP / PP-StructureV3   |
+| Document conversion  | MarkItDown 0.1.x, pdfplumber, pypdf, olefile, pandas    |
+| Web framework        | FastAPI + SSE + vanilla CSS/JS + Chart.js               |
+| CLI framework        | Click + Rich                                            |
+| Storage              | SQLite (WAL mode), Tantivy index, filesystem            |
+| File watching        | watchdog                                                |
 
 ## Key Design Decisions
 
