@@ -141,6 +141,15 @@ copy .env.example .env
 
 ```mermaid
 flowchart TB
+    classDef user fill:#dbeafe,stroke:#3b82f6,stroke-width:2px
+    classDef gateway fill:#fef3c7,stroke:#eab308,stroke-width:2px
+    classDef agent fill:#d1fae5,stroke:#10b981,stroke-width:2px
+    classDef search fill:#ede9fe,stroke:#8b5cf6,stroke-width:2px
+    classDef convert fill:#e0e7ff,stroke:#6366f1,stroke-width:2px
+    classDef data fill:#fce7f3,stroke:#ec4899,stroke-width:2px
+    classDef external fill:#f8fafc,stroke:#94a3b8,stroke-width:2px,stroke-dasharray:6 4
+    classDef comp fill:#f3f4f6,stroke:#9ca3af,stroke-width:1px,font-size:9px
+
     subgraph Users["🎯 User Interface Layer"]
         CLI["CLI (Click)\ndoc-search-lite batch-convert / query"]
         WebUI["Web UI\nFastAPI + vanilla CSS/JS + SSE"]
@@ -157,6 +166,7 @@ flowchart TB
         LLM["LLMClient\nLiteLLM - GLM / DeepSeek"]
         Tools["6 Agent Tools\nSearch / Grep / Read / Rerank / Summarize / Bash"]
         subgraph COMPILOT["COMPILOT Optimizations"]
+            direction LR
             P0["P0 ReAct\nThought→Action"]
             P1["P1 Draft Verify\nClosed-loop"]
             P2["P2 Feedback\nTool signals"]
@@ -187,6 +197,15 @@ flowchart TB
         POCR["PaddleOCR\nLocal GPU OCR"]
         LIT["LiteLLM\n200+ provider proxy"]
     end
+    class CLI,WebUI,MCP,REST user
+    class Auth,Session,Intent gateway
+    class SA,LLM,Tools agent
+    class BM25,HY,MI,RK search
+    class PDF,OFF,CSV,IMG,ARC convert
+    class TIDX,CDB,FS data
+    class GLM,DS,POCR,LIT external
+    class P0,P1,P2,P3 comp
+
     CLI --> Auth
     WebUI --> Auth
     MCP --> Auth
