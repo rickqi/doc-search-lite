@@ -114,9 +114,9 @@ copy .env.example .env
 ## Demo
 
 <p align="center">
-  <img src="docs/screenshots/web-ui.png" alt="doc-search-lite Web UI" width="80%">
+  <img src="docs/screenshots/web-ui-en.png" alt="doc-search-lite Web UI" width="80%">
   <br>
-  <em>Web UI — Agent search with SSE streaming, tool call trace, and source citations. <a href="docs/screenshots/">More screenshots →</a></em>
+  <em>Web UI (English) — Welcome page with quick actions. <a href="docs/screenshots/web-ui-zh.png">Chinese version →</a> | <a href="docs/screenshots/web-ui-session.png">Session view →</a> | <a href="docs/screenshots/web-ui-dark.png">Dark theme →</a></em>
 </p>
 
 ## Features

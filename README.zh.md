@@ -113,9 +113,9 @@ copy .env.example .env
 ## 演示
 
 <p align="center">
-  <img src="docs/screenshots/web-ui.png" alt="doc-search-lite Web UI" width="80%">
+  <img src="docs/screenshots/web-ui-zh.png" alt="doc-search-lite Web 界面" width="80%">
   <br>
-  <em>Web UI — Agent search with SSE streaming, tool call trace, and source citations. <a href="docs/screenshots/">More screenshots →</a></em>
+  <em>Web 界面（中文）— 欢迎页与快捷操作。<a href="docs/screenshots/web-ui-en.png">英文版 →</a> | <a href="docs/screenshots/web-ui-session.png">会话视图 →</a> | <a href="docs/screenshots/web-ui-dark.png">暗色主题 →</a></em>
 </p>
 
 ## 功能特性
