@@ -147,26 +147,107 @@ copy .env.example .env
 
 ## Architecture
 
-```
-User Query
-  ├─ [CLI] Click — batch-convert / build-index / query / watch / stats
-  ├─ [API] FastAPI — 21+ REST endpoints + SSE streaming
-  │    ├─ BM25 / Hybrid / Grep / Tag search (no LLM)
-  │    ├─ Agent search (tool_loop / pipeline)
-  │    ├─ Document analysis (compare/extract/summarize/table)
-  │    ├─ Session management + file upload
-  │    └─ DB panel (conversion status + token usage)
-  ├─ [MCP] FastMCP — 4 tools for OpenCode / Claude
-  │    ├─ doc_search (BM25/Hybrid/Grep)
-  │    ├─ doc_agent (agentic RAG)
-  │    ├─ doc_read (full document content)
-  │    └─ doc_analyze (deep document analysis)
-  └─ [Agent] SearchAgent (8-round tool loop)
-       ├─ SearchTool (BM25) → GrepTool (regex) → ReadTool (TOC injection)
-       ├─ RerankTool (ZhipuAI cloud) → SummarizeTool (LLM)
-       ├─ COMPILOT P0-P6: ReAct → Draft Verify → Feedback → Nudge → BOK → Confidence
-       └─ Guardrails: Early stop → Force read → Quality check → Draft verify
-```
+<div style="width: 100%; max-width: 1200px; box-sizing: border-box; position: relative; background: #fafbff; padding: 20px; border-radius: 10px;">
+<style scoped>
+.arch-wrapper{display:flex;gap:12px}.arch-sidebar{width:165px;flex-shrink:0}.arch-main{flex:1;min-width:0}.arch-title{text-align:center;font-size:22px;font-weight:bold;color:#1e293b;margin-bottom:16px}
+.arch-layer{margin:8px 0;padding:14px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.04)}.arch-layer-title{font-size:13px;font-weight:bold;margin-bottom:10px;text-align:center}
+.arch-grid{display:grid;gap:8px}.arch-grid-2{grid-template-columns:repeat(2,1fr)}.arch-grid-3{grid-template-columns:repeat(3,1fr)}.arch-grid-4{grid-template-columns:repeat(4,1fr)}.arch-grid-5{grid-template-columns:repeat(5,1fr)}
+.arch-box{border-radius:6px;padding:8px;text-align:center;font-size:11px;font-weight:600;line-height:1.35;color:#1e293b;background:#fff;border:1px solid #e2e8f0}.arch-box.highlight{background:linear-gradient(135deg,#dbeafe 0%,#bfdbfe 100%);border:2px solid #2563eb}.arch-box.tech{font-size:10px;color:#475569;background:#f8fafc}
+.arch-layer.external{background:linear-gradient(135deg,#f8fafc 0%,#f1f5f9 100%);border:2px dashed #94a3b8}.arch-layer.external .arch-layer-title{color:#64748b}
+.arch-layer.user{background:linear-gradient(135deg,#dbeafe 0%,#bfdbfe 100%);border:2px solid #3b82f6}.arch-layer.user .arch-layer-title{color:#1e40af}
+.arch-layer.application{background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%);border:2px solid #eab308}.arch-layer.application .arch-layer-title{color:#854d0e}
+.arch-layer.ai{background:linear-gradient(135deg,#d1fae5 0%,#a7f3d0 100%);border:2px solid #10b981}.arch-layer.ai .arch-layer-title{color:#065f46}
+.arch-layer.data{background:linear-gradient(135deg,#fce7f3 0%,#fbcfe8 100%);border:2px solid #ec4899}.arch-layer.data .arch-layer-title{color:#9d174d}
+.arch-layer.search{background:linear-gradient(135deg,#ede9fe 0%,#ddd6fe 100%);border:2px solid #8b5cf6}.arch-layer.search .arch-layer-title{color:#5b21b6}
+.arch-layer.convert{background:linear-gradient(135deg,#e0e7ff 0%,#c7d2fe 100%);border:2px solid #6366f1}.arch-layer.convert .arch-layer-title{color:#4338ca}
+.arch-sidebar-panel{border-radius:8px;padding:10px;background:linear-gradient(135deg,#f3f4f6 0%,#e5e7eb 100%);border:1px solid #9ca3af;margin-bottom:8px}.arch-sidebar-title{font-size:12px;font-weight:bold;text-align:center;color:#1e293b;margin-bottom:6px}.arch-sidebar-item{font-size:10px;text-align:center;color:#374151;background:#fff;padding:5px;border-radius:5px;margin:3px 0;border:1px solid #e5e7eb}.arch-sidebar-item.metric{background:#dbeafe;border:1px solid #3b82f6;color:#1e40af;font-weight:600}
+.arch-conn{stroke:#94a3b8;stroke-width:1.5;fill:none}.arch-conn-dashed{stroke:#94a3b8;stroke-width:1.5;fill:none;stroke-dasharray:6 4}.arch-conn-label{font-size:9px;fill:#64748b;font-family:sans-serif}
+</style>
+<div class="arch-title">doc-search-lite — System Architecture</div>
+<div class="arch-wrapper">
+<div class="arch-sidebar">
+<div class="arch-sidebar-panel"><div class="arch-sidebar-title">🖥️ DevOps</div><div class="arch-sidebar-item">CLI (Click)<br><small>batch-convert<br>build-index<br>query / watch / stats</small></div><div class="arch-sidebar-item">pip install<br><small>Python 3.10+</small></div><div class="arch-sidebar-item">.env Config<br><small>GLM/DeepSeek Keys</small></div></div>
+<div class="arch-sidebar-panel"><div class="arch-sidebar-title">📊 Observability</div><div class="arch-sidebar-item metric">UsageTracker<br><small>OCR/LLM/Rerank</small></div><div class="arch-sidebar-item metric">BudgetGuard<br><small>Monthly Caps</small></div><div class="arch-sidebar-item metric">Diagnostics<br><small>14-Step Timing</small></div><div class="arch-sidebar-item metric">SearchLogger<br><small>Async Logging</small></div><div class="arch-sidebar-item">AgentMemory<br><small>Q&A Recall</small></div></div>
+<div class="arch-sidebar-panel"><div class="arch-sidebar-title">📦 Storage</div><div class="arch-sidebar-item">Tantivy Index<br><small>BM25 Schema v2</small></div><div class="arch-sidebar-item">ConvertDB<br><small>SQLite Schema v2.1</small></div><div class="arch-sidebar-item">Markdown Files<br><small>.md + .md.json</small></div></div>
+</div>
+<div class="arch-main">
+<div class="arch-layer user">
+<div class="arch-layer-title">🎯 User Interface Layer</div>
+<div class="arch-grid arch-grid-4">
+<div class="arch-box highlight">CLI (Click)<br><small>doc-search-lite batch-convert / query</small></div>
+<div class="arch-box highlight">Web UI<br><small>FastAPI + vanilla HTML/CSS/JS + SSE</small></div>
+<div class="arch-box">MCP Server<br><small>FastMCP — 4 tools for OpenCode/Claude</small></div>
+<div class="arch-box">REST API<br><small>21+ endpoints + Swagger docs</small></div>
+</div>
+</div>
+<div class="arch-layer application">
+<div class="arch-layer-title">⚙️ API & Gateway Layer</div>
+<div class="arch-grid arch-grid-3">
+<div class="arch-box">Auth Middleware<br><small>Bearer / X-API-Key / Token Store</small></div>
+<div class="arch-box">Session Manager<br><small>SSE streaming + SQLite persistence</small></div>
+<div class="arch-box">Intent Classifier<br><small>search / review / direct 3-mode routing</small></div>
+</div>
+</div>
+<div class="arch-layer ai">
+<div class="arch-layer-title">🧠 Agent Intelligence Layer</div>
+<div class="arch-grid arch-grid-3">
+<div class="arch-box highlight">SearchAgent<br><small>tool_loop (8 rounds) / pipeline</small></div>
+<div class="arch-box">LLMClient<br><small>LiteLLM — GLM / DeepSeek</small></div>
+<div class="arch-box">Agent Tools<br><small>SearchTool / GrepTool / ReadTool<br>RerankTool / SummarizeTool / BashTool</small></div>
+</div>
+<div style="margin-top:8px"><div class="arch-grid arch-grid-4">
+<div class="arch-box tech">P0 ReAct<br><small>Thought→Action</small></div>
+<div class="arch-box tech">P1 Draft Verify<br><small>Closed-loop</small></div>
+<div class="arch-box tech">P2 Feedback<br><small>Tool signals</small></div>
+<div class="arch-box tech">P3-P6<br><small>Nudge/BOK/Confidence</small></div>
+</div></div>
+</div>
+<div class="arch-layer search">
+<div class="arch-layer-title">🔍 Search Pipeline Layer</div>
+<div class="arch-grid arch-grid-4">
+<div class="arch-box">BM25<br><small>Tantivy + jieba + Bigram</small></div>
+<div class="arch-box">Hybrid<br><small>BM25+Grep RRF K=60</small></div>
+<div class="arch-box">Multi-Index<br><small>Fan-out + namespace</small></div>
+<div class="arch-box">Reranker<br><small>ZhipuAI cloud / local bge</small></div>
+</div>
+</div>
+<div class="arch-layer convert">
+<div class="arch-layer-title">📄 Conversion Pipeline Layer</div>
+<div class="arch-grid arch-grid-5">
+<div class="arch-box tech">PDF<br><small>pdfplumber+pypdf+OCR</small></div>
+<div class="arch-box tech">Office<br><small>MarkItDown (docx/pptx/xlsx)</small></div>
+<div class="arch-box tech">HTML/CSV<br><small>table alignment fix</small></div>
+<div class="arch-box tech">Images<br><small>OCR (4 engines)</small></div>
+<div class="arch-box tech">Archives<br><small>ZIP/7z/RAR/tar</small></div>
+</div>
+</div>
+<div class="arch-layer data">
+<div class="arch-layer-title">🗄️ Data & Persistence Layer</div>
+<div class="arch-grid arch-grid-3">
+<div class="arch-box">Tantivy Index<br><small>BM25 — title boost + highlights</small></div>
+<div class="arch-box">ConvertDB (SQLite)<br><small>Schema v2.1 — files/batches/tokens/budget</small></div>
+<div class="arch-box">File Store<br><small>.md + .md.json (headings + tags)</small></div>
+</div>
+</div>
+<div class="arch-layer external">
+<div class="arch-layer-title">☁️ External Services</div>
+<div class="arch-grid arch-grid-4">
+<div class="arch-box tech">ZhipuAI GLM<br><small>LLM + Rerank + OCR</small></div>
+<div class="arch-box tech">DeepSeek<br><small>Alternative LLM</small></div>
+<div class="arch-box tech">PaddleOCR<br><small>Local GPU OCR</small></div>
+<div class="arch-box tech">LiteLLM<br><small>200+ provider proxy</small></div>
+</div>
+</div>
+</div>
+<div class="arch-sidebar">
+<div class="arch-sidebar-panel"><div class="arch-sidebar-title">🔒 Security</div><div class="arch-sidebar-item">PII Desensitizer<br><small>Phone/ID/Bank card masking</small></div><div class="arch-sidebar-item">API Key Auth<br><small>Bearer / X-API-Key</small></div><div class="arch-sidebar-item">Auth Audit Log<br><small>token/endpoint/IP/status</small></div><div class="arch-sidebar-item">Fail-safe Design<br><small>Never block on error</small></div></div>
+<div class="arch-sidebar-panel"><div class="arch-sidebar-title">📈 Cost & Budget</div><div class="arch-sidebar-item metric">Tiered Routing<br><small>Flash $0.005/query</small></div><div class="arch-sidebar-item metric">Token Tracking<br><small>Millicents precision</small></div><div class="arch-sidebar-item metric">Budget Limits<br><small>Monthly/total caps</small></div><div class="arch-sidebar-item metric">AlertManager<br><small>Webhook + dedup 5min</small></div></div>
+<div class="arch-sidebar-panel"><div class="arch-sidebar-title">🔄 Lifecycle</div><div class="arch-sidebar-item">File Status<br><small>pending→converting→success</small></div><div class="arch-sidebar-item">Batch Resume<br><small>Interrupted→restart</small></div><div class="arch-sidebar-item">Incremental<br><small>Hash + mtime detect</small></div><div class="arch-sidebar-item">Watchdog<br><small>Auto re-index</small></div></div>
+</div>
+</div>
+</div>
+
+### Pipeline
 
 ### Pipeline
 
