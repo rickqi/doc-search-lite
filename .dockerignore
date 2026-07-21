@@ -1,0 +1,14 @@
+.venv/
+.git/
+.gitignore
+__pycache__/
+*.pyc
+.env
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+docs/
+README.zh.md
+CONTRIBUTING.md
+*.md
+AGENTS.md
