@@ -15,6 +15,8 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
 [![CI](https://github.com/rickqi/doc-search-lite/actions/workflows/ci.yml/badge.svg)](https://github.com/rickqi/doc-search-lite/actions/workflows/ci.yml)
+[![Demo](https://img.shields.io/badge/demo-%E5%9C%A8%E7%BA%BF-brightgreen)](https://huggingface.co/spaces/rickqi/doc-search-lite-demo)
+[![CI](https://github.com/rickqi/doc-search-lite/actions/workflows/ci.yml/badge.svg)](https://github.com/rickqi/doc-search-lite/actions/workflows/ci.yml)
 
 ---
 
@@ -109,6 +111,9 @@ copy .env.example .env
 
 > 需要 **Python 3.10+** 和 **ZhipuAI GLM API 密钥**（也用于 Rerank 和 OCR）。
 > DeepSeek 可作为备选 LLM 提供商。
+
+> 🚀 **在线 Demo**：[doc-search-lite on Hugging Face Spaces](https://huggingface.co/spaces/rickqi/doc-search-lite-demo)
+> 或一键部署： [![Deploy to HF](https://img.shields.io/badge/一键部署-Hugging%20Face-yellow)](https://huggingface.co/new-space?template=rickqi/doc-search-lite)
 
 ## 演示
 

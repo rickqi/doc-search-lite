@@ -15,6 +15,8 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
 [![CI](https://github.com/rickqi/doc-search-lite/actions/workflows/ci.yml/badge.svg)](https://github.com/rickqi/doc-search-lite/actions/workflows/ci.yml)
+[![Demo](https://img.shields.io/badge/demo-online-brightgreen)](https://huggingface.co/spaces/rickqi/doc-search-lite-demo)
+[![Deploy to HF](https://img.shields.io/badge/deploy%20on-Hugging%20Face-yellow)](https://huggingface.co/new-space?template=rickqi/doc-search-lite)
 
 ---
 
@@ -112,6 +114,9 @@ copy .env.example .env
 
 > Requires **Python 3.10+** and a **ZhipuAI GLM API key** (also used for Rerank & OCR).
 > DeepSeek is supported as an alternative LLM provider.
+
+> 🚀 **Try the live demo**: [doc-search-lite on Hugging Face Spaces](https://huggingface.co/spaces/rickqi/doc-search-lite-demo)
+> Or deploy your own instance: [![Deploy to HF](https://img.shields.io/badge/deploy%20on-Hugging%20Face-yellow)](https://huggingface.co/new-space?template=rickqi/doc-search-lite)
 
 ## Demo
 
