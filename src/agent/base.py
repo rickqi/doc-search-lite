@@ -6,13 +6,12 @@ This module defines the core abstractions for the agent system:
 - Agent: Abstract base class for agents
 """
 
-import hashlib
-import json
-import time
 from abc import ABC, abstractmethod
-from collections import OrderedDict
 from dataclasses import dataclass, field
 from typing import Any, Optional
+
+# ToolResult/ToolCache moved to tool_types.py; re-exported for backward compat
+from src.agent.tool_types import ToolCache, ToolResult  # noqa: F401
 
 
 class Tool(ABC):
@@ -298,6 +297,4 @@ class Agent(ABC):
         }
 
 
-# ToolResult and ToolCache have been moved to agent/tool_types.py.
-# Import from there instead.
-from src.agent.tool_types import ToolResult, ToolCache  # noqa: F401
+
