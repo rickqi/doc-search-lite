@@ -140,11 +140,24 @@ copy .env.example .env
 
 ## 架构
 
-<p align="center">
-  <img src="docs/screenshots/architecture.png" alt="doc-search-lite 系统架构" width="100%">
-  <br>
-  <em>三栏系统架构图：DevOps/存储（左）、7 层管线（中）、安全/预算/生命周期（右）。</em>
-</p>
+<table style="width:100%;border-collapse:collapse">
+<tr>
+<td style="width:50%;vertical-align:top;padding:8px">
+  <p align="center">
+    <img src="docs/screenshots/architecture.png" alt="doc-search-lite" width="100%">
+    <br>
+    <em><strong>doc-search-lite</strong> — 开源 MIT 版</em>
+  </p>
+</td>
+<td style="width:50%;vertical-align:top;padding:8px">
+  <p align="center">
+    <img src="docs/screenshots/doc-search-architecture.png" alt="doc-search Enterprise" width="100%">
+    <br>
+    <em><strong>doc-search</strong> — 企业版（PolyForm Strict）</em>
+  </p>
+</td>
+</tr>
+</table>
 
 
 ### 管线流程

@@ -143,11 +143,24 @@ copy .env.example .env
 
 ## Architecture
 
-<p align="center">
-  <img src="docs/screenshots/architecture.png" alt="doc-search-lite System Architecture" width="100%">
-  <br>
-  <em>System architecture — 3-column layout: DevOps/Storage (left), 7-layer pipeline (center), Security/Budget/Lifecycle (right).</em>
-</p>
+<table style="width:100%;border-collapse:collapse">
+<tr>
+<td style="width:50%;vertical-align:top;padding:8px">
+  <p align="center">
+    <img src="docs/screenshots/architecture.png" alt="doc-search-lite" width="100%">
+    <br>
+    <em><strong>doc-search-lite</strong> — Open source MIT edition</em>
+  </p>
+</td>
+<td style="width:50%;vertical-align:top;padding:8px">
+  <p align="center">
+    <img src="docs/screenshots/doc-search-architecture.png" alt="doc-search Enterprise" width="100%">
+    <br>
+    <em><strong>doc-search</strong> — Enterprise edition (PolyForm Strict)</em>
+  </p>
+</td>
+</tr>
+</table>
 
 ### Pipeline
 
